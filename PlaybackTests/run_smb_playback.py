@@ -45,7 +45,9 @@ def main():
             "xcodebuild", "test-without-building", "-xctestrun", str(copy), "-destination", args.destination,
             "-resultBundlePath", str(args.result),
             "-only-testing:" + args.target + ("" if args.all_playback else "/FilmPlaybackTests/testRealSMBStreamRepeatedSeekAndReopenReleasesReads"),
-            "-parallel-testing-enabled", "NO", "-collect-test-diagnostics", "never"
+            "-parallel-testing-enabled", "NO", "-collect-test-diagnostics", "never",
+            "-test-timeouts-enabled", "YES", "-default-test-execution-time-allowance", "120",
+            "-maximum-test-execution-time-allowance", "180"
         ], check=False)
         raise SystemExit(result.returncode)
     finally:

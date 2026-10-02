@@ -138,10 +138,10 @@ public actor SMBStreamingServer {
                 try await client.sendHTTP(SMBHTTPResponse(status: 405, length: 0, extraHeaders: ["Allow": "GET, HEAD"]).data)
                 return
             }
-            // Playback clients keep the request channel open until consumption finishes.
-            // Observe input EOF as well as write failures so abandoned seeks release an active SMB read promptly.
-            client.receive(minimumIncompleteLength: 1, maximumLength: 1) { _, _, complete, error in
-                if complete || error != nil { onConsumerClosed() }
+            // RFC 9112 § 9.6: a client write half-close does not abandon the response.
+            // Only transport errors cancel consumption; stop/deinit and write failures also release reads.
+            client.receive(minimumIncompleteLength: 1, maximumLength: 1) { _, _, _, error in
+                if error != nil { onConsumerClosed() }
             }
             // HTTP Range is defined for GET. HEAD describes the complete representation.
             let rangeHeader = request.method == "GET" ? request.range : nil

@@ -16,6 +16,7 @@ import UIKit
 @MainActor
 final class FilmPlaybackTests: XCTestCase {
     private var player: FilmPlayer!
+    private var diagnosticOrigin = ContinuousClock.now
     #if os(macOS)
     private var window: NSWindow!
     private var surface: VLCVideoView!
@@ -26,6 +27,7 @@ final class FilmPlaybackTests: XCTestCase {
     #endif
 
     override func setUp() async throws {
+        diagnosticOrigin = .now
         player = FilmPlayer()
         #if os(macOS)
         window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
@@ -107,6 +109,9 @@ final class FilmPlaybackTests: XCTestCase {
         player.load(url: url, startAt: 2)
         try await waitUntil("resume at two seconds") { self.player.position >= 2.1 }
         player.pause()
+        try await waitUntil("backend confirms pause before measuring stillness") {
+            self.player.backendState == "paused" && self.player.backendIsPlaying == false
+        }
         try await Task.sleep(for: .milliseconds(300))
         let paused = player.position
         try await Task.sleep(for: .milliseconds(800))
@@ -144,6 +149,9 @@ final class FilmPlaybackTests: XCTestCase {
             self.player.isPlaying && self.player.position > before + 0.5
         }
         player.pause()
+        try await waitUntil("backend confirms the final rapid-control pause") {
+            self.player.backendState == "paused" && self.player.backendIsPlaying == false
+        }
         try await Task.sleep(for: .milliseconds(300))
         let paused = player.position
         try await Task.sleep(for: .milliseconds(600))
@@ -260,7 +268,7 @@ final class FilmPlaybackTests: XCTestCase {
         let connection = SMBConnection(name: "Playback fixture", host: "127.0.0.1", port: configuration.port,
                                        share: configuration.share, rootPath: configuration.mediaPath)
         let credentials = SMBCredentials(username: configuration.username, password: configuration.password)
-        let provider = CountingSMBProvider()
+        let provider = CountingSMBProvider(diagnosticOrigin: diagnosticOrigin)
         let path = try SMBPath.joining(configuration.mediaPath, "clip-smb-long.mp4")
         let size = try await provider.fileSize(connection, credentials: credentials, path: path)
         XCTAssertGreaterThan(size, 20 * 1_024 * 1_024, "Use the generated long SMB fixture to verify streaming.")
@@ -282,8 +290,9 @@ final class FilmPlaybackTests: XCTestCase {
                     let displayed = player.displayedVideoFrames
                     player.seek(target)
                     player.play()
-                    try await waitUntil("SMB cycle \(cycle): seek to \(Int(target)) seconds") {
-                        self.player.position > target + 0.2 && self.player.position < target + 2
+                    try await waitUntil("SMB cycle \(cycle): seek to \(Int(target)) seconds", traceInitialSeek: true) {
+                        guard let time = self.player.backendTime else { return false }
+                        return time > target + 0.2 && time < target + 2
                             && self.player.displayedVideoFrames > displayed
                     }
                     player.pause()
@@ -302,10 +311,21 @@ final class FilmPlaybackTests: XCTestCase {
             } catch {
                 player.stop()
                 await server.stop()
+                await provider.close()
+                await attachSMBReadTimeline(provider)
                 throw error
             }
         }
         await provider.close()
+        await attachSMBReadTimeline(provider)
+    }
+
+    private func attachSMBReadTimeline(_ provider: CountingSMBProvider) async {
+        guard let data = try? await provider.diagnosticData() else { return }
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "Generated SMB fixture read timeline"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func fixture(_ filename: String) throws -> URL {
@@ -320,34 +340,56 @@ final class FilmPlaybackTests: XCTestCase {
         return try XCTUnwrap(file, "Missing \(filename). Run PlaybackTests/generate_fixtures.py before building the test bundle.")
     }
 
-    private func waitUntil(_ label: String, timeout: Double = 12, _ condition: @MainActor () -> Bool) async throws {
+    private func waitUntil(_ label: String, timeout: Double = 12, traceInitialSeek: Bool = false,
+                           _ condition: @MainActor () -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
-        var nextDiagnostic = Date().addingTimeInterval(0.5)
+        let fastDiagnosticDeadline = traceInitialSeek ? Date().addingTimeInterval(2) : nil
+        var nextDiagnostic = Date().addingTimeInterval(traceInitialSeek ? 0.1 : 0.5)
+        printPlaybackDiagnostic(label, phase: "begin")
         while !condition() && Date() < deadline {
             try await Task.sleep(for: .milliseconds(100))
             if Date() >= nextDiagnostic {
                 // This suite only opens generated media. Never log video URLs
                 // or fixture credentials; names here are synthetic subtitles.
-                print("Playback check=\(label), position=\(player.position), "
-                      + "audioTracks=\(player.audioTracks.count), subtitles=\(player.subtitleTracks.map(\.name)), "
-                      + "backendSubtitles=\(player.backendSubtitleTracks.map(\.name)), "
-                      + "subtitleIDLengths=\(player.subtitleTracks.map { $0.id.count }), "
-                      + "selectedSubtitle=\(player.selectedSubtitleID != nil), chapters=\(player.chapters.count)")
-                nextDiagnostic = Date().addingTimeInterval(0.5)
+                printPlaybackDiagnostic(label, phase: "pending")
+                let interval = fastDiagnosticDeadline.map { Date() < $0 } == true ? 0.1 : 0.5
+                nextDiagnostic = Date().addingTimeInterval(interval)
             }
         }
+        printPlaybackDiagnostic(label, phase: condition() ? "ready" : "timeout")
         XCTAssertTrue(condition(), "\(label) timed out; error=\(player.errorMessage ?? "none"), "
                       + "subtitleError=\(player.subtitleErrorMessage ?? "none"), "
                       + "position=\(player.position), duration=\(player.duration), playing=\(player.isPlaying), "
+                      + "backendState=\(player.backendState), backendPlaying=\(String(describing: player.backendIsPlaying)), "
+                      + "backendTime=\(String(describing: player.backendTime)), "
                       + "audioTracks=\(player.audioTracks.count), subtitleTracks=\(player.subtitleTracks.count), "
                       + "selectedSubtitle=\(player.selectedSubtitleID != nil), chapters=\(player.chapters.count), "
                       + "videoDecoded=\(player.decodedVideoFrames), videoDisplayed=\(player.displayedVideoFrames), "
+                      + "audioDecoded=\(player.decodedAudioBuffers), "
                       + "audioPlayed=\(player.playedAudioBuffers)")
         if !condition() { throw PlaybackTestError.timeout }
+    }
+
+    private func printPlaybackDiagnostic(_ label: String, phase: String) {
+        print("Playback t=\(String(format: "%.3f", diagnosticElapsed(since: diagnosticOrigin))) "
+              + "check=\(label), phase=\(phase), position=\(player.position), "
+              + "backendState=\(player.backendState), backendPlaying=\(String(describing: player.backendIsPlaying)), "
+              + "backendTime=\(String(describing: player.backendTime)), "
+              + "videoDecoded=\(player.decodedVideoFrames), videoDisplayed=\(player.displayedVideoFrames), "
+              + "audioDecoded=\(player.decodedAudioBuffers), audioPlayed=\(player.playedAudioBuffers), "
+              + "audioTracks=\(player.audioTracks.count), subtitles=\(player.subtitleTracks.map(\.name)), "
+              + "backendSubtitles=\(player.backendSubtitleTracks.map(\.name)), "
+              + "subtitleIDLengths=\(player.subtitleTracks.map { $0.id.count }), "
+              + "selectedSubtitle=\(player.selectedSubtitleID != nil), chapters=\(player.chapters.count)")
     }
 }
 
 private enum PlaybackTestError: Error { case timeout }
+
+private func diagnosticElapsed(since origin: ContinuousClock.Instant) -> Double {
+    let components = origin.duration(to: .now).components
+    return Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000
+}
 
 private struct SMBPlaybackFixture: Decodable {
     let port: Int
@@ -377,7 +419,25 @@ private struct SMBPlaybackFixture: Decodable {
 /// and teardown exercise cancellation rather than only the decoder's cache.
 private actor CountingSMBProvider: SMBFileProviding {
     private let provider = SMBProvider()
+    private let diagnosticOrigin: ContinuousClock.Instant
+    private var nextReadID = 0
+    private var readEvents: [ReadEvent] = []
+    private var omittedEvents = 0
     private(set) var bytesRead: Int64 = 0
+
+    private struct ReadEvent: Encodable {
+        let id: Int
+        let phase: String
+        let elapsed: Double
+        let offset: Int64
+        let requestedBytes: Int64
+        let actualBytes: Int
+        let totalBytes: Int64
+    }
+
+    init(diagnosticOrigin: ContinuousClock.Instant) {
+        self.diagnosticOrigin = diagnosticOrigin
+    }
 
     func testConnection(_ connection: SMBConnection, credentials: SMBCredentials) async throws {
         try await provider.testConnection(connection, credentials: credentials)
@@ -392,11 +452,54 @@ private actor CountingSMBProvider: SMBFileProviding {
     }
 
     func readFile(_ connection: SMBConnection, credentials: SMBCredentials, path: String, range: Range<Int64>) async throws -> Data {
-        try await Task.sleep(for: .milliseconds(100))
-        let data = try await provider.readFile(connection, credentials: credentials, path: path, range: range)
-        bytesRead += Int64(data.count)
-        return data
+        nextReadID += 1
+        let id = nextReadID
+        recordRead(id: id, phase: "begin", range: range)
+        do {
+            try await Task.sleep(for: .milliseconds(100))
+            let data = try await provider.readFile(connection, credentials: credentials, path: path, range: range)
+            bytesRead += Int64(data.count)
+            recordRead(id: id, phase: "end", range: range, actualBytes: data.count)
+            return data
+        } catch {
+            // Log only a safe phase. Error descriptions can contain network
+            // addresses or paths and are deliberately excluded from fixtures.
+            recordRead(id: id, phase: Task.isCancelled || error is CancellationError ? "cancel" : "failure", range: range)
+            throw error
+        }
     }
 
-    func close() async { await provider.close() }
+    private func recordRead(id: Int, phase: String, range: Range<Int64>, actualBytes: Int = 0) {
+        let event = ReadEvent(id: id, phase: phase, elapsed: diagnosticElapsed(since: diagnosticOrigin),
+                              offset: range.lowerBound, requestedBytes: range.upperBound - range.lowerBound,
+                              actualBytes: actualBytes, totalBytes: bytesRead)
+        // Bound console output and the attachment if a stalled client retries
+        // excessively. The generated normal scenario fits these limits.
+        if readEvents.count < 1_024 { readEvents.append(event) } else { omittedEvents += 1 }
+        if id <= 160 {
+            print("SMB fixture t=\(String(format: "%.3f", event.elapsed)), read=\(id), phase=\(phase), "
+                  + "offset=\(event.offset), requestedBytes=\(event.requestedBytes), "
+                  + "actualBytes=\(actualBytes), totalBytes=\(bytesRead)")
+        }
+    }
+
+    func diagnosticData() throws -> Data {
+        struct Timeline: Encodable {
+            let events: [ReadEvent]
+            let totalReadRequests: Int
+            let totalBytes: Int64
+            let omittedEvents: Int
+            let consoleReadLimit: Int
+        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try encoder.encode(Timeline(events: readEvents, totalReadRequests: nextReadID, totalBytes: bytesRead,
+                                           omittedEvents: omittedEvents, consoleReadLimit: 160))
+    }
+
+    func close() async {
+        await provider.close()
+        print("SMB fixture summary requests=\(nextReadID), totalBytes=\(bytesRead), "
+              + "attachedEvents=\(readEvents.count), omittedEvents=\(omittedEvents), consoleReadLimit=160")
+    }
 }

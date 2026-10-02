@@ -79,6 +79,26 @@ public final class FilmPlayer: NSObject {
     var displayedVideoFrames: UInt64 { engine?.media?.statistics.displayedPictures ?? 0 }
     var decodedAudioBuffers: UInt64 { engine?.media?.statistics.decodedAudio ?? 0 }
     var playedAudioBuffers: UInt64 { engine?.media?.statistics.playedAudioBuffers ?? 0 }
+    // Read-only test diagnostics. VLC's time is its cached/interpolated clock,
+    // so it must be evaluated together with actual decoded/output counts.
+    var backendState: String {
+        guard let engine else { return "none" }
+        switch engine.state {
+        case .nothingSpecial: return "nothingSpecial"
+        case .opening: return "opening"
+        case .playing: return "playing"
+        case .paused: return "paused"
+        case .stopping: return "stopping"
+        case .stopped: return "stopped"
+        case .error: return "error"
+        @unknown default: return "unknown(\(engine.state.rawValue))"
+        }
+    }
+    var backendIsPlaying: Bool? { engine?.isPlaying }
+    var backendTime: Double? {
+        guard let milliseconds = engine?.time.value?.doubleValue else { return nil }
+        return milliseconds / 1_000
+    }
     var appliedVolume: Float? { engine?.audio.map { Float($0.volume) / 100 } }
     var backendSubtitleTracks: [PlayerTrack] {
         engine?.textTracks.map { PlayerTrack(id: $0.trackId, name: $0.trackName) } ?? []

@@ -36,7 +36,7 @@ After generating fixtures, regenerate the project and use `xcodebuild build-for-
   --products build/iOS/Build/Products --result build/Playback.xcresult
 ```
 
-The runner selects an existing iPhone Simulator; use `--device-id` when sharing simulators with other work. It runs a real isolated SMB stream alongside the container, subtitle, controls, persistence and 4K software-output cases. GitHub CI executes this suite; real-device hardware decode and VM GUI acceptance remain separate.
+The runner selects an existing iPhone Simulator; use `--device-id` when sharing simulators with other work. It runs a real isolated SMB stream alongside the container, subtitle, controls, persistence and 4K software-output cases. Individual tests have a 120-second default and 180-second maximum watchdog; the playback assertions keep their shorter deadlines. Diagnostics include raw player state/output counters and a bounded generated-fixture read timeline, never URLs or credentials. GitHub CI executes this suite; real-device hardware decode and VM GUI acceptance remain separate. Pushes changing only `docs/`, `README.md` or this guide skip the product pipeline; source, tests, resources and workflow changes always run it.
 
 Run `scripts/test_ui.sh macOS` only in the Tart `macos27` VM. Pass a specific iOS simulator or authorized device destination for iOS tests. Preserve logs / result bundles and review screenshots; typechecks and build success do not prove playback.
 
