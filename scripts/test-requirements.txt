@@ -1,0 +1,2 @@
+# Test fixture only; this package is never linked into or shipped with AetherFilm.
+impacket==0.13.0

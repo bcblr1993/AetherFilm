@@ -1,0 +1,50 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  shared-tests:
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -version && swift --version
+      - name: Prepare isolated SMB fixture
+        run: |
+          python3 -m venv .build/test-venv
+          .build/test-venv/bin/python -m pip install -r scripts/test-requirements.txt
+      - name: Test domain, persistence and real SMB2
+        run: .build/test-venv/bin/python scripts/test_smb_integration.py -- swift test --package-path Packages/AetherFilmKit
+  platform-builds:
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare build tools and synthetic media
+        run: |
+          brew install xcodegen ffmpeg
+          python3 scripts/generate_ui_fixtures.py
+          python3 PlaybackTests/generate_fixtures.py
+          xcodegen generate
+      - name: macOS app and test bundles
+        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-macOS -destination 'platform=macOS,arch=arm64' -derivedDataPath build/Mac CODE_SIGNING_ALLOWED=NO
+      - name: iOS Simulator app and test bundles
+        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS Simulator' -derivedDataPath build/iOS CODE_SIGNING_ALLOWED=NO
+      - name: iOS device build
+        run: xcodebuild build -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS' -configuration Release -derivedDataPath build/Device CODE_SIGNING_ALLOWED=NO
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-diagnostics
+          path: build/Logs
+
+# Platform builds do not certify real playback or release readiness.
+# Desktop UI tests run in the dedicated macos27 VM and real iPhone acceptance
+# is recorded separately in docs/TEST_MATRIX.md before publication.

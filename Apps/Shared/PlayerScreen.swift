@@ -1,0 +1,288 @@
+import SwiftUI
+import UniformTypeIdentifiers
+import FilmDomain
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+struct PlayerScreen: View {
+    let item: MediaItem
+    let store: AppStore
+    @State private var player = FilmPlayer()
+    @State private var openingError: String?
+    @State private var subtitles: [MediaItem] = []
+    @State private var showingSubtitlePicker = false
+    @State private var showingOptions = false
+    @State private var isScrubbing = false
+    @State private var scrubPosition: Double = 0
+    @State private var gesturePosition: Double?
+    @State private var gestureVolume: Float?
+    #if os(iOS)
+    @State private var gestureBrightness: CGFloat?
+    #endif
+    @AppStorage("preferredAudioLanguage") private var preferredAudioLanguage = ""
+    @AppStorage("preferredSubtitleLanguage") private var preferredSubtitleLanguage = ""
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.ignoresSafeArea()
+                PlayerSurface(player: player)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .gesture(SpatialTapGesture(count: 2).onEnded { value in
+                        player.seek(player.position + (value.location.x < geometry.size.width / 2 ? -10 : 10))
+                    })
+                    .simultaneousGesture(scrubbingGesture(width: geometry.size.width))
+                VStack {
+                    header
+                    Spacer()
+                    if let error = openingError ?? player.errorMessage {
+                        VStack(spacing: 14) {
+                            Image(systemName: "exclamationmark.triangle").font(.largeTitle)
+                            Text(error).multilineTextAlignment(.center)
+                            Button("重新播放") { Task { await open() } }.buttonStyle(.glassProminent)
+                        }
+                        .padding(24)
+                        .glassEffect(in: .rect(cornerRadius: 24))
+                        .accessibilityIdentifier("player.error")
+                        Spacer()
+                    } else if player.isLoading {
+                        ProgressView("正在打开视频…")
+                            .padding(20)
+                            .glassEffect()
+                            .accessibilityIdentifier("player.loading")
+                        Spacer()
+                    }
+                    controls
+                }
+                .padding(16)
+            }
+        }
+        .preferredColorScheme(.dark)
+        .tint(.mint)
+        #if os(macOS)
+        .frame(minWidth: 620, minHeight: 400, idealHeight: 620)
+        #endif
+        .task(id: item.id) { await open() }
+        .onDisappear {
+            player.stop()
+            Task { await store.flushProgress(); await store.stopStreaming() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { Task { await store.flushProgress() } }
+        }
+        .fileImporter(isPresented: $showingSubtitlePicker,
+                      allowedContentTypes: [.plainText, UTType(filenameExtension: "srt") ?? .data,
+                                            UTType(filenameExtension: "ass") ?? .data, UTType(filenameExtension: "vtt") ?? .data]) { result in
+            if case .success(let url) = result { player.addSubtitle(url) }
+        }
+        .sheet(isPresented: $showingOptions) { playbackOptions }
+    }
+
+    private var header: some View {
+        HStack(spacing: 12) {
+            Button {
+                player.stop()
+                Task { await store.flushProgress(); await store.stopStreaming(); dismiss() }
+            } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }
+            .buttonStyle(.glass)
+            .keyboardShortcut(.escape, modifiers: [])
+            .accessibilityLabel("关闭播放器")
+            .accessibilityIdentifier("player.close")
+            Text(item.title).font(.headline).lineLimit(1)
+            Spacer(minLength: 0)
+            Button { showingOptions = true } label: { Image(systemName: "slider.horizontal.3").frame(width: 44, height: 44) }
+                .buttonStyle(.glass)
+                .accessibilityLabel("字幕、音轨与播放设置")
+                .accessibilityIdentifier("player.options")
+        }
+        .padding(12)
+        .glassEffect(in: .rect(cornerRadius: 22))
+    }
+
+    private var controls: some View {
+        VStack(spacing: 10) {
+            Slider(value: Binding(get: { isScrubbing ? scrubPosition : player.position },
+                                  set: { scrubPosition = $0 }), in: 0...max(1, player.duration)) { editing in
+                if editing { scrubPosition = player.position }
+                isScrubbing = editing
+                if !editing { player.seek(scrubPosition) }
+            }
+            .disabled(!player.isSeekable)
+            .accessibilityLabel("播放进度")
+            .accessibilityValue(time(player.position))
+            .accessibilityIdentifier("player.seek")
+            HStack {
+                Text(time(player.position)).monospacedDigit()
+                    .accessibilityIdentifier("player.time")
+                Spacer()
+                Text(time(player.duration)).monospacedDigit().foregroundStyle(.secondary)
+            }.font(.caption)
+            HStack(spacing: 4) {
+                Button { player.seek(player.position - 10) } label: { Image(systemName: "gobackward.10").frame(width: 44, height: 44) }
+                    .accessibilityLabel("后退十秒").keyboardShortcut(.leftArrow, modifiers: [])
+                Button { player.toggle(); Task { await store.flushProgress() } } label: {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill").font(.title2).frame(width: 44, height: 44)
+                }
+                .accessibilityLabel(player.isPlaying ? "暂停" : "播放")
+                .accessibilityValue(player.isPlaying ? "正在播放" : "已暂停")
+                .accessibilityIdentifier("player.playPause")
+                .keyboardShortcut(.space, modifiers: [])
+                Button { player.seek(player.position + 10) } label: { Image(systemName: "goforward.10").frame(width: 44, height: 44) }
+                    .accessibilityLabel("前进十秒").keyboardShortcut(.rightArrow, modifiers: [])
+                Spacer(minLength: 0)
+                Menu {
+                    ForEach([0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0], id: \.self) { rate in
+                        Button(String(format: "%g×", rate)) { player.setRate(Float(rate)) }
+                    }
+                } label: { Text(String(format: "%g×", player.rate)).font(.subheadline.monospacedDigit()).frame(minWidth: 44, minHeight: 44) }
+                .accessibilityLabel("播放速度")
+                .accessibilityIdentifier("player.rate")
+                if store.nextItem(after: item) != nil {
+                    Button { Task { await store.playNext(after: item) } } label: { Image(systemName: "forward.end.fill").frame(width: 44, height: 44) }
+                        .accessibilityLabel("下一个视频").accessibilityIdentifier("player.next")
+                }
+                #if os(macOS)
+                Button { (NSApp.keyWindow?.sheetParent ?? NSApp.keyWindow)?.toggleFullScreen(nil) } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                }
+                .accessibilityLabel("切换全屏")
+                .keyboardShortcut("f", modifiers: [.control, .command])
+                #endif
+            }
+            .buttonStyle(.plain)
+            .font(.title3)
+        }
+        .padding(16)
+        .glassEffect(in: .rect(cornerRadius: 24))
+    }
+
+    private var playbackOptions: some View {
+        NavigationStack {
+            Form {
+                Section("音轨") {
+                    ForEach(player.audioTracks) { track in
+                        Button { player.selectAudio(track.id) } label: {
+                            HStack { Text(track.name); Spacer(); if player.selectedAudioID == track.id { Image(systemName: "checkmark") } }
+                        }
+                    }
+                    if player.audioTracks.isEmpty { Text("这个视频没有可选音轨").foregroundStyle(.secondary) }
+                }
+                Section("字幕") {
+                    Button("关闭字幕") { player.selectSubtitle(nil) }
+                    ForEach(player.subtitleTracks) { track in
+                        Button { player.selectSubtitle(track.id) } label: {
+                            HStack { Text(track.name); Spacer(); if player.selectedSubtitleID == track.id { Image(systemName: "checkmark") } }
+                        }
+                    }
+                    ForEach(subtitles) { subtitle in
+                        Button(subtitle.name) {
+                            Task {
+                                do { player.addSubtitle(try await store.subtitleURL(subtitle)) }
+                                catch { openingError = "无法打开这个字幕，请检查文件和 NAS 连接。" }
+                            }
+                        }
+                    }
+                    Button("选择外置字幕…") { showingOptions = false; showingSubtitlePicker = true }
+                    Stepper("字幕延迟：\(player.subtitleDelay, specifier: "%.1f") 秒", value:
+                        Binding(get: { player.subtitleDelay }, set: { player.setSubtitleDelay($0) }), in: -10...10, step: 0.5)
+                    Slider(value: Binding(get: { Double(player.subtitleScale) }, set: { player.setSubtitleScale(Float($0)) }), in: 0.5...2) {
+                        Text("字幕大小")
+                    }
+                }
+                if !player.chapters.isEmpty {
+                    Section("章节") {
+                        ForEach(player.chapters) { chapter in
+                            Button(chapter.name) { player.selectChapter(chapter.id); showingOptions = false }
+                        }
+                    }
+                }
+                Section("画面和声音") {
+                    Toggle("填满画面", isOn: Binding(get: { player.fillsScreen }, set: { player.setVideoFill($0) }))
+                    Slider(value: Binding(get: { Double(player.volume) }, set: { player.setVolume(Float($0)) }), in: 0...1) { Text("音量") }
+                }
+                Section("默认语言") {
+                    Picker("音轨", selection: $preferredAudioLanguage) { languageChoices }
+                    Picker("字幕", selection: $preferredSubtitleLanguage) { languageChoices }
+                    Text("默认语言在下次打开视频时使用，当前视频可直接选择上面的轨道。")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("播放设置")
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showingOptions = false } } }
+        }
+        #if os(macOS)
+        .frame(width: 430, height: 500)
+        #endif
+    }
+
+    private func open() async {
+        openingError = nil
+        player.stop()
+        player.setPreferredLanguages(audio: preferredAudioLanguage.isEmpty ? nil : preferredAudioLanguage,
+            subtitles: preferredSubtitleLanguage.isEmpty ? nil : preferredSubtitleLanguage)
+        player.onProgress = { position, duration in store.recordProgress(item, position: position, duration: duration) }
+        player.onEnded = { Task { await store.playNext(after: item, markCompleted: true) } }
+        do {
+            let url = try await store.preparePlayback(item)
+            try Task.checkCancellation()
+            player.load(url: url, startAt: store.progress(for: item)?.resumePosition ?? 0)
+            subtitles = (try? await store.subtitleCandidates(for: item)) ?? []
+            let base = (item.name as NSString).deletingPathExtension.lowercased()
+            if let match = subtitles.first(where: { ($0.name as NSString).deletingPathExtension.lowercased() == base }) {
+                if let url = try? await store.subtitleURL(match) { player.addSubtitle(url) }
+            }
+        } catch is CancellationError { }
+        catch { openingError = error.localizedDescription }
+    }
+
+    private func scrubbingGesture(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 20).onChanged { value in
+            if abs(value.translation.width) > abs(value.translation.height) {
+                if gesturePosition == nil { gesturePosition = player.position }
+                scrubPosition = max(0, min(player.duration, (gesturePosition ?? 0) + value.translation.width / max(1, width) * player.duration))
+                isScrubbing = true
+            } else {
+                #if os(iOS)
+                if value.startLocation.x < width / 2,
+                   let screen = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first?.screen {
+                    if gestureBrightness == nil { gestureBrightness = screen.brightness }
+                    screen.brightness = min(1, max(0.05, (gestureBrightness ?? 0.5) - value.translation.height / 300))
+                } else {
+                    if gestureVolume == nil { gestureVolume = player.volume }
+                    player.setVolume((gestureVolume ?? 1) - Float(value.translation.height / 300))
+                }
+                #else
+                if gestureVolume == nil { gestureVolume = player.volume }
+                player.setVolume((gestureVolume ?? 1) - Float(value.translation.height / 300))
+                #endif
+            }
+        }.onEnded { _ in
+            if isScrubbing { player.seek(scrubPosition) }
+            isScrubbing = false; gesturePosition = nil; gestureVolume = nil
+            #if os(iOS)
+            gestureBrightness = nil
+            #endif
+        }
+    }
+
+    private func time(_ seconds: Double) -> String {
+        let value = Int(seconds.isFinite ? max(0, seconds) : 0)
+        return value >= 3600 ? String(format: "%d:%02d:%02d", value / 3600, value / 60 % 60, value % 60)
+                             : String(format: "%d:%02d", value / 60, value % 60)
+    }
+
+    @ViewBuilder private var languageChoices: some View {
+        Text("自动").tag("")
+        Text("中文").tag("zh,zho,chi")
+        Text("英语").tag("en,eng")
+        Text("日语").tag("ja,jpn")
+        Text("韩语").tag("ko,kor")
+    }
+}

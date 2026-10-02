@@ -1,0 +1,207 @@
+name: AetherFilm
+options:
+  bundleIdPrefix: com.aethernative
+  deploymentTarget:
+    macOS: "26.0"
+    iOS: "26.0"
+  createIntermediateGroups: true
+  xcodeVersion: "27.0"
+configFiles:
+  Debug: Version.xcconfig
+  Release: Version.xcconfig
+packages:
+  AetherFilmKit:
+    path: Packages/AetherFilmKit
+  VLCKit:
+    url: https://github.com/videolan/vlckit.git
+    revision: 8f5ce02f09a7da5d061a24ddac3cb432f2a9b332
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    GENERATE_INFOPLIST_FILE: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 5984KQD4D7
+    PRODUCT_MODULE_NAME: AetherFilm
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    INFOPLIST_KEY_CFBundleDisplayName: AetherFilm
+    INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.video
+    INFOPLIST_KEY_NSLocalNetworkUsageDescription: 连接你的局域网 NAS，浏览和播放你选择的视频。
+targets:
+  AetherFilm-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - Apps/Shared
+      - Playback
+      - path: Apps/Resources/Assets.xcassets
+        buildPhase: resources
+      - path: .build/UIFixtures
+        type: folder
+        buildPhase: resources
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm
+        PRODUCT_NAME: AetherFilm
+        ENABLE_HARDENED_RUNTIME: YES
+      configs:
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: UIFixtures
+    info:
+      path: Apps/macOS/Info.plist
+      properties:
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Video
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.movie, public.video, org.matroska.mkv, public.avi]
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    entitlements:
+      path: Apps/macOS/AetherFilm.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-only: true
+        com.apple.security.files.bookmarks.app-scope: true
+        com.apple.security.network.client: true
+        com.apple.security.network.server: true
+    dependencies:
+      - package: AetherFilmKit
+        product: FilmDomain
+      - package: AetherFilmKit
+        product: FilmLibrary
+      - package: AetherFilmKit
+        product: FilmSources
+      - package: VLCKit
+  AetherFilm-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - Apps/Shared
+      - Playback
+      - path: Apps/Resources/Assets.xcassets
+        buildPhase: resources
+      - path: .build/UIFixtures
+        type: folder
+        buildPhase: resources
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm.ios
+        PRODUCT_NAME: AetherFilm
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+      configs:
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: UIFixtures
+    info:
+      path: Apps/iOS/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        LSSupportsOpeningDocumentsInPlace: true
+        UIFileSharingEnabled: true
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Video
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.movie, public.video, org.matroska.mkv, public.avi]
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    dependencies:
+      - package: AetherFilmKit
+        product: FilmDomain
+      - package: AetherFilmKit
+        product: FilmLibrary
+      - package: AetherFilmKit
+        product: FilmSources
+      - package: VLCKit
+  AetherFilmPlaybackTests-macOS:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PlaybackTests
+        excludes: ["*.py", "README.md"]
+      - Tests/AppStoreTests
+      - path: .build/PlaybackFixtures
+        type: folder
+        buildPhase: resources
+        optional: true
+    dependencies:
+      - target: AetherFilm-macOS
+      - package: VLCKit
+      - package: AetherFilmKit
+        product: FilmDomain
+      - package: AetherFilmKit
+        product: FilmLibrary
+      - package: AetherFilmKit
+        product: FilmSources
+    settings:
+      base:
+        PRODUCT_MODULE_NAME: AetherFilmPlaybackTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm.PlaybackTests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/AetherFilm.app/Contents/MacOS/AetherFilm
+        BUNDLE_LOADER: $(TEST_HOST)
+  AetherFilmPlaybackTests-iOS:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PlaybackTests
+        excludes: ["*.py", "README.md"]
+      - Tests/AppStoreTests
+      - path: .build/PlaybackFixtures
+        type: folder
+        buildPhase: resources
+        optional: true
+    dependencies:
+      - target: AetherFilm-iOS
+      - package: VLCKit
+      - package: AetherFilmKit
+        product: FilmDomain
+      - package: AetherFilmKit
+        product: FilmLibrary
+      - package: AetherFilmKit
+        product: FilmSources
+    settings:
+      base:
+        PRODUCT_MODULE_NAME: AetherFilmPlaybackTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm.ios.PlaybackTests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/AetherFilm.app/AetherFilm
+        BUNDLE_LOADER: $(TEST_HOST)
+  AetherFilmUITests-macOS:
+    type: bundle.ui-testing
+    platform: macOS
+    sources: [Tests/AetherFilmUITests]
+    dependencies:
+      - target: AetherFilm-macOS
+    settings:
+      base:
+        PRODUCT_MODULE_NAME: AetherFilmUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm.UITests
+  AetherFilmUITests-iOS:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Tests/AetherFilmUITests]
+    dependencies:
+      - target: AetherFilm-iOS
+    settings:
+      base:
+        PRODUCT_MODULE_NAME: AetherFilmUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aethernative.AetherFilm.ios.UITests
+schemes:
+  AetherFilm-macOS:
+    build:
+      targets:
+        AetherFilm-macOS: all
+    test:
+      targets: [AetherFilmPlaybackTests-macOS, AetherFilmUITests-macOS]
+      parallelizable: false
+  AetherFilm-iOS:
+    build:
+      targets:
+        AetherFilm-iOS: all
+    test:
+      targets: [AetherFilmPlaybackTests-iOS, AetherFilmUITests-iOS]
+      parallelizable: false
