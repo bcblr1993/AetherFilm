@@ -55,6 +55,8 @@ xcodebuild test \
   -destination "$TASK_DESTINATION" \
   -derivedDataPath "$TASK_ROOT/build/ui-derived-$TASK_PLATFORM" \
   -resultBundlePath "$TASK_RESULT_BUNDLE" \
+  -only-testing:"AetherFilmUITests-$TASK_PLATFORM" \
+  -collect-test-diagnostics never \
   -parallel-testing-enabled NO \
   CODE_SIGNING_ALLOWED="$TASK_SIGNING" \
   | tee "$TASK_LOG"

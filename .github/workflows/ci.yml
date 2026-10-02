@@ -32,18 +32,30 @@ jobs:
           brew install xcodegen ffmpeg
           python3 scripts/generate_ui_fixtures.py
           python3 PlaybackTests/generate_fixtures.py
+          python3 PlaybackTests/generate_smb_fixture.py
+          python3 PlaybackTests/generate_4k_fixture.py
+          python3 -m venv .build/test-venv
+          .build/test-venv/bin/python -m pip install -r scripts/test-requirements.txt
           xcodegen generate
       - name: macOS app and test bundles
-        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-macOS -destination 'platform=macOS,arch=arm64' -derivedDataPath build/Mac CODE_SIGNING_ALLOWED=NO
+        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-macOS -destination 'platform=macOS,arch=arm64' -derivedDataPath build/Mac -clonedSourcePackagesDirPath build/SourcePackages CODE_SIGNING_ALLOWED=NO
       - name: iOS Simulator app and test bundles
-        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS Simulator' -derivedDataPath build/iOS CODE_SIGNING_ALLOWED=NO
+        run: xcodebuild build-for-testing -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS Simulator' -derivedDataPath build/iOS -clonedSourcePackagesDirPath build/SourcePackages CODE_SIGNING_ALLOWED=NO
       - name: iOS device build
-        run: xcodebuild build -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS' -configuration Release -derivedDataPath build/Device CODE_SIGNING_ALLOWED=NO
+        run: xcodebuild build -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS' -configuration Release -derivedDataPath build/Device -clonedSourcePackagesDirPath build/SourcePackages CODE_SIGNING_ALLOWED=NO
+      - name: iOS playback, persistence and real SMB stream
+        run: .build/test-venv/bin/python scripts/test_simulator_playback.py --products build/iOS/Build/Products --result build/Playback.xcresult
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: build-diagnostics
           path: build/Logs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playback-results
+          path: build/Playback.xcresult
+          if-no-files-found: ignore
 
 # Platform builds do not certify real playback or release readiness.
 # Desktop UI tests run in the dedicated macos27 VM and real iPhone acceptance

@@ -15,6 +15,7 @@ public final class FilmPlayer: NSObject {
     public private(set) var isPlaying = false
     public private(set) var isLoading = false
     public private(set) var errorMessage: String?
+    public private(set) var subtitleErrorMessage: String?
     public private(set) var rate: Float = 1
     public private(set) var volume: Float = 1
     public private(set) var isSeekable = false
@@ -39,8 +40,12 @@ public final class FilmPlayer: NSObject {
     @ObservationIgnored private var didStart = false
     @ObservationIgnored private var didEnd = false
     @ObservationIgnored private var openingTimeout: Task<Void, Never>?
+    @ObservationIgnored private var subtitleLoadingTask: Task<Void, Never>?
     @ObservationIgnored private var preferredAudioLanguage: String?
     @ObservationIgnored private var preferredSubtitleLanguage: String?
+    @ObservationIgnored var capturesDecoderEvidence = false
+    @ObservationIgnored private(set) var videoToolboxSelected = false
+    @ObservationIgnored private(set) var videoToolboxAcceptedFrame = false
     #if os(iOS)
     @ObservationIgnored private var interruptionObserver: NSObjectProtocol?
     @ObservationIgnored private var routeObserver: NSObjectProtocol?
@@ -56,6 +61,7 @@ public final class FilmPlayer: NSObject {
 
     isolated deinit {
         openingTimeout?.cancel()
+        subtitleLoadingTask?.cancel()
         engine?.delegate = nil
         engine?.stop()
         engine?.drawable = nil
@@ -74,10 +80,15 @@ public final class FilmPlayer: NSObject {
     var decodedAudioBuffers: UInt64 { engine?.media?.statistics.decodedAudio ?? 0 }
     var playedAudioBuffers: UInt64 { engine?.media?.statistics.playedAudioBuffers ?? 0 }
     var appliedVolume: Float? { engine?.audio.map { Float($0.volume) / 100 } }
+    var backendSubtitleTracks: [PlayerTrack] {
+        engine?.textTracks.map { PlayerTrack(id: $0.trackId, name: $0.trackName) } ?? []
+    }
+    var backendChapterID: Int? { engine.map { Int($0.currentChapterIndex) } }
 
     public func load(url: URL, startAt: Double = 0) {
         stop()
         errorMessage = nil
+        subtitleErrorMessage = nil
         position = 0
         duration = 0
         audioTracks = []
@@ -91,6 +102,8 @@ public final class FilmPlayer: NSObject {
         didEnd = false
         isLoading = true
         isSeekable = false
+        videoToolboxSelected = false
+        videoToolboxAcceptedFrame = false
 
         guard ["file", "http", "https"].contains(url.scheme?.lowercased() ?? "") else {
             fail("无法打开这个视频地址。")
@@ -104,6 +117,9 @@ public final class FilmPlayer: NSObject {
         if let language = preferredAudioLanguage { media.addOption(":audio-language=\(language)") }
         if let language = preferredSubtitleLanguage { media.addOption(":sub-language=\(language)") }
         let player = VLCMediaPlayer(options: ["--quiet", "--no-video-title-show"])
+        if capturesDecoderEvidence {
+            player.libraryInstance.loggers = [DecoderEvents(owner: self, sessionID: sessionID)]
+        }
         let delegate = PlayerEvents(owner: self, sessionID: sessionID)
         player.delegate = delegate
         player.timeChangeUpdateInterval = 0.25
@@ -168,8 +184,12 @@ public final class FilmPlayer: NSObject {
     }
 
     public func selectChapter(_ id: Int) {
-        guard chapters.contains(where: { $0.id == id }), let index = Int32(exactly: id), let engine else { return }
+        guard let chapter = chapters.first(where: { $0.id == id }), let index = Int32(exactly: id), let engine else { return }
         engine.currentChapterIndex = index
+        // VLC does not emit time callbacks for every chapter change while
+        // paused. Queue a seek to the chapter's real timestamp and update the
+        // observable position before playback resumes.
+        if let time = chapter.time { seek(time) }
     }
 
     public func selectAudio(_ id: String) {
@@ -190,17 +210,48 @@ public final class FilmPlayer: NSObject {
     }
 
     public func addSubtitle(_ url: URL) {
-        guard MediaFormats.subtitle.contains(url.pathExtension.lowercased()), let engine else {
-            errorMessage = "请选择 SRT、ASS、SSA、VTT 或 SUB 字幕文件。"
+        subtitleLoadingTask?.cancel()
+        subtitleLoadingTask = nil
+        guard MediaFormats.subtitle.contains(url.pathExtension.lowercased()) else {
+            subtitleErrorMessage = "请选择 SRT、ASS、SSA、VTT 或 SUB 字幕文件。"
             return
         }
+        guard let engine else {
+            subtitleErrorMessage = "请先打开视频后再添加字幕。"
+            return
+        }
+        let previousTracks = Set(engine.textTracks.map(\.trackId))
         retainSecurityScope(for: url)
         guard engine.addPlaybackSlave(url, type: .subtitle, enforce: true) == 0 else {
-            errorMessage = "无法添加这个字幕文件，请检查文件是否可读。"
+            subtitleErrorMessage = "无法添加这个字幕文件，请检查文件是否可读。"
             return
         }
-        errorMessage = nil
+        subtitleErrorMessage = nil
         refreshTracks()
+        let token = sessionID
+        subtitleLoadingTask = Task { [weak self] in
+            var addedTrackID: String?
+            for _ in 0..<50 {
+                guard !Task.isCancelled, let self, self.sessionID == token, let engine = self.engine else { return }
+                if addedTrackID == nil {
+                    addedTrackID = engine.textTracks.first(where: { !previousTracks.contains($0.trackId) })?.trackId
+                }
+                if let addedTrackID, let track = engine.textTracks.first(where: { $0.trackId == addedTrackID }) {
+                    // VLC's forced-slave flag does not reliably re-enable a
+                    // track after the user has disabled subtitles. Select the
+                    // real newly added track and verify the engine's state.
+                    if !track.isSelected { engine.selectTextTracks([track]) }
+                    self.refreshTracks()
+                    if self.selectedSubtitleID == addedTrackID {
+                        self.subtitleErrorMessage = nil
+                        return
+                    }
+                }
+                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
+            }
+            guard let self, self.sessionID == token, !Task.isCancelled else { return }
+            self.subtitleErrorMessage = "无法加载这个字幕文件，请检查内容和编码后重试。"
+        }
     }
 
     public func setSubtitleDelay(_ seconds: Double) {
@@ -234,6 +285,8 @@ public final class FilmPlayer: NSObject {
         sessionID = UUID()
         openingTimeout?.cancel()
         openingTimeout = nil
+        subtitleLoadingTask?.cancel()
+        subtitleLoadingTask = nil
         engine?.delegate = nil
         engine?.stop()
         engine?.drawable = nil
@@ -372,6 +425,10 @@ public final class FilmPlayer: NSObject {
             isPlaying = false
             isLoading = false
             captureProgress()
+            // libVLC queues input controls asynchronously. A play requested
+            // immediately after pause may run before libVLC considers itself
+            // paused. Reconcile this late pause event with the latest intent.
+            if wantsToPlay { engine.play() }
         case .error:
             fail("无法播放这个视频，请检查文件格式或片源连接。")
         case .stopping:
@@ -380,7 +437,9 @@ public final class FilmPlayer: NSObject {
         case .stopped:
             isLoading = false
             isPlaying = false
-            guard didStart, wantsToPlay, !didEnd, errorMessage == nil else { return }
+            // Recoverable subtitle errors must not prevent a completed video
+            // from recording its end. Playback failures clear wantsToPlay.
+            guard didStart, wantsToPlay, !didEnd else { return }
             // VLC 4 reports natural completion as stopped. A stop before the
             // known end is treated as an interrupted source, not as watched.
             if duration > 0 && position >= max(0, duration - 1.5) {
@@ -410,6 +469,12 @@ public final class FilmPlayer: NSObject {
     fileprivate func receiveTracks(token: UUID) {
         guard token == sessionID else { return }
         refreshTracks()
+    }
+
+    fileprivate func receiveDecoderEvidence(selected: Bool, acceptedFrame: Bool, token: UUID) {
+        guard token == sessionID else { return }
+        videoToolboxSelected = videoToolboxSelected || selected
+        videoToolboxAcceptedFrame = videoToolboxAcceptedFrame || acceptedFrame
     }
 
     fileprivate func receiveLength(_ milliseconds: Int64, token: UUID) {
@@ -462,6 +527,30 @@ public final class FilmPlayer: NSObject {
         }
     }
     #endif
+}
+
+/// Test-only capture reduces backend logs to two booleans. It retains or emits
+/// no message, URL, file path or credentials from libVLC logging callbacks.
+private final class DecoderEvents: NSObject, VLCLogging {
+    var level: VLCLogLevel = .debug
+    private weak var owner: FilmPlayer?
+    private let sessionID: UUID
+
+    @MainActor init(owner: FilmPlayer, sessionID: UUID) {
+        self.owner = owner
+        self.sessionID = sessionID
+    }
+
+    func handleMessage(_ message: String, logLevel: VLCLogLevel, context: VLCLogContext?) {
+        guard context?.module == "videotoolbox" else { return }
+        let selected = message.hasPrefix("Using Video Toolbox to decode ")
+        let accepted = message.hasPrefix("session accepted first frame ")
+        guard selected || accepted else { return }
+        let token = sessionID
+        Task { @MainActor [weak owner] in
+            owner?.receiveDecoderEvidence(selected: selected, acceptedFrame: accepted, token: token)
+        }
+    }
 }
 
 /// Delegate callbacks do not carry mutable VLC objects across executors.

@@ -51,3 +51,5 @@ macOS and iPad use system split navigation; iPhone uses a navigation stack and f
 ## Build and release
 
 `project.yml` generates both app and test targets with XcodeGen. `Version.xcconfig` is the single version/build and minimum-OS source. Generated projects and downloaded binaries are ignored. Dependencies are fixed by exact version or commit. CI verifies shared tests and platform builds; Tart `macos27` verifies desktop UI and real iPhone evidence remains separate. Release signing uses existing identities without exporting keys. `RELEASE.md` defines the distribution gates and website verification order.
+
+The macOS app uses a single native Window scene because playback and its SMB stream have one owner. Opening another app window must not duplicate audio or let one window dispose another player’s stream. iOS uses the native WindowGroup scene.

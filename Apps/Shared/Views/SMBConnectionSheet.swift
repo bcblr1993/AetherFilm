@@ -59,7 +59,7 @@ struct SMBConnectionSheet: View {
                 .disabled(isConnecting)
 
                 Section {
-                    DisclosureGroup("高级选项") {
+                    DisclosureGroup {
                         plainField("端口", text: $draft.port, identifier: "smb.port")
                         plainField("起始目录（可选）", text: $draft.directory, identifier: "smb.directory")
                         plainField("域（可选）", text: $draft.domain, identifier: "smb.domain")
@@ -73,8 +73,10 @@ struct SMBConnectionSheet: View {
                                 .font(.footnote)
                                 .foregroundStyle(.red)
                         }
+                    } label: {
+                        Text("高级选项")
+                            .accessibilityIdentifier("smb.advanced")
                     }
-                    .accessibilityIdentifier("smb.advanced")
                 }
                 .disabled(isConnecting)
 

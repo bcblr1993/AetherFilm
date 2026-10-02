@@ -18,3 +18,7 @@ Failing core tests, crashes, missing playback evidence, or missing signed macOS 
 ## Rollback
 
 Retain the previous version and its hashes. Do not overwrite published artifacts in place. Correct faulty binaries with a new version. Website changes must be reversible through their scoped commit.
+
+## Current candidate evidence
+
+2026-10-03: universal macOS Release and signed iOS Release archive built. macOS App and DMG notarization are Accepted; tickets validate. The local DMG was mounted read-only, with correct volume label, Applications link, licenses, icon, minimum 26.0 and no test resources. That earlier candidate was superseded by the playback-button touch-target fix and retained under `artifacts/previous-candidates/0.1.0-969ae33c/`. Its SHA-256 is `969ae33c72535a8db8a617d089c6e45d5edd6e2617d47951cb49276a353c07e8`. See `TEST_MATRIX.md` for exact evidence and policy-assessment limitations. VM graphical acceptance, iPhone acceptance, final CI, public download and website deployment remain pending; this is an unpublished candidate.

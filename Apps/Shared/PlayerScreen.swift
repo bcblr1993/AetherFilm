@@ -12,6 +12,7 @@ struct PlayerScreen: View {
     let store: AppStore
     @State private var player = FilmPlayer()
     @State private var openingError: String?
+    @State private var subtitleError: String?
     @State private var subtitles: [MediaItem] = []
     @State private var showingSubtitlePicker = false
     @State private var showingOptions = false
@@ -19,13 +20,17 @@ struct PlayerScreen: View {
     @State private var scrubPosition: Double = 0
     @State private var gesturePosition: Double?
     @State private var gestureVolume: Float?
+    @State private var controlsVisible = true
+    @State private var controlsInteraction = 0
     #if os(iOS)
     @State private var gestureBrightness: CGFloat?
     #endif
     @AppStorage("preferredAudioLanguage") private var preferredAudioLanguage = ""
     @AppStorage("preferredSubtitleLanguage") private var preferredSubtitleLanguage = ""
+    @AppStorage("preferredPlaybackRate") private var preferredPlaybackRate = 1.0
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
     var body: some View {
         GeometryReader { geometry in
@@ -33,13 +38,29 @@ struct PlayerScreen: View {
                 Color.black.ignoresSafeArea()
                 PlayerSurface(player: player)
                     .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                Rectangle()
+                    .fill(Color.clear)
+                    .ignoresSafeArea()
                     .contentShape(Rectangle())
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("视频画面")
+                    .accessibilityIdentifier("player.surface")
                     .gesture(SpatialTapGesture(count: 2).onEnded { value in
+                        revealControls()
                         player.seek(player.position + (value.location.x < geometry.size.width / 2 ? -10 : 10))
-                    })
+                    }.exclusively(before: TapGesture().onEnded {
+                        withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
+                        controlsInteraction += 1
+                    }))
+                    .accessibilityAction(named: "显示播放控制") { revealControls() }
                     .simultaneousGesture(scrubbingGesture(width: geometry.size.width))
                 VStack {
                     header
+                        .opacity(controlsVisible ? 1 : 0)
+                        .allowsHitTesting(controlsVisible)
+                        .accessibilityHidden(!controlsVisible)
                     Spacer()
                     if let error = openingError ?? player.errorMessage {
                         VStack(spacing: 14) {
@@ -59,21 +80,43 @@ struct PlayerScreen: View {
                         Spacer()
                     }
                     controls
+                        .opacity(controlsVisible ? 1 : 0)
+                        .allowsHitTesting(controlsVisible)
+                        .accessibilityHidden(!controlsVisible)
                 }
                 .padding(16)
             }
         }
         .preferredColorScheme(.dark)
         .tint(.mint)
+        #if os(iOS)
+        .statusBarHidden(!controlsVisible)
+        .persistentSystemOverlays(controlsVisible ? .automatic : .hidden)
+        #endif
         #if os(macOS)
         .frame(minWidth: 620, minHeight: 400, idealHeight: 620)
         #endif
         .task(id: item.id) { await open() }
+        .task(id: "\(controlsInteraction)-\(player.isPlaying)-\(showingOptions)-\(isScrubbing)-\(voiceOverEnabled)") {
+            guard player.isPlaying, !showingOptions, !isScrubbing, !voiceOverEnabled else { return }
+            do { try await Task.sleep(for: .seconds(4)) } catch { return }
+            guard !Task.isCancelled, player.isPlaying, openingError == nil, player.errorMessage == nil else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { controlsVisible = false }
+        }
+        .onChange(of: player.isPlaying) { _, playing in if !playing { revealControls() } }
+        .onChange(of: player.errorMessage) { _, message in if message != nil { revealControls() } }
+        .onChange(of: player.subtitleErrorMessage) { _, message in
+            if let message { subtitleError = message; revealControls() }
+        }
+        .onChange(of: showingOptions) { _, _ in revealControls() }
         .onDisappear {
             player.stop()
-            Task { await store.flushProgress(); await store.stopStreaming() }
+            Task { await store.flushProgress(); await store.stopStreaming(for: item.id) }
         }
         .onChange(of: scenePhase) { _, phase in
+            #if os(iOS)
+            if phase == .background { player.pause() }
+            #endif
             if phase != .active { Task { await store.flushProgress() } }
         }
         .fileImporter(isPresented: $showingSubtitlePicker,
@@ -82,21 +125,31 @@ struct PlayerScreen: View {
             if case .success(let url) = result { player.addSubtitle(url) }
         }
         .sheet(isPresented: $showingOptions) { playbackOptions }
+        .alert("无法打开字幕", isPresented: Binding(get: { subtitleError != nil }, set: { if !$0 { subtitleError = nil } })) {
+            Button("好", role: .cancel) { subtitleError = nil }
+        } message: { Text(subtitleError ?? "") }
     }
 
     private var header: some View {
         HStack(spacing: 12) {
             Button {
                 player.stop()
-                Task { await store.flushProgress(); await store.stopStreaming(); dismiss() }
-            } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }
+                Task {
+                    await store.flushProgress()
+                    await store.stopStreaming(for: item.id)
+                    store.playingItem = nil
+                    #if os(iOS)
+                    dismiss()
+                    #endif
+                }
+            } label: { Image(systemName: "xmark").frame(width: 44, height: 44).contentShape(Rectangle()) }
             .buttonStyle(.glass)
             .keyboardShortcut(.escape, modifiers: [])
             .accessibilityLabel("关闭播放器")
             .accessibilityIdentifier("player.close")
             Text(item.title).font(.headline).lineLimit(1)
             Spacer(minLength: 0)
-            Button { showingOptions = true } label: { Image(systemName: "slider.horizontal.3").frame(width: 44, height: 44) }
+            Button { showingOptions = true } label: { Image(systemName: "slider.horizontal.3").frame(width: 44, height: 44).contentShape(Rectangle()) }
                 .buttonStyle(.glass)
                 .accessibilityLabel("字幕、音轨与播放设置")
                 .accessibilityIdentifier("player.options")
@@ -109,49 +162,54 @@ struct PlayerScreen: View {
         VStack(spacing: 10) {
             Slider(value: Binding(get: { isScrubbing ? scrubPosition : player.position },
                                   set: { scrubPosition = $0 }), in: 0...max(1, player.duration)) { editing in
+                revealControls()
                 if editing { scrubPosition = player.position }
                 isScrubbing = editing
                 if !editing { player.seek(scrubPosition) }
             }
             .disabled(!player.isSeekable)
             .accessibilityLabel("播放进度")
-            .accessibilityValue(time(player.position))
+            .accessibilityValue(time(isScrubbing ? scrubPosition : player.position))
             .accessibilityIdentifier("player.seek")
             HStack {
-                Text(time(player.position)).monospacedDigit()
+                Text(time(isScrubbing ? scrubPosition : player.position)).monospacedDigit()
                     .accessibilityIdentifier("player.time")
                 Spacer()
                 Text(time(player.duration)).monospacedDigit().foregroundStyle(.secondary)
+                    .accessibilityIdentifier("player.duration")
             }.font(.caption)
             HStack(spacing: 4) {
-                Button { player.seek(player.position - 10) } label: { Image(systemName: "gobackward.10").frame(width: 44, height: 44) }
+                Button { revealControls(); player.seek(player.position - 10) } label: { Image(systemName: "gobackward.10").frame(width: 44, height: 44).contentShape(Rectangle()) }
                     .accessibilityLabel("后退十秒").keyboardShortcut(.leftArrow, modifiers: [])
-                Button { player.toggle(); Task { await store.flushProgress() } } label: {
-                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill").font(.title2).frame(width: 44, height: 44)
+                Button { revealControls(); player.toggle(); Task { await store.flushProgress() } } label: {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill").font(.title2).frame(width: 44, height: 44).contentShape(Rectangle())
                 }
                 .accessibilityLabel(player.isPlaying ? "暂停" : "播放")
                 .accessibilityValue(player.isPlaying ? "正在播放" : "已暂停")
                 .accessibilityIdentifier("player.playPause")
                 .keyboardShortcut(.space, modifiers: [])
-                Button { player.seek(player.position + 10) } label: { Image(systemName: "goforward.10").frame(width: 44, height: 44) }
+                Button { revealControls(); player.seek(player.position + 10) } label: { Image(systemName: "goforward.10").frame(width: 44, height: 44).contentShape(Rectangle()) }
                     .accessibilityLabel("前进十秒").keyboardShortcut(.rightArrow, modifiers: [])
                 Spacer(minLength: 0)
                 Menu {
                     ForEach([0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0], id: \.self) { rate in
-                        Button(String(format: "%g×", rate)) { player.setRate(Float(rate)) }
+                        Button(String(format: "%g×", rate)) { revealControls(); preferredPlaybackRate = rate; player.setRate(Float(rate)) }
                     }
-                } label: { Text(String(format: "%g×", player.rate)).font(.subheadline.monospacedDigit()).frame(minWidth: 44, minHeight: 44) }
+                } label: { Text(String(format: "%g×", player.rate)).font(.subheadline.monospacedDigit()).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle()) }
                 .accessibilityLabel("播放速度")
+                .accessibilityValue(String(format: "%g倍", player.rate))
                 .accessibilityIdentifier("player.rate")
+                .simultaneousGesture(TapGesture().onEnded { revealControls() })
                 if store.nextItem(after: item) != nil {
-                    Button { Task { await store.playNext(after: item) } } label: { Image(systemName: "forward.end.fill").frame(width: 44, height: 44) }
+                    Button { Task { await store.playNext(after: item) } } label: { Image(systemName: "forward.end.fill").frame(width: 44, height: 44).contentShape(Rectangle()) }
                         .accessibilityLabel("下一个视频").accessibilityIdentifier("player.next")
                 }
                 #if os(macOS)
-                Button { (NSApp.keyWindow?.sheetParent ?? NSApp.keyWindow)?.toggleFullScreen(nil) } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                Button { NSApp.keyWindow?.toggleFullScreen(nil) } label: {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right").frame(width: 44, height: 44).contentShape(Rectangle())
                 }
                 .accessibilityLabel("切换全屏")
+                .accessibilityIdentifier("player.fullscreen")
                 .keyboardShortcut("f", modifiers: [.control, .command])
                 #endif
             }
@@ -184,7 +242,8 @@ struct PlayerScreen: View {
                         Button(subtitle.name) {
                             Task {
                                 do { player.addSubtitle(try await store.subtitleURL(subtitle)) }
-                                catch { openingError = "无法打开这个字幕，请检查文件和 NAS 连接。" }
+                                catch is CancellationError { }
+                                catch { subtitleError = "请检查字幕文件和 NAS 连接。" }
                             }
                         }
                     }
@@ -215,7 +274,9 @@ struct PlayerScreen: View {
             }
             .formStyle(.grouped)
             .navigationTitle("播放设置")
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showingOptions = false } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) {
+                Button("完成") { showingOptions = false }.accessibilityIdentifier("player.options.done")
+            } }
         }
         #if os(macOS)
         .frame(width: 430, height: 500)
@@ -223,8 +284,11 @@ struct PlayerScreen: View {
     }
 
     private func open() async {
+        revealControls()
         openingError = nil
+        subtitleError = nil
         player.stop()
+        player.setRate(Float(preferredPlaybackRate))
         player.setPreferredLanguages(audio: preferredAudioLanguage.isEmpty ? nil : preferredAudioLanguage,
             subtitles: preferredSubtitleLanguage.isEmpty ? nil : preferredSubtitleLanguage)
         player.onProgress = { position, duration in store.recordProgress(item, position: position, duration: duration) }
@@ -244,6 +308,7 @@ struct PlayerScreen: View {
 
     private func scrubbingGesture(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 20).onChanged { value in
+            controlsVisible = true
             if abs(value.translation.width) > abs(value.translation.height) {
                 if gesturePosition == nil { gesturePosition = player.position }
                 scrubPosition = max(0, min(player.duration, (gesturePosition ?? 0) + value.translation.width / max(1, width) * player.duration))
@@ -264,12 +329,18 @@ struct PlayerScreen: View {
                 #endif
             }
         }.onEnded { _ in
+            controlsInteraction += 1
             if isScrubbing { player.seek(scrubPosition) }
             isScrubbing = false; gesturePosition = nil; gestureVolume = nil
             #if os(iOS)
             gestureBrightness = nil
             #endif
         }
+    }
+
+    private func revealControls() {
+        controlsVisible = true
+        controlsInteraction += 1
     }
 
     private func time(_ seconds: Double) -> String {

@@ -62,6 +62,52 @@ of every byte in the official binary. Preserve the archive checksum and gather
 the corresponding source/build materials before distribution; source links
 alone are not a completed release compliance record.
 
+### Preserved and verified source materials
+
+The fixed wrapper source archive has SHA256
+`8e2291f2f31032414a058bc80585de2ff12864303887271020d5fb6f09e0e61b`.
+The VLC base archive has SHA256
+`84d2d701a234edd8c9eac0214557e654d510fac048ddc3d32163d1511a6fd5c6`.
+The actual upstream Git objects were also fetched. Its base tree
+`da587edb9af21bdc2f8610a60355d555c1f7a4e2` matched the official commit API.
+Applying all 12 fixed wrapper patches succeeded and produced tree
+`9cb4e084a5e41ba0f7037c209884d8816ef929ad`. Its exported patched-source archive
+has SHA256 `448c7842896f9881592ae1c0fd0f4893f4d2848764fc492ebe0b1d494f3589a0`.
+
+The official Apple `build.conf` selections were evaluated separately for
+macOS and iOS, with no system pkg-config packages substituted. Source-only
+`make fetch` completed for 65 and 64 package selections respectively. The
+union contains 64 source archives (some package selections share one archive),
+totaling 588984529 bytes:
+
+- 60 archive SHA512 values matched the fixed official `SHA512SUMS` files.
+- FluidLite, libnoidea and Theora fixed revisions matched their rules,
+  `.githash` records and `git archive` PAX commit comments.
+- The rav1e vendor archive uses the upstream `skip-hash` rule. All 228 crate
+  package checksums matched the original Cargo.lock; all 15603 listed source
+  file SHA256 values matched, with no missing/extra crate or unlisted source
+  file. Upstream AppleDouble metadata was excluded from these source-file
+  checks. This is an inner-source verification, not an official outer digest.
+
+The ignored release-input bundle is
+`.build/CorrespondingSources/AetherFilm-v0.1.0-VLCKit-source-materials.tar.gz`,
+665341487 bytes, SHA256
+`350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72`.
+It contains the inputs, contrib sources, component license text, a verification
+manifest and rebuild/relink entry-point instructions. No user media or test
+credentials are included. Publish it alongside the app after release review.
+The complete framework rebuild and replacement/relink checks are still open.
+Its manifest explicitly retains the inferred binary/source mapping boundary;
+the local patched tree is not presented as a publicly resolved `c6a26dafaf`.
+
+LGPL 2.1 sections 4 and 6 require source access, notices and an applicable
+relinking mechanism. The GNU
+[source FAQ](https://www.gnu.org/licenses/gpl-faq.en.html#CorrespondingSource)
+distinguishes corresponding source from reproducing an identical binary hash.
+That distinction does not excuse missing library modifications or source
+inputs. A source-input bundle and a passed app playback test are separate
+release evidence.
+
 ## License and distribution
 
 VLCKit's source headers identify LGPL-2.1-or-later. The official archive ships
@@ -78,7 +124,7 @@ repository by itself does not prove all component obligations are satisfied.
 ## Planned first-release support
 
 The playback adapter uses the fixed VLCKit backend for MP4/MOV/MKV/AVI,
-embedded and external SRT/ASS subtitles, audio track selection, chapters,
+embedded and external SRT/ASS/WebVTT subtitles, audio track selection, chapters,
 pause, seek and rate control. Generated fixtures and XCTest sources live in
 `PlaybackTests/`. Successful upstream playback is not AetherFilm acceptance.
 
@@ -101,7 +147,40 @@ framework for diagnosis, but final reproducibility/CI must still verify the
 checked-in specification and fixed official artifact.
 
 The current standalone macOS diagnostic app is `.build/Probe/Smoke.app`.
-Invoke its executable inside Tart `macos27`, supplying the generated fixture
-directory as an absolute path. It emits a JSON report and exits nonzero when a
-check fails. Its generated source is `.build/Probe/SmokeMain.swift`; maintained
-release regression sources are `PlaybackTests/FilmPlaybackTests.swift`.
+Launch it through `open` inside a logged-in Tart `macos27` GUI session,
+supplying the generated fixture directory as an absolute path through
+`--args`, and use `-o` / `--stderr` to retain its output. An SSH session without
+a GUI launchd domain cannot establish window/output acceptance. It emits a
+JSON report; inspect the `passed` field because `open`'s exit status does not
+represent the application's test exit status. Its generated source is
+`.build/Probe/SmokeMain.swift`; maintained release regression sources are
+`PlaybackTests/FilmPlaybackTests.swift`.
+
+Executed iOS Simulator diagnostics exposed two adapter issues: adding an
+external subtitle after disabling subtitles created a track but did not
+select it; immediate pause/play could leave a late pause command active.
+The adapter now waits for and explicitly selects the added track, reports
+asynchronous loading failure, and reconciles late pause events with the latest
+play intent. A paused chapter selection also queues its real timestamp seek.
+Subtitle errors are exposed separately from video/audio playback failures;
+missing or unsupported subtitle files leave the video running, and a verified
+successful retry or opening another video clears the recoverable error.
+The corresponding XCTest cases assert actual resumed progression, track
+selection and decoded/displayed output rather than only optimistic UI state.
+
+The real SMB case has passed on the iOS Simulator through the production
+SMB2 provider, loopback HTTP Range server and VLC player: initial output before
+full-file reading, two rounds of ten remote seeks with displayed-frame
+progression, stop/reopen and settled NAS byte counts. Its retained evidence is
+`.build/results/iOS-SMB-VLC-control-fix-20261003-0545.xcresult` and
+`.build/PlaybackEvidence/ios-smb-vlc-controls.log` (36.505 seconds, zero failures).
+This does not replace macOS GUI or physical iPhone acceptance.
+
+The subsequent full iOS Simulator playback/AppStore run, including the real
+SMB fixture and non-blocking subtitle-error regression, passed all 13 tests
+with zero failures in 63.205 seconds. Its result is
+`.build/results/iOS-nonfatal-subtitle-full-SMB-20261003-0606.xcresult`, with log
+`.build/PlaybackEvidence/ios-nonfatal-subtitle-full-smb.log`. The 4K HEVC case
+produced decoded/displayed video and played audio output, but this Simulator
+reported no hardware HEVC capability and no selected VideoToolbox decoder;
+that result provides software-output evidence only.

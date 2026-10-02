@@ -19,6 +19,9 @@ def main():
     (folder / "external.srt").write_text(
         "1\n00:00:00,000 --> 00:00:05,000\nAetherFilm 中文字幕测试\n\n"
         "2\n00:00:05,000 --> 00:00:12,000\n跳转后字幕仍然同步\n", encoding="utf-8")
+    (folder / "external.vtt").write_text(
+        "WEBVTT\n\n00:00:00.000 --> 00:00:05.000\nAetherFilm WebVTT 中文字幕\n\n"
+        "00:00:05.000 --> 00:00:12.000\nWebVTT 跳转同步验证\n", encoding="utf-8")
     (folder / "external.ass").write_text(
         "[Script Info]\nScriptType: v4.00+\nPlayResX: 320\nPlayResY: 180\n"
         "[V4+ Styles]\n"

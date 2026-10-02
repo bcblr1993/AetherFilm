@@ -7,7 +7,8 @@ actor UIFixtureSMBProvider: SMBFileProviding {
         throw FilmError.invalidConnection
     }
     func listDirectory(_ connection: SMBConnection, credentials: SMBCredentials, path: String) async throws -> [MediaItem] {
-        try await Task.sleep(for: .milliseconds(500))
+        let hasError = ProcessInfo.processInfo.arguments.contains("--ui-source-error")
+        try await Task.sleep(for: .milliseconds(hasError ? 2_000 : 500))
         if ProcessInfo.processInfo.arguments.contains("--ui-source-error") { throw FilmError.missingSource }
         if path == "Movies/Empty" { return [] }
         if path == "Movies" {

@@ -34,11 +34,7 @@ struct RootView: View {
                     try await store.addSMB(draft)
                 }
             }
-            #if os(macOS)
-            .sheet(item: $store.playingItem) { item in
-                PlayerScreen(item: item, store: store)
-            }
-            #else
+            #if os(iOS)
             .fullScreenCover(item: $store.playingItem) { item in
                 PlayerScreen(item: item, store: store)
             }
@@ -57,7 +53,11 @@ struct RootView: View {
     @ViewBuilder
     private var navigation: some View {
         #if os(macOS)
-        splitNavigation
+        if let item = store.playingItem {
+            PlayerScreen(item: item, store: store)
+        } else {
+            splitNavigation
+        }
         #else
         if horizontalSizeClass == .regular {
             splitNavigation

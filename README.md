@@ -1,8 +1,10 @@
 # AetherFilm
 
+<img src="Apps/Resources/AetherFilm-icon-v1.png" width="112" alt="AetherFilm icon">
+
 轻一点的私人影院。A native personal video player from [AetherNative](https://www.aethernative.com/).
 
-**规划 / 开发中，尚未发布。** macOS 26+ · iOS / iPadOS 26+ · Swift 6 · SwiftUI · Liquid Glass.
+**开发验收中，尚未发布。** macOS 26+ · iOS / iPadOS 26+ · Swift 6 · SwiftUI · Liquid Glass.
 
 AetherFilm focuses on adding your own media, browsing a compact library, and reliable playback. Inspired by everyday Infuse workflows, it is an independent application and is not affiliated with Firecore.
 
@@ -16,7 +18,7 @@ The name and macOS-first distribution direction are confirmed. Phase one focuses
 - Seeking, playback speed, fullscreen and persistent progress.
 - Native macOS and iPhone / iPad layouts with light / dark appearance and accessibility support.
 
-See [product scope](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), [test matrix](docs/TEST_MATRIX.md), and [release gates](docs/RELEASE.md). Features above are in development; support is confirmed only after the release matrix passes.
+See [product scope](docs/PRODUCT.md), [architecture](docs/ARCHITECTURE.md), [compatibility](docs/COMPATIBILITY.md), [test matrix](docs/TEST_MATRIX.md), and [release gates](docs/RELEASE.md). Distribution and device support are confirmed only after the release matrix passes.
 
 ## Project
 
@@ -30,4 +32,4 @@ Shared domain and service modules use Swift Package Manager. Platform app target
 
 ## License
 
-Application code is MIT licensed. Any bundled media framework is distributed under its own license; see `THIRD_PARTY_NOTICES.md` when the playback dependency is integrated.
+Application code is MIT licensed. VLCKit, AMSMB2 and libsmb2 retain their own licenses. See [third-party notices](THIRD_PARTY_NOTICES.md) and [corresponding-source evidence](docs/BACKEND_EVIDENCE.md).

@@ -5,6 +5,33 @@ import FilmSources
 
 /// Opt-in only: credentials are injected in memory by an isolated loopback test-server launcher.
 struct SMBIntegrationTests {
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["AETHERFILM_SMB_BOOTSTRAP_URL"] != nil))
+    func bootstrapDeliversCredentialsInMemoryForTestRunners() async throws {
+        struct Configuration: Decodable {
+            let port: Int
+            let username: String
+            let password: String
+            let share: String
+        }
+        let endpoint = try #require(ProcessInfo.processInfo.environment["AETHERFILM_SMB_BOOTSTRAP_URL"])
+        let url = try #require(URL(string: endpoint))
+        #expect(url.host == "127.0.0.1")
+        #expect(url.user == nil && url.password == nil && url.query == nil)
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let http = try #require(response as? HTTPURLResponse)
+        #expect(http.statusCode == 200)
+        #expect(http.value(forHTTPHeaderField: "Cache-Control") == "no-store")
+        let configuration = try JSONDecoder().decode(Configuration.self, from: data)
+        let connection = SMBConnection(name: "Bootstrap fixture", host: "127.0.0.1", port: configuration.port,
+                                       share: configuration.share, rootPath: "nested")
+        let credentials = SMBCredentials(username: configuration.username, password: configuration.password)
+        let provider = SMBProvider(timeout: 3)
+        try await provider.testConnection(connection, credentials: credentials)
+        let bytes = try await provider.readFile(connection, credentials: credentials, path: "nested/sample.bin", range: 0..<100)
+        #expect(bytes == Data((0..<100).map { UInt8($0 % 251) }))
+        await provider.close()
+    }
+
     @Test(.enabled(if: ProcessInfo.processInfo.environment["AETHERFILM_SMB_TEST_PORT"] != nil))
     func requiredEncryptionNeverFallsBackToPlaintextSMB2() async throws {
         let environment = ProcessInfo.processInfo.environment

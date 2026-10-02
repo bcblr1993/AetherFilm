@@ -33,7 +33,10 @@ enum AppSection: Hashable, Identifiable {
     @ObservationIgnored private var queue: [MediaItem] = []
     @ObservationIgnored private var lastSavedAt: Date = .distantPast
     @ObservationIgnored private var loaded = false
+    @ObservationIgnored private var loadingTask: Task<Void, Never>?
     @ObservationIgnored private var playbackGeneration = UUID()
+    @ObservationIgnored private var playbackItemID: String?
+    @ObservationIgnored private var subtitleCacheURLs: [URL] = []
     #if DEBUG
     @ObservationIgnored private var fixtureMarker: URL?
     #endif
@@ -82,13 +85,20 @@ enum AppSection: Hashable, Identifiable {
 
     func load() async {
         guard !loaded else { return }
-        do {
-            snapshot = try await library.load(); loaded = true
-            #if DEBUG
-            await loadUIFixturesIfRequested()
-            #endif
+        if let loadingTask { await loadingTask.value; return }
+        let task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                snapshot = try await library.load(); loaded = true
+                #if DEBUG
+                await loadUIFixturesIfRequested()
+                #endif
+            }
+            catch { errorMessage = error.localizedDescription }
         }
-        catch { errorMessage = error.localizedDescription }
+        loadingTask = task
+        await task.value
+        loadingTask = nil
     }
 
     func select(_ section: AppSection) async {
@@ -188,12 +198,13 @@ enum AppSection: Hashable, Identifiable {
     func preparePlayback(_ item: MediaItem) async throws -> URL {
         let generation = UUID()
         playbackGeneration = generation
+        playbackItemID = item.id
         await releasePlaybackResources()
         try Task.checkCancellation()
         guard playbackGeneration == generation else { throw CancellationError() }
         if let sourceID = item.sourceID {
             guard let connection = connections.first(where: { $0.id == sourceID }) else { throw FilmError.missingSource }
-            let credentials = try KeychainStore.read(sourceID: sourceID)
+            let credentials = try credentials(for: connection)
             let size = try await smb.fileSize(connection, credentials: credentials, path: item.path)
             try Task.checkCancellation()
             guard playbackGeneration == generation else { throw CancellationError() }
@@ -222,24 +233,27 @@ enum AppSection: Hashable, Identifiable {
         if let sourceID = item.sourceID {
             guard let connection = connections.first(where: { $0.id == sourceID }) else { throw FilmError.missingSource }
             let path = (item.path as NSString).deletingLastPathComponent
-            return try await smb.listDirectory(connection, credentials: KeychainStore.read(sourceID: sourceID), path: path).filter(\.isSubtitle)
+            return try await smb.listDirectory(connection, credentials: credentials(for: connection), path: path).filter(\.isSubtitle)
         }
         return snapshot.localItems.filter(\.isSubtitle)
     }
 
     func subtitleURL(_ subtitle: MediaItem) async throws -> URL {
+        let generation = playbackGeneration
         if let sourceID = subtitle.sourceID {
             guard let connection = connections.first(where: { $0.id == sourceID }) else { throw FilmError.missingSource }
-            let credentials = try KeychainStore.read(sourceID: sourceID)
+            let credentials = try credentials(for: connection)
             let size = try await smb.fileSize(connection, credentials: credentials, path: subtitle.path)
             guard size > 0, size <= 8 * 1024 * 1024 else { throw FilmError.invalidRange }
             let data = try await smb.readFile(connection, credentials: credentials, path: subtitle.path, range: 0..<size)
             try Task.checkCancellation()
+            guard playbackGeneration == generation else { throw CancellationError() }
             guard data.count == size else { throw FilmError.invalidRange }
             let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent("AetherFilm/Subtitles")
             try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
             let url = caches.appendingPathComponent(UUID().uuidString).appendingPathExtension(subtitle.fileExtension)
             try data.write(to: url, options: .atomic)
+            subtitleCacheURLs.append(url)
             return url
         }
         #if os(macOS)
@@ -305,7 +319,8 @@ enum AppSection: Hashable, Identifiable {
             snapshot.connections.removeAll { $0.id == connection.id }
             let sourceItemIDs = Set(snapshot.recentItems.filter { $0.sourceID == connection.id }.map(\.id))
             snapshot.recentItems.removeAll { $0.sourceID == connection.id }
-            snapshot.progress = snapshot.progress.filter { !sourceItemIDs.contains($0.key) }
+            let sourcePrefix = connection.id.uuidString + ":"
+            snapshot.progress = snapshot.progress.filter { !sourceItemIDs.contains($0.key) && !$0.key.hasPrefix(sourcePrefix) }
             do { try await persist() } catch { snapshot = before; throw error }
             try KeychainStore.remove(sourceID: connection.id)
             if let provider = smb as? SMBProvider { await provider.forgetConnection(connection.id) }
@@ -313,16 +328,21 @@ enum AppSection: Hashable, Identifiable {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    func stopStreaming() async {
+    func stopStreaming(for itemID: String? = nil) async {
+        guard itemID == nil || playbackItemID == itemID else { return }
         playbackGeneration = UUID()
+        playbackItemID = nil
         await releasePlaybackResources()
     }
 
     private func releasePlaybackResources() async {
         let oldStream = stream
         let oldAccess = activeAccess
+        let oldSubtitles = subtitleCacheURLs
         stream = nil; activeAccess = nil
+        subtitleCacheURLs = []
         oldAccess?.stopAccessingSecurityScopedResource()
+        for url in oldSubtitles { try? FileManager.default.removeItem(at: url) }
         await oldStream?.stop()
     }
 

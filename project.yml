@@ -36,6 +36,9 @@ targets:
       - Playback
       - path: Apps/Resources/Assets.xcassets
         buildPhase: resources
+      - path: Apps/Resources/Notices
+        type: folder
+        buildPhase: resources
       - path: .build/UIFixtures
         type: folder
         buildPhase: resources
@@ -58,6 +61,25 @@ targets:
             LSItemContentTypes: [public.movie, public.video, org.matroska.mkv, public.avi]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        UTImportedTypeDeclarations: &mediaTypes
+          - UTTypeIdentifier: org.matroska.mkv
+            UTTypeConformsTo: [public.movie]
+            UTTypeTagSpecification:
+              public.filename-extension: [mkv]
+              public.mime-type: [video/x-matroska]
+          - UTTypeIdentifier: com.aethernative.subtitle.srt
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [srt]
+          - UTTypeIdentifier: com.aethernative.subtitle.ass
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [ass, ssa]
+          - UTTypeIdentifier: org.w3c.webvtt
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [vtt]
+              public.mime-type: [text/vtt]
     entitlements:
       path: Apps/macOS/AetherFilm.entitlements
       properties:
@@ -81,6 +103,9 @@ targets:
       - Apps/Shared
       - Playback
       - path: Apps/Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Apps/Resources/Notices
+        type: folder
         buildPhase: resources
       - path: .build/UIFixtures
         type: folder
@@ -110,6 +135,7 @@ targets:
             LSItemContentTypes: [public.movie, public.video, org.matroska.mkv, public.avi]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        UTImportedTypeDeclarations: *mediaTypes
     dependencies:
       - package: AetherFilmKit
         product: FilmDomain

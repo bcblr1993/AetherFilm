@@ -15,3 +15,5 @@ TestResults/
 *.xcresult
 .build/Probe/
 *.xcodeproj/
+__pycache__/
+*.py[cod]

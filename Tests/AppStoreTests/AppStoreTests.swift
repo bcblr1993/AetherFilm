@@ -34,12 +34,15 @@ import FilmLibrary
         let store = makeStore(); await store.load()
         let source = SMBConnection(name: "Fixture", host: "fixture.invalid", share: "Videos")
         let item = MediaItem(name: "video.mkv", path: "video.mkv", sourceID: source.id)
+        let olderItem = MediaItem(name: "older.mkv", path: "older.mkv", sourceID: source.id)
         store.snapshot.connections = [source]
         store.recordProgress(item, position: 5, duration: 30)
+        store.snapshot.progress[olderItem.id] = PlaybackProgress(itemID: olderItem.id, position: 5, duration: 30)
         await store.flushProgress()
         await store.removeConnection(source)
         XCTAssertTrue(store.connections.isEmpty)
         XCTAssertTrue(store.continueItems.isEmpty)
+        XCTAssertNil(store.progress(for: olderItem), "Source removal also clears progress evicted from recent history.")
         store.recordProgress(item, position: 10, duration: 30)
         XCTAssertNil(store.progress(for: item))
     }
@@ -52,6 +55,20 @@ import FilmLibrary
         let store = makeStore(); await store.load(); store.snapshot.localItems = [item]
         await store.removeLocalItem(item)
         XCTAssertTrue(store.localItems.isEmpty)
+        XCTAssertEqual(try Data(contentsOf: file), content)
+    }
+
+    func testColdLaunchAndOpenFileShareOneLibraryLoad() async throws {
+        let file = directory.appendingPathComponent("打开 中文 video.mp4")
+        let content = Data("owned cold-open fixture".utf8)
+        try content.write(to: file)
+        let store = makeStore()
+        async let launch: Void = store.load()
+        async let incomingFile: Void = store.importFiles([file])
+        _ = await (launch, incomingFile)
+        XCTAssertEqual(store.localItems.map(\.name), [file.lastPathComponent])
+        let reopened = makeStore(); await reopened.load()
+        XCTAssertEqual(reopened.localItems.map(\.name), [file.lastPathComponent])
         XCTAssertEqual(try Data(contentsOf: file), content)
     }
 

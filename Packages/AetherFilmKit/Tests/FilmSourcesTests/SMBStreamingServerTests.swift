@@ -102,6 +102,29 @@ struct SMBStreamingServerTests {
         await #expect(throws: (any Error).self) { try await request.value }
     }
 
+    @Test func releasingServerCancelsActiveReadAndClosesListener() async throws {
+        let fixture = SMBFixtureFileProvider(bytes: Data([1, 2, 3]), delay: .seconds(20))
+        var server: SMBStreamingServer? = makeServer(provider: fixture, size: 3)
+        let url = try await #require(server).start()
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        var pending = URLRequest(url: url)
+        pending.timeoutInterval = 3
+        let request = Task { try await session.data(for: pending) }
+        for _ in 0..<50 {
+            if await !fixture.ranges.isEmpty { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(await !fixture.ranges.isEmpty)
+        let clock = ContinuousClock(), releasedAt = clock.now
+        server = nil
+        await #expect(throws: (any Error).self) { try await request.value }
+        #expect(clock.now - releasedAt < .seconds(2))
+        var next = URLRequest(url: url)
+        next.timeoutInterval = 1
+        await #expect(throws: (any Error).self) { try await session.data(for: next) }
+    }
+
     @Test func requestParserRejectsDuplicateAndFoldedHeaders() throws {
         let parsed = try SMBHTTPRequest(data: Data("GET /token.mp4 HTTP/1.1\r\nHost: 127.0.0.1\r\nRaNgE: bytes=1-2\r\n\r\n".utf8))
         #expect(parsed.method == "GET" && parsed.range == "bytes=1-2")

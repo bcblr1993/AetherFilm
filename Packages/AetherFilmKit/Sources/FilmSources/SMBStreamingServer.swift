@@ -27,6 +27,15 @@ public actor SMBStreamingServer {
         mimeType = Self.contentType(for: fileExtension)
     }
 
+    deinit {
+        listener?.cancel()
+        startTask?.cancel()
+        for (connection, task) in sessions.values {
+            task.cancel()
+            connection.cancel()
+        }
+    }
+
     public func start() async throws -> URL {
         if let startTask { return try await startTask.value }
         guard size >= 0 else { throw FilmError.invalidRange }

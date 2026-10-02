@@ -6,11 +6,15 @@ Install the test-only dependency in a virtual environment:
 
 Examples:
     python3 scripts/test_smb_integration.py -- swift test --package-path Packages/AetherFilmKit --filter SMB
-    python3 scripts/test_smb_integration.py --media-folder Tests/Fixtures -- xcodebuild test -scheme AetherFilm-macOS ...
+    python3 scripts/test_smb_integration.py --bootstrap-only --media-folder Tests/Fixtures -- xcodebuild test -scheme AetherFilm-macOS ...
 
 The command inherits AETHERFILM_SMB_TEST_PORT, AETHERFILM_SMB_TEST_PASSWORD,
 and AETHERFILM_SMB_STALL_PORT. The test password is generated for each run,
 kept only in process memory, and never written to a fixture or auth log.
+With --bootstrap-only, Xcode test runners inherit AETHERFILM_SMB_BOOTSTRAP_URL, a
+non-secret loopback URL whose GET JSON supplies port, username, password,
+share and mediaPath, without any password in their launch environment. Do
+not put the password in a scheme or .xctestrun file.
 With --media-folder, test media is copied to the FILMS share's media directory
 and AETHERFILM_SMB_MEDIA_PATH is set to media. Symlinks and non-media files
 are skipped; originals remain untouched.
@@ -21,6 +25,8 @@ playback require their own acceptance tests.
 from __future__ import annotations
 
 import argparse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
 import logging
 import os
 from pathlib import Path
@@ -50,6 +56,7 @@ def run_command(command: list[str], environment: dict[str, str]) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--bootstrap-only", action="store_true", help="Keep the password out of the command environment; fetch credentials from the loopback bootstrap URL in memory")
     parser.add_argument("--media-folder", type=Path, help="Copy test video/subtitle fixtures into FILMS/media without modifying their originals")
     parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to run, after --")
     arguments = parser.parse_args()
@@ -146,12 +153,54 @@ def main() -> int:
 
         stalled_thread = threading.Thread(target=accept_stalled, daemon=True)
         stalled_thread.start()
+        configuration = {
+            "port": server.getServer().server_address[1],
+            "username": "aetherfilm-fixture",
+            "password": password,
+            "share": "FILMS",
+            "mediaPath": "media" if media_folder is not None else None,
+        }
+
+        class BootstrapHandler(BaseHTTPRequestHandler):
+            def setup(self):
+                super().setup()
+                self.connection.settimeout(5)
+
+            def do_GET(self):
+                if self.path != "/configuration":
+                    self.send_response(404)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                payload = json.dumps(configuration).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                try:
+                    self.wfile.write(payload)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+
+            def log_message(self, format, *args):
+                # Never record bootstrap requests or credential responses.
+                pass
+
+        bootstrap = ThreadingHTTPServer(("127.0.0.1", 0), BootstrapHandler)
+        bootstrap.daemon_threads = True
+        bootstrap_thread = threading.Thread(target=bootstrap.serve_forever, daemon=True)
+        bootstrap_thread.start()
         environment = os.environ.copy()
+        environment.pop("AETHERFILM_SMB_TEST_PASSWORD", None)
+        environment.pop("AETHERFILM_SMB_MEDIA_PATH", None)
         environment.update(
             AETHERFILM_SMB_TEST_PORT=str(server.getServer().server_address[1]),
-            AETHERFILM_SMB_TEST_PASSWORD=password,
             AETHERFILM_SMB_STALL_PORT=str(stalled.getsockname()[1]),
+            AETHERFILM_SMB_BOOTSTRAP_URL=f"http://127.0.0.1:{bootstrap.server_port}/configuration",
         )
+        if not arguments.bootstrap_only:
+            environment["AETHERFILM_SMB_TEST_PASSWORD"] = password
         if media_folder is not None:
             environment["AETHERFILM_SMB_MEDIA_PATH"] = "media"
         print("Isolated SMB2 fixture ready on loopback; ephemeral credentials remain in memory.", flush=True)
@@ -161,6 +210,9 @@ def main() -> int:
             print("Unable to start the requested test command.", file=sys.stderr)
             return 2
         finally:
+            bootstrap.shutdown()
+            bootstrap.server_close()
+            bootstrap_thread.join(timeout=1)
             finished.set()
             stalled.close()
             stalled_thread.join(timeout=1)

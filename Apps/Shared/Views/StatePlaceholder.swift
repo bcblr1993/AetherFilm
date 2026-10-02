@@ -11,6 +11,7 @@ struct StatePlaceholder: View {
     var body: some View {
         ContentUnavailableView {
             Label(title, systemImage: symbol)
+                .accessibilityIdentifier(identifier ?? "state.placeholder")
         } description: {
             Text(description)
         } actions: {
@@ -20,6 +21,5 @@ struct StatePlaceholder: View {
                     .accessibilityIdentifier(identifier.map { $0 + ".action" } ?? "state.action")
             }
         }
-        .accessibilityIdentifier(identifier ?? "state.placeholder")
     }
 }
