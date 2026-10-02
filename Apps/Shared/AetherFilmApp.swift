@@ -45,7 +45,11 @@ private struct UITestAppearance: ViewModifier {
             content
                 .defaultAppStorage(testPreferences)
                 .preferredColorScheme(args.contains("--ui-appearance=dark") ? .dark : args.contains("--ui-appearance=light") ? .light : nil)
-                .dynamicTypeSize(args.contains("--ui-content-size=accessibility3") || args.contains("--ui-content-size=accessibility-extra-extra-extra-large") ? .accessibility3 : .large)
+                .transformEnvironment(\.dynamicTypeSize) { size in
+                    if args.contains("--ui-content-size=accessibility3") || args.contains("--ui-content-size=accessibility-extra-extra-extra-large") {
+                        size = .accessibility3
+                    }
+                }
         } else { content }
     }
 

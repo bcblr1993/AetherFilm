@@ -250,8 +250,10 @@ struct PlayerScreen: View {
                     Button("选择外置字幕…") { showingOptions = false; showingSubtitlePicker = true }
                     Stepper("字幕延迟：\(player.subtitleDelay, specifier: "%.1f") 秒", value:
                         Binding(get: { player.subtitleDelay }, set: { player.setSubtitleDelay($0) }), in: -10...10, step: 0.5)
-                    Slider(value: Binding(get: { Double(player.subtitleScale) }, set: { player.setSubtitleScale(Float($0)) }), in: 0.5...2) {
-                        Text("字幕大小")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("字幕大小").accessibilityHidden(true)
+                        Slider(value: Binding(get: { Double(player.subtitleScale) }, set: { player.setSubtitleScale(Float($0)) }), in: 0.5...2)
+                            .accessibilityLabel("字幕大小")
                     }
                 }
                 if !player.chapters.isEmpty {
@@ -263,7 +265,11 @@ struct PlayerScreen: View {
                 }
                 Section("画面和声音") {
                     Toggle("填满画面", isOn: Binding(get: { player.fillsScreen }, set: { player.setVideoFill($0) }))
-                    Slider(value: Binding(get: { Double(player.volume) }, set: { player.setVolume(Float($0)) }), in: 0...1) { Text("音量") }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("音量").accessibilityHidden(true)
+                        Slider(value: Binding(get: { Double(player.volume) }, set: { player.setVolume(Float($0)) }), in: 0...1)
+                            .accessibilityLabel("音量")
+                    }
                 }
                 Section("默认语言") {
                     Picker("音轨", selection: $preferredAudioLanguage) { languageChoices }
