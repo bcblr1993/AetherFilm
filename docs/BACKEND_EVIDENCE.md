@@ -62,6 +62,39 @@ of every byte in the official binary. Preserve the archive checksum and gather
 the corresponding source/build materials before distribution; source links
 alone are not a completed release compliance record.
 
+### Source mapping cross-check
+
+The fixed default recipe's `TESTEDHASH` resolves to the upstream base above.
+The official
+[version-tag comparison metadata](https://api.github.com/repos/videolan/vlc/compare/4.0.0-dev...005e69e67a8730f128e44bde68437fbb048cf45f?per_page=1&page=2)
+reports `ahead_by=39216`, `behind_by=0`; adding the 12 official patches gives
+**39228**, matching the binary's version distance. The API's `total_commits`
+is capped at 10000 for this comparison and is not the distance used here.
+The fixed VLC [revision generator](https://github.com/videolan/vlc/blob/005e69e67a8730f128e44bde68437fbb048cf45f/src/Makefile.am#L751)
+uses `git describe`, which identifies a commit rather than a source-tree hash.
+
+The official archive embeds build-local changesets
+`c6a26dafaf244df0cfb8154bc54540402cccb7c8` for macOS and
+`48b12f61c8a08976d57d9e5d5cfbffd59f2398f9` for iOS device/simulator, both
+with distance 39228. The fixed
+[official CI](https://github.com/videolan/vlckit/blob/8f5ce02f09a7da5d061a24ddac3cb432f2a9b332/.gitlab-ci.yml#L75)
+removes the VLC checkout between platform builds and repeats checkout plus
+`git am`. An in-memory Git-object check confirmed that changing only the
+committer timestamp changes a commit SHA while its tree, parent, author and
+message stay identical. This explains how platform hashes can differ without
+different functional source; it does not prove those historical commits were
+created with otherwise identical inputs.
+
+Independent read-only hashing of 5675 tracked index entries reproduced the
+preserved patched tree `9cb4e084a5e41ba0f7037c209884d8816ef929ad`. The official
+macOS dSYM matches the binary UUID and retained source declaration lines,
+but its DWARF 4 line tables provide no source-file checksums. These are
+consistency checks of the pinned official recipe, not an independent
+attestation of every binary compilation input or a complete framework rebuild.
+No extra private modification has been identified. Audit records are retained
+under `.build/VLCSourceMappingAudit/`; the reconstruction/relinking limits
+below remain open.
+
 ### Preserved and verified source materials
 
 The fixed wrapper source archive has SHA256

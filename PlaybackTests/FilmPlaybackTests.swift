@@ -67,6 +67,61 @@ final class FilmPlaybackTests: XCTestCase {
         player = nil
     }
 
+    func testDelayedActualPauseCallbackKeepsToggleConsistentWithPlayback() async throws {
+        player.load(url: try fixture("clip-h264.mp4"))
+        try await waitUntil("race probe initial real video and audio output") {
+            self.player.isPlaying && self.player.backendState == "playing" && self.player.backendIsPlaying == true
+                && (self.player.backendTime ?? 0) > 0.8 && self.player.displayedVideoFrames > 0
+                && self.player.playedAudioBuffers > 0
+        }
+        player.debugHoldNextPausedCallback()
+        player.pause()
+        try await waitUntil("race probe captured actual paused callback") {
+            self.player.debugHasHeldPausedCallback && self.player.backendState == "paused"
+                && self.player.backendIsPlaying == false
+        }
+        let pausedTime = try XCTUnwrap(player.backendTime)
+        let frames = player.displayedVideoFrames
+        let audio = player.playedAudioBuffers
+        player.play()
+        try await waitUntil("race probe resumed actual output before delayed event") {
+            self.player.isPlaying && self.player.backendState == "playing" && self.player.backendIsPlaying == true
+                && (self.player.backendTime ?? 0) > pausedTime + 0.3
+                && self.player.displayedVideoFrames > frames && self.player.playedAudioBuffers > audio
+        }
+        let callbacks = player.debugPausedCallbacksReceived
+        player.debugReleaseHeldPausedCallback()
+        try await waitUntil("race probe released actual paused callback was consumed") {
+            self.player.debugPausedCallbacksReceived > callbacks
+        }
+        printPlaybackDiagnostic("race probe model after late paused event", phase: "snapshot")
+        XCTAssertTrue(player.isPlaying, "A late paused event must not show play while real output is playing.")
+        XCTAssertEqual(player.backendState, "playing")
+        XCTAssertEqual(player.backendIsPlaying, true)
+        let lateTime = try XCTUnwrap(player.backendTime)
+        let lateFrames = player.displayedVideoFrames
+        try await waitUntil("race probe backend still advances after late event") {
+            (self.player.backendTime ?? 0) > lateTime + 0.3 && self.player.displayedVideoFrames > lateFrames
+        }
+        player.toggle()
+        // Keep executing after the model assertion so this tests the actual
+        // button action. No direct setter or fake engine state is involved.
+        let deadline = Date().addingTimeInterval(3)
+        while !(player.backendState == "paused" && player.backendIsPlaying == false) && Date() < deadline {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        printPlaybackDiagnostic("race probe toggle actual outcome", phase: "snapshot")
+        XCTAssertEqual(player.backendState, "paused", "Toggle must pause the real backend after the delayed callback.")
+        XCTAssertEqual(player.backendIsPlaying, false)
+        XCTAssertFalse(player.isPlaying)
+        try await Task.sleep(for: .milliseconds(300))
+        let stillTime = try XCTUnwrap(player.backendTime)
+        try await Task.sleep(for: .milliseconds(800))
+        XCTAssertEqual(player.backendTime ?? -1, stillTime, accuracy: 0.35,
+                       "The real backend time must remain still after toggle.")
+        printPlaybackDiagnostic("race probe toggle stillness", phase: "snapshot")
+    }
+
     func testCommonContainersProduceVideoAndAudioOutput() async throws {
         for name in ["clip-h264.mp4", "clip-hevc.mov", "clip-mpeg4.avi", "clip-multitrack.mkv"] {
             player.load(url: try fixture(name))

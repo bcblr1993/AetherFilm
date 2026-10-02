@@ -9,3 +9,5 @@ Generation prompt:
 > Production app icon for AetherFilm, a native personal video player on macOS and iPhone, part of AetherNative. One full-bleed square artwork: a large sculptural translucent glass play triangle formed by a folded cinematic ribbon with a subtle A-like silhouette, smooth thick edges, a pale cyan core and restrained mint/teal and violet edge refractions. Front-facing, central, high contrast, simple at 32 px; deep navy-to-indigo background with a soft teal glow. No text, watermark, clapperboard, small decorations, outer border or mockup. The OS applies the icon mask.
 
 The source is retained; packaging only resizes it for platform assets. Inspect Dock and Home Screen appearance on real platform builds before release.
+
+The square source follows Apple's [app icon guidance](https://developer.apple.com/design/human-interface-guidelines/app-icons/): the system supplies the platform mask. iOS Simulator Home Screen appearance has been inspected; the macOS Dock check still requires graphical acceptance in the `macos27` VM.

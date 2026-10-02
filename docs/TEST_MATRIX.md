@@ -6,16 +6,16 @@
 | --- | --- | --- | --- |
 | 构建 | 最低部署版本 26；Debug / Release；真机 archive | 最新 Debug / tests 与 universal Release 候选构建通过 | Simulator Debug / tests、已签名 device tests 与最终 Release archive 构建通过 |
 | 本地 | 导入、取消、重复、中文 / 空格路径、重启访问 | 待测 | 待测 |
-| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 19 项协议 / HTTP 回归通过；VM 播放与 SMB3 加密成功待测 | Simulator 真实 SMB 播放、20 次远近 seek、停止后重开通过；真机待测 |
+| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 21 项协议 / HTTP 回归通过；VM 播放与 SMB3 加密成功待测 | Simulator 真实 SMB 播放、20 次远近 seek、停止后重开通过；真机待测 |
 | 播放 | H.264 + AAC MP4；HEVC MOV；MPEG4 + MP3 AVI；多轨 MKV；实际画面 / 音频输出 / 时间推进；4K HEVC | VM 待登录运行 | 四种容器与 4K HEVC Simulator 实际输出通过；真机硬件解码待测 |
-| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | VM 待测 | 本地 iOS 26.5 播放控制与完整 UI 通过；CI iOS 27 SMB seek 失败调查中，真机待测 |
+| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | VM 待测 | 新异步音频 / 控制源码本地完整 22 项通过；旧 UI 布局完整 19 项通过，新源码 3 项 UI 聚焦待完成；最终 CI / 真机待测 |
 | 字幕 | SRT / ASS / VTT 中文、内嵌字幕、开关、跳转同步、无字幕 | VM 待测 | Simulator 内嵌 / 外挂 SRT、ASS、VTT 选择与关闭、章节跳转、坏字幕不中断视频与同片重试通过；视觉同步 / 真机待测 |
 | 音轨 | 单 / 多音轨、切换、无音轨、不可解码错误 | VM 待测 | 多轨选择通过；其余 UI / 真机待测 |
 | 记录 | 断点、重启恢复、片尾完成、已看、清除；库条目删除不删除原文件 | shared storage 通过；AppStore / UI 待运行 | AppStore 5 case 与对应 UI 回归通过，含 cold-open 导入并发、移除保留原文件、旧进度清理 |
 | UI | 本地 / 续播空状态；导入入口；SMB 表单校验 / 取消；目录 / 返回 / 空目录；列表筛选；失败重试；格式 / 观看状态；播放入口 | 自动化已编写，待 VM 运行 | 完整 19 项通过，0 skipped；虚拟 NAS 状态不替代真实协议 / 真机 |
 | 可访问性 | 动态字体、可访问性描述、VoiceOver、实际系统减少透明度、键盘导航 | 待实际运行 / 人工验收 | 描述 audit、真实系统大字体及减少透明度通过；VoiceOver / 真机人工验收待测 |
 | 适配 | 980×680 / 620×440 窗口、浅深色；iPhone 小屏 / 横屏；iPad 分屏 | 自动化已编写，待截图审核 | iPhone 22 张完整 UI 截图已审核；iPad 4 项布局烟测通过，分屏和完整键盘表单仍待测 |
-| 分发 | 签名、公证、DMG 标签和内容、安装、首启、公开下载 SHA256 | 402034c 新候选公证及本地 28 项、Gatekeeper 启用的 VM 54 项安装 / 签名检查通过；首启 / 播放和公开下载待测 | 不适用 |
+| 分发 | 签名、公证、DMG 标签和内容、安装、首启、公开下载 SHA256 | 最新 5e12be2 公证、本地 31 项及 Gatekeeper 启用的 VM 54 项通过；首启 / 播放和公开下载待测 | 不适用 |
 | 分发 | 真机安装 / 播放、TestFlight 构建和安装、公开入口 | 不适用 | 待测 |
 | 官网 | 中英介绍、真实截图、系统要求、下载 / 发布链接、线上访问 | 隔离候选 153 项测试及 16 个浏览器场景通过；实际截图、下载与线上部署待完成 | 开发状态页面候选通过；无公开 iOS 安装链接 |
 
@@ -62,13 +62,33 @@ FIN 本身无法区分有效半关闭与已放弃响应，后者由写入 / tran
 
 GitHub CI `37067646747` 对相同提交的第一轮：31 项共享回归、macOS / iOS Simulator 测试产物构建及 iOS device Release 构建通过；iPhone Air / iOS 27.0 的 13 项播放测试中 12 项通过，SMB 第一次跳转到 62 秒没有持续画面 / 时间推进，超时失败。原始日志 `.build/ci-402034c-failure.log` 和下载的 `.build/CI402PlaybackResult/` 保留。第二轮同提交重跑：真实 SMB 完整 20 次 seek / 重开通过，75.735 秒；唯一失败为暂停静止检查在底层异步 pause 确认前记录基准，后续位置 3.098 相比 2.346 超出原 0.35 容差。日志 `.build/ci-402034c-attempt2-failure.log` 保留。测试随后加入真实 backend paused / playing 状态确认，再记录基准；原静止时间、0.35 容差、快速暂停 / 继续与 SMB 无等待操作序列均保留。首次 seek 超时尚未确定根因；新增只读原始状态与无凭据的 range / bytes 诊断，未修改生产 pause / seek 行为。目前不能声称最终 CI 已通过。
 
-HTTP 修复后的首次诊断全组 13 / 13 通过，62.168 秒；暂停确认修改后的全组曾 12 / 13，SMB 跳转采样失败，旧结果保留。100 ms 细化诊断记录到一例明确的界面值滞后：seek 68 时 raw backendTime 69.885 且已输出新帧，而 SwiftUI position 仍是 68.0；约 200 ms 后界面值更新为 70.028，错过原目标窗口。SMB 精度断言随后改读底层时间，仍要求 `target + 0.2 < time < target + 2`、新显示帧、原 12 秒超时和无等待快速操作序列，不用乐观目标值代替成功证据。每个 case 有独立 120 / 180 秒 XCTest watchdog。最新源码的完整复跑与新 iOS 27 CI 仍待确认；增量 Runner 执行旧事件的问题另行保留，重新构建与重启自己的测试设备后再判断实际行为。
+HTTP 修复后的首次诊断全组 13 / 13 通过，62.168 秒；暂停确认修改后的全组曾 12 / 13，SMB 跳转采样失败，旧结果保留。100 ms 细化诊断记录到一例明确的界面值滞后：seek 68 时 raw backendTime 69.885 且已输出新帧，而 SwiftUI position 仍是 68.0；约 200 ms 后界面值更新为 70.028，错过原目标窗口。SMB 精度断言随后改读底层时间，仍要求 `target + 0.2 < time < target + 2`、新显示帧、原 12 秒超时和无等待快速操作序列，不用乐观目标值代替成功证据。每个 case 有独立 120 / 180 秒 XCTest watchdog。增量 Runner 执行旧事件的问题及旧失败结果均保留。
+
+最新源码 `5e12be2fb9f62923ce3477ad590e79065b667135` 在移除自己的旧测试 host、重启明确指定的 iPhone 17 Pro / iOS 26.5 Simulator 并使用全新 DerivedData 后，完整 **13 / 13 通过，0 failures、0 skipped，61.837 秒**。真实 SMB 两次打开与 20 次 seek 通过，36.081 秒；306 次读取都有结束或取消事件，共 612 条、0 遗漏、0 错误。20 次跳转都满足底层时间推进和新显示帧断言，其中 15 次成功时 UI position 仍停在刚设置的目标值，确认不能用界面采样替代底层输出判定。产品暂停 / seek / 播放行为未改变。证据 `.build/PlaybackEvidence/diagnostic-final-review.json`、`ios-diagnostic-backend-clock-fresh-full-smb.log` 与 `.build/results/iOS-diagnostic-backend-clock-fresh-full-SMB-20261003-0610.xcresult`，三个相关源文件 hash 与提交一致。本地结果不替代新 CI、真机或 Mac GUI 验收。
+
+新 GitHub CI `37070907202` 首轮：33 项共享回归与三个平台构建通过，iOS 27 播放 **11 / 13 passed、2 failed、0 skipped**，119.927 秒。失败为 SMB 首次 seek 62 秒时底层时钟停在 62.0，以及坏字幕 case 在添加字幕之前的本地 MP4 初始画音输出超时（所有输出计数为 0）；不能把后者称为字幕加载失败。SMB 前四个 512 KiB 读取耗时 9.773 / 7.490 / 5.518 / 5.585 秒；seek 在 t27.264 发起，新高偏移的 provider 读取 begin 在 t36.718，2.670 秒后随测试结束取消，无结束或错误事件。该 begin 位于 HTTP 解析与响应头发送之后，不是 TCP 到达或 VLC 发出请求时间。旧读在测试层 100 ms 延迟之前就取消，没有进入共享 C 会话。日志另有 CoreAudio overload / no-object 消息。这些是广泛迟滞的证据，尚未确定最终根因，也未证明快速 pause / seek / play 无竞态。保留 `.build/ci-5e12be2-platform-failure.log`、`.build/CI5ePlaybackResult/` 与安全数值附件 `.build/CI5ePlaybackAttachments/`。
+
+同源新 runner 的 attempt 2 为 **12 / 13 passed、1 failed、0 skipped，138.207 秒**，仍是首次 SMB seek 62 秒失败；之前字幕 case 的本地 MP4 初始零输出未再次出现。本轮 provider 高偏移读取在 seek 后 11.162 秒才开始，距断言期限仅 0.930 秒；旧读取消耗时 2.655 秒，不能沿用首轮 10 ms / 未进入 C 的排除结论。HTTP / SMB 链路没有 MainActor 要求；固定 AMSMB2 同 context 的命令锁确实存在，但取锁、C 入口和 HTTP 首字节均未计时，不能认定锁争用或系统负载是根因。完整精确来源：job `111054789327`、artifact `11255992751`，ZIP SHA256 `422990e84709bf55dbedac01bf787eecf5f3a64b7d1530d8bf52086173e83553`，证据 `.build/CI5eAttempt2Evidence/review.md` / `review.json`。旧源失败保留；后续新源 CI 是独立验证。
+
+## 异步音频与暂停控制回归
+
+对 `5e12be2` 做隔离诊断时，实际 VLC paused 回调被暂存，在确认底层暂停并重新输出画面 / 音频后，经原 MainActor Task 路径放回。旧代码把界面状态写为暂停，但底层仍在播放，下一次真实 toggle 未暂停：原 case 失败 6.687 秒，时钟在 800 ms 内从 5.192 推进至 6.002，超出原 0.35 容差。仅改为按当前 engine state 发布暂停状态后，相同 case 通过 3.563 秒，真实 toggle 后时钟保持静止。无虚构 callback / backend state，证据 `.build/PlayerEventRaceProbe/evidence/review.json`、两个原始 xcresult 和日志。它证明独立的控制状态缺陷，不能据此宣称已确定 CI SMB 超时根因。
+
+将该修复及后台串行音频协调层接入后的初步源码（FilmPlayer SHA256 `6881cb022cf16db9232d0ff84c0480677e291926b8d0d857e57e2cd6a0860b02`）在实际 iOS 26.5 Simulator 完整 **18 / 18 通过，0 failures、0 skipped，63.470 秒**：AppStore 5、FilmPlayback 9、AudioSessionCoordinator 4。协调层覆盖非主线程执行、FIFO、多个 owner、失败与重复释放；真实媒体和 20 次 SMB seek 仍保留原严格断言。证据 `.build/PlaybackEvidence/AudioSessionIntegration/full18-before-reattach-test.log` 与 `.build/results/iOS-audio-full18-before-reattach-20261003-0650.xcresult`。
+
+只读 review 另发现无 drawable 的完成分支释放音频后，仍播放中的播放器重新挂载未必再次激活音频。补齐实际 nil→surface 音频恢复后，最终工作源码（FilmPlayer SHA256 `6111efafdd176ab206f3ef14a4cbce50f8a67b53bf0cec190e6b4b6240ecdba7`）全新构建与实际执行 **22 / 22 通过，0 failures、0 skipped，70.895 秒**。新增 4 项通过可控后台 gate 调用真实 AVAudioSession，验证准备时暂停 / 重复播放、stop / 换片后旧完成、初始无 surface、已播放中的 surface 重挂载；均要求真实 VLC 输出。关键重挂载确实经历 backend playing=true、音频 API 已成功停用的触发状态，随后第三次真实激活及时间 .913→1.415、显示帧 31→45、音频输出 106→129 通过。driver active 字段是系统 API 成功反馈，不代替人工听音或真机验收；没有将此运行称为旧 guard 的 A/B 失败对照。证据 `.build/PlaybackEvidence/AudioSessionIntegration/full22-test.log` 与 `.build/results/iOS-audio-full22-reattach-6111.xcresult`。后续 CI、同源 3 项 UI 聚焦和新签名候选 / 设备验收仍待完成。
 
 ## 签名候选执行证据
 
-2026-10-03，提交 `402034cd87fd10545d22e3ef33c8ee80473e75f0` 的 macOS universal Release 与 iOS 签名 Release archive 构建通过。App 与 DMG 的 Developer ID 签名、公证均为 `Accepted`，票据装订和验证通过。已只读挂载这个新候选，真实卷标为 `AetherFilm`，包含 `AetherFilm.app`、指向 `/Applications` 的链接、许可证和中文安装说明；App 为 0.1.0 / build 1，最低 macOS 26，主程序与两个框架均有 arm64 / x86_64，不含测试 fixtures / 插件，含正式图标。
+当前源码 `5e12be2fb9f62923ce3477ad590e79065b667135` 已重新完成 macOS universal Release、macOS / iOS physical Debug build-for-testing 与 iOS 签名 Release archive。Debug 源码与提交逐字节一致、测试 host / bundle / 可执行文件及 xctestrun 均存在，证据 `.build/DebugBuildEvidence/5e12be2/provenance.json`；构建不代表运行测试。iOS archive 严格签名及 team、arm64、最低 26.0、iPhone / iPad family、图标和许可证均已核验，不含测试插件和样片；证据 `.build/ReleaseEvidence/ios-archive-inspection-5e12be2.json`，尚未安装或运行于锁定的 iPhone。
 
-此前未发布候选（需要因 HTTP 修复重新构建）：`artifacts/AetherFilm-0.1.0-macos-universal.dmg`，60,249,014 bytes，SHA-256 `ee54fc8dd8a1f84604940278939c1a0e0e6cab06b73f2db3c7d60ec04d5b7600`。公证日志 `.build/package-402034c-retry.log`，公证记录 `artifacts/notarization-0.1.0.xt5c5H/`；本地 28 项检查通过，证据 `.build/ReleaseEvidence/local-inspection-402034c.json`。`artifacts/CANDIDATE_MANIFEST.json` 记录该源码提交和全部三个分发资产的 SHA256；尚未验证公开下载和图形首启。
+当前新 App 与 DMG 公证均为 `Accepted`，装订票据及签名通过。首次 DMG 提交遇到 `HTTPClientError.connectTimeout`，失败日志 `.build/package-5e12be2.log` 保留；同源重试成功，日志 `.build/package-5e12be2-retry.log`，记录 `artifacts/notarization-0.1.0.8YP1Kp/`。当前 DMG `artifacts/AetherFilm-0.1.0-macos-universal.dmg` 为 60,249,938 bytes，SHA-256 `fb32d110b58e0c17d61120ea8375677352a9846d9e2368f5f6ce665406690c74`。只读挂载后 **31 项本地检查通过**，包括真实卷标、Applications 链接、版本 / 最低系统、图标 / 原许可证、无测试资源、三个 Mach-O 的 arm64 / x86_64、严格签名 / 票据，以及主程序两片 UUID 与当前源码构建产物一致。证据 `.build/ReleaseEvidence/local-inspection-5e12be2.json`；当前 `artifacts/CANDIDATE_MANIFEST.json` 与 `SHA256SUMS.txt` 覆盖这个新包和两个源码材料包。主机仍有原有 security override，未改变其策略，因此该处评估不能代替开启 Gatekeeper 的 VM 验收。
+
+同一 `5e12be2 / fb32d110` 新候选已在 Tart `macos27` 完成 **54 / 54 安装文件系统 / 签名预检**。Gatekeeper 为 `assessments enabled`，DMG / 挂载 App / 安装 App 三次均为 `Notarized Developer ID`、无 override；原许可证逐字节 hash、版本 / 双架构 / 图标 / 无 debug dylib / 测试资源均通过。当前 Debug Products ZIP 两端 hash、6 个产品文件 hash 与 5 个 relocated paths 通过。证据 `.build/ReleaseEvidence/candidate-fb32d110/reviewed-summary.json`、`vm-preflight.json`、`testing-products.json`，待执行命令在 `READY_FOR_GUI.md`。VM console 仍为 root / 登录窗口，没有启动 GUI 或 XCTest，也没有修改账户、自动登录或安全设置；元数据明确 `publicationReady=false`。首启 / 实际播放、失败 CI 的处理和真机验收未完成，公开下载与网站部署未执行。
+
+2026-10-03，此前提交 `402034cd87fd10545d22e3ef33c8ee80473e75f0` 的 macOS universal Release 与 iOS 签名 Release archive 构建通过。App 与 DMG 的 Developer ID 签名、公证均为 `Accepted`，票据装订和验证通过。旧候选的只读挂载中，真实卷标为 `AetherFilm`，包含 `AetherFilm.app`、指向 `/Applications` 的链接、许可证和中文安装说明；App 为 0.1.0 / build 1，最低 macOS 26，主程序与两个框架均有 arm64 / x86_64，不含测试 fixtures / 插件，含正式图标。
+
+此前未发布候选已保留于 `artifacts/previous-candidates/0.1.0-ee54fc8d/AetherFilm-0.1.0-macos-universal.dmg`，60,249,014 bytes，SHA-256 `ee54fc8dd8a1f84604940278939c1a0e0e6cab06b73f2db3c7d60ec04d5b7600`。公证日志 `.build/package-402034c-retry.log`，公证记录 `artifacts/notarization-0.1.0.xt5c5H/`；本地 28 项检查通过，证据 `.build/ReleaseEvidence/local-inspection-402034c.json`。该目录保留的 `CANDIDATE_MANIFEST.json` 记录旧源码提交和全部三个分发资产的 SHA256；不能用来认证新候选，尚未验证公开下载和图形首启。
 
 相同 `ee54fc8d` 候选在 Tart `macos27` 完成独立 **54 项安装文件系统 / 签名预检**：Gatekeeper 为 `assessments enabled`，DMG、挂载 App 与安装副本均被评估为 `Notarized Developer ID` 且没有 security override；严格签名、票据、真实许可证哈希和两个架构均通过。证据 `.build/ReleaseEvidence/candidate-ee54fc8d/vm-preflight.json` 与 `.log`。安装副本位于本轮自有临时验收目录；VM 仍停留在登录窗口，图形首启、实际播放以及首次启动策略执行尚未验证。没有更改任何账户、自动登录或安全设置。
 

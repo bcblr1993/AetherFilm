@@ -37,6 +37,7 @@ public final class FilmPlayer: NSObject {
     @ObservationIgnored private var scopedURLs: [URL] = []
     @ObservationIgnored private var pendingSeek: Double?
     @ObservationIgnored private var wantsToPlay = false
+    @ObservationIgnored private var backendIsLoading = false
     @ObservationIgnored private var didStart = false
     @ObservationIgnored private var didEnd = false
     @ObservationIgnored private var openingTimeout: Task<Void, Never>?
@@ -47,17 +48,31 @@ public final class FilmPlayer: NSObject {
     @ObservationIgnored private(set) var videoToolboxSelected = false
     @ObservationIgnored private(set) var videoToolboxAcceptedFrame = false
     #if os(iOS)
+    @ObservationIgnored private let audioSessionCoordinator: AudioSessionCoordinator
+    @ObservationIgnored private let audioSessionOwner = UUID()
+    @ObservationIgnored private var pendingAudioActivation: UUID?
     @ObservationIgnored private var interruptionObserver: NSObjectProtocol?
     @ObservationIgnored private var routeObserver: NSObjectProtocol?
     @ObservationIgnored private var resumesAfterInterruption = false
     #endif
 
     public override init() {
+        #if os(iOS)
+        audioSessionCoordinator = .shared
+        #endif
         super.init()
         #if os(iOS)
         observeAudioSession()
         #endif
     }
+
+    #if os(iOS)
+    init(audioSessionCoordinator: AudioSessionCoordinator) {
+        self.audioSessionCoordinator = audioSessionCoordinator
+        super.init()
+        observeAudioSession()
+    }
+    #endif
 
     isolated deinit {
         openingTimeout?.cancel()
@@ -69,7 +84,8 @@ public final class FilmPlayer: NSObject {
         #if os(iOS)
         if let interruptionObserver { NotificationCenter.default.removeObserver(interruptionObserver) }
         if let routeObserver { NotificationCenter.default.removeObserver(routeObserver) }
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        pendingAudioActivation = nil
+        audioSessionCoordinator.deactivate(owner: audioSessionOwner)
         #endif
     }
 
@@ -105,6 +121,15 @@ public final class FilmPlayer: NSObject {
     }
     var backendChapterID: Int? { engine.map { Int($0.currentChapterIndex) } }
 
+    #if DEBUG
+    // Isolated probe only: capture one actual paused callback and release it
+    // through the same delegate Task after real playback has resumed.
+    @ObservationIgnored private(set) var debugPausedCallbacksReceived = 0
+    func debugHoldNextPausedCallback() { events?.debugHoldNextPausedCallback() }
+    var debugHasHeldPausedCallback: Bool { events?.debugHasHeldPausedCallback ?? false }
+    func debugReleaseHeldPausedCallback() { events?.debugReleaseHeldPausedCallback() }
+    #endif
+
     public func load(url: URL, startAt: Double = 0) {
         stop()
         errorMessage = nil
@@ -120,7 +145,8 @@ public final class FilmPlayer: NSObject {
         wantsToPlay = true
         didStart = false
         didEnd = false
-        isLoading = true
+        backendIsLoading = true
+        refreshLoading()
         isSeekable = false
         videoToolboxSelected = false
         videoToolboxAcceptedFrame = false
@@ -163,10 +189,10 @@ public final class FilmPlayer: NSObject {
             startEngine()
         } else {
             #if os(iOS)
-            do { try AVAudioSession.sharedInstance().setActive(true) }
-            catch { fail("无法启动音频播放，请重试。"); return }
-            #endif
+            requestAudioActivation(for: engine)
+            #else
             engine.play()
+            #endif
         }
     }
 
@@ -177,6 +203,10 @@ public final class FilmPlayer: NSObject {
         wantsToPlay = false
         engine?.pause()
         isPlaying = false
+        backendIsLoading = false
+        refreshLoading()
+        openingTimeout?.cancel()
+        openingTimeout = nil
         captureProgress()
     }
 
@@ -317,19 +347,30 @@ public final class FilmPlayer: NSObject {
         scopedURLs = []
         wantsToPlay = false
         isPlaying = false
+        backendIsLoading = false
         isLoading = false
         isSeekable = false
         pendingSeek = nil
         #if os(iOS)
         resumesAfterInterruption = false
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        pendingAudioActivation = nil
+        audioSessionCoordinator.deactivate(owner: audioSessionOwner)
         #endif
     }
 
     public func attachDrawable(_ view: AnyObject) {
+        #if os(iOS)
+        let wasDetached = drawable == nil
+        #endif
         drawable = view
         engine?.drawable = view
+        #if os(iOS)
+        // Reacquire audio when a dismantled surface is attached again. SwiftUI
+        // also updates an existing surface; those updates must not reactivate.
+        if wantsToPlay && wasDetached { play() }
+        #else
         if wantsToPlay && !didStart { startEngine() }
+        #endif
     }
 
     public func detachDrawable(_ view: AnyObject) {
@@ -340,30 +381,100 @@ public final class FilmPlayer: NSObject {
 
     private func startEngine() {
         guard let engine else { return }
-        #if os(iOS)
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .moviePlayback)
-            try session.setActive(true)
-        } catch {
-            fail("无法启动音频播放，请重试。")
-            return
-        }
-        #endif
         engine.rate = rate
         engine.audio?.volume = Int32((volume * 100).rounded())
         engine.currentVideoSubTitleDelay = Int(subtitleDelay * 1_000_000)
         engine.currentSubTitleFontScale = subtitleScale
         engine.videoFitMode = fillsScreen ? .larger : .smaller
+        #if os(iOS)
+        requestAudioActivation(for: engine)
+        #else
+        armOpeningTimeout()
         engine.play()
+        #endif
+    }
+
+    private func armOpeningTimeout() {
+        guard openingTimeout == nil else { return }
         let token = sessionID
-        openingTimeout?.cancel()
         openingTimeout = Task { [weak self] in
             do { try await Task.sleep(for: .seconds(30)) } catch { return }
-            guard let self, self.sessionID == token, !self.didStart else { return }
+            guard let self, self.sessionID == token else { return }
+            #if os(iOS)
+            guard !self.didStart || self.pendingAudioActivation != nil else { return }
+            #else
+            guard !self.didStart else { return }
+            #endif
             self.fail("视频打开超时，请检查片源连接后重试。")
             self.engine?.stop()
         }
+    }
+
+    #if os(iOS)
+    private func requestAudioActivation(for engine: VLCMediaPlayer) {
+        // The deadline includes waiting for the background audio worker. A
+        // repeated play request shares the activation already in flight.
+        armOpeningTimeout()
+        guard pendingAudioActivation == nil else {
+            refreshLoading()
+            return
+        }
+        let request = UUID()
+        let token = sessionID
+        let engineID = ObjectIdentifier(engine)
+        pendingAudioActivation = request
+        refreshLoading()
+        audioSessionCoordinator.activate(owner: audioSessionOwner) { [weak self] succeeded in
+            // Pass only values across the worker boundary, never a VLC object.
+            Task { @MainActor [weak self] in
+                self?.finishAudioActivation(succeeded, request: request, token: token, engineID: engineID)
+            }
+        }
+    }
+
+    private func finishAudioActivation(_ succeeded: Bool, request: UUID, token: UUID,
+                                       engineID: ObjectIdentifier) {
+        guard token == sessionID, pendingAudioActivation == request,
+              let engine, ObjectIdentifier(engine) == engineID else { return }
+        pendingAudioActivation = nil
+        guard wantsToPlay else {
+            refreshLoading()
+            if !didStart { audioSessionCoordinator.deactivate(owner: audioSessionOwner) }
+            return
+        }
+        guard drawable != nil else {
+            // Keep the latest intent for a later surface attachment, but never
+            // start a decoder after the native surface has been dismantled.
+            openingTimeout?.cancel()
+            openingTimeout = nil
+            refreshLoading()
+            audioSessionCoordinator.deactivate(owner: audioSessionOwner)
+            return
+        }
+        guard succeeded else {
+            fail("无法启动音频播放，请重试。")
+            return
+        }
+        isPlaying = wantsToPlay && engine.state == .playing
+        refreshLoading()
+        engine.play()
+        // Initial opening still waits for the real playing callback. Resuming
+        // an existing session has finished its audio preparation here.
+        if didStart {
+            openingTimeout?.cancel()
+            openingTimeout = nil
+        }
+    }
+    #endif
+
+    private func refreshLoading() {
+        #if os(iOS)
+        let preparingAudio = pendingAudioActivation != nil
+        #else
+        let preparingAudio = false
+        #endif
+        let waitingForPlayback = !didStart || engine?.state == .opening || engine?.state == .paused
+        isLoading = wantsToPlay && errorMessage == nil && (backendIsLoading || preparingAudio || waitingForPlayback)
     }
 
     private func retainSecurityScope(for url: URL) {
@@ -417,10 +528,15 @@ public final class FilmPlayer: NSObject {
     private func fail(_ message: String) {
         openingTimeout?.cancel()
         openingTimeout = nil
+        backendIsLoading = false
         isLoading = false
         isPlaying = false
         wantsToPlay = false
         errorMessage = message
+        #if os(iOS)
+        pendingAudioActivation = nil
+        audioSessionCoordinator.deactivate(owner: audioSessionOwner)
+        #endif
     }
 
     fileprivate func receive(state: VLCMediaPlayerState, token: UUID) {
@@ -428,33 +544,57 @@ public final class FilmPlayer: NSObject {
         isSeekable = engine.isSeekable
         switch state {
         case .opening:
-            isLoading = true
+            backendIsLoading = true
+            refreshLoading()
         case .playing:
             didStart = true
             isPlaying = wantsToPlay
-            isLoading = false
             errorMessage = nil
+            backendIsLoading = false
+            refreshLoading()
+            #if os(iOS)
+            if pendingAudioActivation == nil {
+                openingTimeout?.cancel()
+                openingTimeout = nil
+            }
+            #else
             openingTimeout?.cancel()
             openingTimeout = nil
+            #endif
             refreshTracks()
             updateDuration()
             applyPendingSeek()
             engine.rate = rate
             if !wantsToPlay { engine.pause() }
         case .paused:
-            isPlaying = false
-            isLoading = false
+            #if DEBUG
+            debugPausedCallbacksReceived += 1
+            #endif
+            // A queued delegate event can arrive after the engine resumed.
+            // Keep the observable control state aligned with current playback.
+            isPlaying = wantsToPlay && engine.state == .playing
+            if engine.state == .paused { backendIsLoading = false }
+            refreshLoading()
             captureProgress()
             // libVLC queues input controls asynchronously. A play requested
             // immediately after pause may run before libVLC considers itself
             // paused. Reconcile this late pause event with the latest intent.
-            if wantsToPlay { engine.play() }
+            if wantsToPlay {
+                #if os(iOS)
+                if pendingAudioActivation == nil { engine.play() }
+                #else
+                engine.play()
+                #endif
+            }
         case .error:
             fail("无法播放这个视频，请检查文件格式或片源连接。")
         case .stopping:
             captureProgress()
             isPlaying = false
+            backendIsLoading = false
+            isLoading = false
         case .stopped:
+            backendIsLoading = false
             isLoading = false
             isPlaying = false
             // Recoverable subtitle errors must not prevent a completed video
@@ -511,7 +651,8 @@ public final class FilmPlayer: NSObject {
 
     fileprivate func receiveBuffering(_ progress: Float, token: UUID) {
         guard token == sessionID, errorMessage == nil, wantsToPlay else { return }
-        isLoading = progress < 1
+        backendIsLoading = progress < 1
+        refreshLoading()
     }
 
     private func updateDuration() {
@@ -583,7 +724,47 @@ private final class PlayerEvents: NSObject, VLCMediaPlayerDelegate {
         self.sessionID = sessionID
     }
 
+    #if DEBUG
+    private let debugPauseLock = NSLock()
+    private var debugHoldNextPause = false
+    private var debugHeldPause: VLCMediaPlayerState?
+
+    func debugHoldNextPausedCallback() {
+        debugPauseLock.lock()
+        defer { debugPauseLock.unlock() }
+        debugHoldNextPause = true
+    }
+
+    var debugHasHeldPausedCallback: Bool {
+        debugPauseLock.lock()
+        defer { debugPauseLock.unlock() }
+        return debugHeldPause != nil
+    }
+
+    func debugReleaseHeldPausedCallback() {
+        debugPauseLock.lock()
+        let held = debugHeldPause
+        debugHeldPause = nil
+        debugPauseLock.unlock()
+        if let held { enqueueState(held) }
+    }
+    #endif
+
     func mediaPlayerStateChanged(_ newState: VLCMediaPlayerState) {
+        #if DEBUG
+        debugPauseLock.lock()
+        let hold = newState == .paused && debugHoldNextPause
+        if hold {
+            debugHoldNextPause = false
+            debugHeldPause = newState
+        }
+        debugPauseLock.unlock()
+        if hold { return }
+        #endif
+        enqueueState(newState)
+    }
+
+    private func enqueueState(_ newState: VLCMediaPlayerState) {
         let token = sessionID
         Task { @MainActor [weak owner] in owner?.receive(state: newState, token: token) }
     }
