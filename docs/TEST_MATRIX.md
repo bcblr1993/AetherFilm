@@ -2,28 +2,32 @@
 
 当前处于执行验收阶段，尚未发布。构建和部分协议 / 播放测试已有真实结果；失败、未测和未发布分别记录。每项执行后记录命令、环境、结果、证据文件和 commit。
 
+当前生产源码基准为 `e4d7ff0f8e91e99cec13c6bca66c60dda795ad3a`。正式 iOS App 本地与该提交 CI 的播放 / 持久化测试均为 **29 / 29、0 skipped**；完整 UI 全组 **18 通过、1 项 opt-in 跳过**，减少透明度专项另行 **1 / 1、0 skipped**，合计 19 个场景实际执行。旧 CI 整轮因共享测试 7 项失败而失败；两处 TCP 测试辅助代码改用独立 GCD queue 后，本地共享 **41 / 41、0 skipped**，新提交 CI 仍待验证。该辅助修复未改变生产 App、服务、桥接、工程规范或资源。历史结果保留，不能将单个绿色 job 或旧签名包视为当前发布完成。
+
 | 层级 | 场景 | macOS | iOS |
 | --- | --- | --- | --- |
-| 构建 | 最低部署版本 26；Debug / Release；真机 archive | 最新 Debug / tests 与 universal Release 候选构建通过 | Simulator Debug / tests、已签名 device tests 与最终 Release archive 构建通过 |
+| 构建 | 最低部署版本 26；Debug / Release；真机 archive | 当前正式桥接 Debug / tests 与 universal Release 构建通过；新签名 DMG 未制作 | 当前 Simulator Debug / tests、device build 与 Apple Development Release archive 构建通过；archive 57 项检查通过 |
 | 本地 | 导入、取消、重复、中文 / 空格路径、重启访问 | 待测 | 待测 |
-| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 21 项协议 / HTTP 回归通过；VM 播放与 SMB3 加密成功待测 | Simulator 真实 SMB 播放、20 次远近 seek、停止后重开通过；真机待测 |
+| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 28 项 Sources 回归通过；VM 播放、真实 NAS 与 SMB3 加密成功待测 | 本地及 CI Simulator 真实 SMB 播放、20 次远近 seek、停止后重开通过；真实尾部读错拒绝完成与新流重试通过；真机待测 |
 | 播放 | H.264 + AAC MP4；HEVC MOV；MPEG4 + MP3 AVI；多轨 MKV；实际画面 / 音频输出 / 时间推进；4K HEVC | VM 待登录运行 | 四种容器与 4K HEVC Simulator 实际输出通过；真机硬件解码待测 |
-| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | VM 待测 | 新异步音频 / 控制源码本地 22 项与 3 项聚焦 UI 通过；新 CI 21 / 22，片尾结束判定失败；真机待测 |
+| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | VM 待测 | 正式桥接 / 音频 / EOF / 持久化本地与 CI 29 / 29 通过；当前完整 UI 与减少透明度专项通过；真机待测 |
 | 字幕 | SRT / ASS / VTT 中文、内嵌字幕、开关、跳转同步、无字幕 | VM 待测 | Simulator 内嵌 / 外挂 SRT、ASS、VTT 选择与关闭、章节跳转、坏字幕不中断视频与同片重试通过；视觉同步 / 真机待测 |
 | 音轨 | 单 / 多音轨、切换、无音轨、不可解码错误 | VM 待测 | 多轨选择通过；其余 UI / 真机待测 |
-| 记录 | 断点、重启恢复、片尾完成、已看、清除；库条目删除不删除原文件 | shared storage 通过；AppStore / UI 待运行 | AppStore 5 case 与对应 UI 回归通过，含 cold-open 导入并发、移除保留原文件、旧进度清理 |
-| UI | 本地 / 续播空状态；导入入口；SMB 表单校验 / 取消；目录 / 返回 / 空目录；列表筛选；失败重试；格式 / 观看状态；播放入口 | 自动化已编写，待 VM 运行 | 完整 19 项通过，0 skipped；虚拟 NAS 状态不替代真实协议 / 真机 |
-| 可访问性 | 动态字体、可访问性描述、VoiceOver、实际系统减少透明度、键盘导航 | 待实际运行 / 人工验收 | 描述 audit、减少透明度及设置页实际系统标准 / 大 / 最大字号与滑杆通过；全应用最大字号、VoiceOver / 真机人工验收待测 |
-| 适配 | 980×680 / 620×440 窗口、浅深色；iPhone 小屏 / 横屏；iPad 分屏 | 自动化已编写，待截图审核 | iPhone 22 张完整 UI 截图已审核；iPad 4 项布局烟测通过，分屏和完整键盘表单仍待测 |
-| 分发 | 签名、公证、DMG 标签和内容、安装、首启、公开下载 SHA256 | c790607 公证与本地 31 项通过；VM 54 项仅对应旧 5e12be2；新包 VM、首启 / 播放和公开下载待测 | 不适用 |
-| 分发 | 真机安装 / 播放、TestFlight 构建和安装、公开入口 | 不适用 | 待测 |
+| 记录 | 断点、重启恢复、片尾完成、已看、清除；库条目删除不删除原文件 | Domain 9 / Library 4 通过；AppStore / UI 待 VM 运行 | AppStore 8 case 与当前 UI 回归通过；未确认片尾 seek 可续播、已确认已看不被清除、源失败 / 旧会话拒绝完成通过 |
+| UI | 本地 / 续播空状态；导入入口；SMB 表单校验 / 取消；目录 / 返回 / 空目录；列表筛选；失败重试；格式 / 观看状态；播放入口 | 自动化已编写，待 VM 运行 | 全组 18 通过、1 opt-in 跳过；专项减少透明度 1 通过、0 skipped；19 场景已实跑，虚拟 NAS 状态不替代真实协议 / 真机 |
+| 可访问性 | 动态字体、可访问性描述、VoiceOver、实际系统减少透明度、键盘导航 | 待实际运行 / 人工验收 | 当前描述 audit / 减少透明度专项通过；历史设置页标准 / 大 / 最大系统字号与滑杆证据保留；全应用最大字号、真实 VoiceOver / 真机人工验收待测 |
+| 适配 | 980×680 / 620×440 窗口、浅深色；iPhone 小屏 / 横屏；iPad 分屏 | 自动化已编写，待截图审核 | 当前 iPhone 22 张 UI 截图已审核；历史 iPad 4 项布局烟测通过，当前完整 iPad / 分屏和键盘表单仍待测 |
+| 分发 | 签名、公证、DMG 标签和内容、安装、首启、公开下载 SHA256 | 磁盘 c790607 DMG 为旧候选；VM 54 项仅对应旧 5e12be2；当前源码的新签名 / 公证包、VM、首启 / 播放和公开下载待测 | 不适用 |
+| 分发 | 真机安装 / 播放、TestFlight 构建和安装、公开入口 | 不适用 | 当前 archive 57 项通过，Apple Development / get-task-allow=true；手机仍锁定，安装 / 播放 / TestFlight / 公开入口待测 |
 | 官网 | 中英介绍、真实截图、系统要求、下载 / 发布链接、线上访问 | 隔离候选 153 项测试及 16 个浏览器场景通过；实际截图、下载与线上部署待完成 | 开发状态页面候选通过；无公开 iOS 安装链接 |
 
-共享代码回归：文件格式 / 自然排序、目录边界、HTTP Range、进度边界、编码往返、损坏 / 未来版本数据、密钥不入普通持久化。加入合法 TCP 半关闭回归后的完整共享测试 **33 项通过**：Domain 8、Library 4、Sources 21，0 skipped；日志 `.build/kit-full-halfclose-candidate.log`。此前 31 项运行日志 `.build/kit-full-candidate.log` 保留。SMB 证据见下文。
+共享代码回归：文件格式 / 自然排序、目录边界、HTTP Range、进度边界、编码往返、损坏 / 未来版本数据、密钥不入普通持久化和源健康。当前两处 TCP 测试辅助修复后的完整共享测试 **41 / 41、0 failures、0 skipped**：Domain 9、Library 4、Sources 28，证据 `.build/SMBSocketQueueFixEvidence/review.json`。旧 `e4d7ff0` CI 的共享结果为 34 / 41、7 failures，原始失败保留，修复后新提交 CI 待验证。历史半关闭阶段的 33 / 33 日志 `.build/kit-full-halfclose-candidate.log` 和此前 31 项 `.build/kit-full-candidate.log` 仍保留。
 
 协议集成使用隔离 SMB2 服务和自己生成的媒体样片，验证认证、读取、HTTP Range、取消、超时与失败路径。WebDAV / Jellyfin 未入选本期，不是本期验收项。
 
 macOS UI 优先在 Tart `macos27` 验证，避免占用用户主机键鼠。自动化结果不替代 iPhone 的硬件解码、声音、4K 和安装验收。测试样片由脚本生成，不提交版权影片。
+
+下列分阶段证据保留各自原提交和结果；当前结论以前述矩阵和文末正式集成记录为准。
 
 ## SMB 协议与代理执行证据
 
@@ -161,6 +165,16 @@ iPad 的独立自建 Pro 11-inch（M5）/ iOS 26.5 Simulator 共 **4 项布局�
 
 完整 iOS App 的正式三参数进度回调、源健康查询与会话校验已联编并实际运行：**29 / 29、0 failures、0 skipped，76.272 秒**，含 AppStore 8、音频 8、EOF 4、原播放 9。真实 SMB 尾部读取失败不会发送完成或保存伪造终点；健康片尾、独立重播保留字幕、旧暂停回调与挂起验证器的会话隔离通过。原自然结束 6 秒期限、暂停漂移 0.35 秒及 SMB 20 次跳转断言未放宽；本轮自然结束 3.105 秒、真实 SMB 跳转 / 重开 32.415 秒。未确认片尾 seek 退出重读可续播，已确认的观看状态不会被随后未确认 seek 清除。结果 `.build/results/AetherFilm-final-bridge-full-20261003-0038.xcresult`、日志 `.build/final-bridge-full-playback.log`，xcresult runtimeWarnings 为空。之前旧 wrapper 和诊断原型结果各自保留，不替代本轮正式结果。
 
-同实现的 macOS Debug App / 测试包、arm64 + x86_64 Release 与 iOS Simulator 双架构测试产品、Apple Development iOS archive 构建均通过，最低版本均保持 26.0。桥接类在 App 中定义一次，测试包复用 App 的定义。`.build/FinalBridgeMacBuildEvidence/review.json`、`.build/final-bridge-symbol-link-proof.json` 及 `.build/final-bridge-device-archive.log` 记录具体边界。本地构建采用明确记录的固定 VLCKit 二进制镜像，只有复制工程 / 包的两个 manifest 改为同一规范路径，实现字节与正式仓库一致，见 `.build/final-bridge-source-inventory.json`；正式 manifest 保留官方远程 revision，新 GitHub CI 的远程完整图仍须验证。
+同实现的 macOS Debug App / 测试包、arm64 + x86_64 Release 与 iOS Simulator 双架构测试产品、Apple Development iOS archive 构建均通过，最低版本均保持 26.0。桥接类在 App 中定义一次，测试包复用 App 的定义。`.build/FinalBridgeMacBuildEvidence/review.json`、`.build/final-bridge-symbol-link-proof.json` 及 `.build/final-bridge-device-archive.log` 记录具体边界。本地构建采用明确记录的固定 VLCKit 二进制镜像，只有复制工程 / 包的两个 manifest 改为同一规范路径，实现字节与正式仓库一致，见 `.build/final-bridge-source-inventory.json`；正式 manifest 保留官方远程 revision。随后 `e4d7ff0` CI 的远程图三个平台构建及 29 项运行通过，但共享 job 失败，整轮并未通过。
 
-同一 App 的完整 UI 正在执行，不能沿用历史 19 项作为新播放器的完整验收。新源码资产、修改桥接后的实际重新链接、签名公证后的新候选、macOS VM 图形播放、iPhone 真机安装 / 播放及公开下载仍是分开的发布门槛。未发布 tag、版本或官网入口。
+同一正式 App 的完整 UI 已执行：`.build/results/AetherFilm-final-bridge-ui-20261003-0040.xcresult` **18 passed、0 failed、1 opt-in skipped，263.801 秒**。减少透明度须显式启用专项，正确配置的 `.build/results/AetherFilm-final-bridge-reduced-transparency-20261003-0047-v2.xcresult` **1 passed、0 failed、0 skipped，20.192 秒**，实际系统设置和应用截图均已审核。0045 的旧 target 配置错误所致跳过保留在同名 xcresult，不当作通过。19 个场景分别实跑，22 张原始截图已审核，实际安装 App 的 69 文件与本轮正式构建逐一字节相同，见 `.build/FinalBridgeUIEvidence/review.json`。外观 / 字号 / 减少透明度恢复记录保留；本轮不宣称全应用最大字号布局、真实 VoiceOver 朗读、macOS GUI 或物理设备验收。
+
+正式源码 `e4d7ff0f8e91e99cec13c6bca66c60dda795ad3a` 的 GitHub CI `37083136280` **整轮 failed**：platform job 的 macOS build-for-testing、iOS Simulator build-for-testing、iOS device build 均通过，iPhone Air / iOS 27.0 正式 **29 / 29、0 failures、0 skipped**，case 时间合计 114.903 秒、suite elapsed 117.107 秒，runtimeWarnings 为空；shared job 为 **34 / 41、7 failures、0 skipped**。六项为 BSD socket receive EAGAIN，另一个并发停滞协议用例耗时 8.162 秒超过原 5 秒断言。原日志、精确 artifact 与审核 `.build/CIe4d7ff0Evidence/review.json` 保留，不把 platform 绿色解释为整轮 CI 绿色。
+
+窄修仅将 `SMBReadFailureTests.swift`、`SMBStreamingServerTests.swift` 的阻塞 socket 辅助及 await 调用改为独立 concurrent GCD queue / continuation，避免占用 Swift cooperative executor；生产服务未改。所有断言、原 3 秒收包超时和 5 秒停滞期限保持不变，未增加过滤或串行化。修改后完整隔离 SMB2 共享回归 **41 / 41、0 failures、0 skipped**（Sources 28，2.115 秒；Library 4，0.005 秒；Domain 9，0.004 秒），证据 `.build/SMBSocketQueueFixEvidence/review.json`。旧实现阻塞 detached Swift task 的路径已确认，分组延迟支持 executor 干扰，但没有 CI 线程追踪证明这是唯一根因；下一提交 CI 待验证，不将本地通过替代远程结果。
+
+新 iOS 归档 `.build/Archives/AetherFilm-iOS-0.1.0-confirmed-eof.xcarchive` 独立检查 **57 / 57 通过**：最低 26.0、iPhone / iPad、三个 arm64 Mach-O、实际严格签名 / 同 team / provisioning、图标、4 份 license 与 SOURCE / notice 共 6 份资源、无测试 / 样片。68 个编译源与资源哈希和正式 / 冻结工程一致；实际 ObjC class / metaclass metadata 与匹配 UUID 的 dSYM 类符号、三 typed callback selectors 存在，旧 diagnostic getter 不存在。证据 `.build/ReleaseEvidence/ios-archive-inspection-confirmed-eof-system-trust.json`；初次沙箱证书信任失败记录保留，沙箱外只读信任核验通过。该产物为 Apple Development、`get-task-allow=true`，不是 TestFlight / 公开分发导出，未安装或启动真机。
+
+`e4d7ff0` 的完整 App / 修改 wrapper 对应源码候选已独立分阶段核验：`.build/CorrespondingSourceCandidates/e4d7ff0-51b82e86/stage-review.json`、`relink-review.json`、`archive-review.json`。源码清单与归档通过；隔离修改一个 wrapper 文件后，macOS 基线 / 修改版各两个架构（arm64、x86_64）实际重新链接，修改版双架构有 marker、基线无 marker，最低版本保持 26.0；CLI 执行返回该修改的 marker。未执行 iOS 重新链接或 App GUI。此证据不等于完整 libVLC 引擎重建、App 图形播放或分发验收。候选未发布；下一最终提交仍需新的独立源码归档及未变生产实现 / 构建产物的哈希绑定，不能将早期依赖源码输入包当作完整同提交源码。
+
+磁盘中的 c790607 DMG 为旧候选，VM 54 项只认证旧 5e12be2 包。当前源码尚无新的签名 / 公证 DMG，也未做新包安装、首启 / 播放或公开下载。macOS VM 图形验收仍需用户登录，真实 iPhone 仍锁定；未更改登录、安全设置或账户。新提交 CI、最终源码资产 / 二进制绑定、VM GUI、真机安装 / 播放、GitHub tag / release 和官网上线均未完成。

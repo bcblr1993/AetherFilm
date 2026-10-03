@@ -10,7 +10,7 @@ import FilmDomain
         let observer = SMBReadFailureObserver()
         let server = makeServer(provider, size: 1_048_649, observer: observer)
         let url = try await server.start()
-        let response = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: nil) }.value
+        let response = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: nil)
         #expect(response.length == 1_048_649 && response.body.count == 524_288)
         #expect(observer.errors == [.timedOut])
         #expect(await server.readFailure() == .timedOut)
@@ -26,14 +26,14 @@ import FilmDomain
         let short = SMBReadFailureProvider(bytes: bytes, behavior: .shortChunks(777))
         let healthy = makeServer(short, size: Int64(bytes.count))
         let healthyURL = try await healthy.start()
-        let full = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: healthyURL, range: nil) }.value
+        let full = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: healthyURL, range: nil)
         #expect(full.body == bytes)
         #expect(await healthy.readFailure() == nil)
         await healthy.stop()
         let early = SMBReadFailureProvider(bytes: bytes, behavior: .emptyAfter(1))
         let failed = makeServer(early, size: Int64(bytes.count)+1)
         let failedURL = try await failed.start()
-        let incomplete = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: failedURL, range: nil) }.value
+        let incomplete = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: failedURL, range: nil)
         #expect(incomplete.body == bytes && incomplete.length == bytes.count + 1)
         #expect(await failed.readFailure() == .invalidResponse)
         await failed.stop()
@@ -44,9 +44,9 @@ import FilmDomain
         let observer = SMBReadFailureObserver()
         let server = makeServer(provider, size: 3, observer: observer)
         let url = try await server.start()
-        let socket = try await Task.detached { try SMBReadFailureTCPClient.sendRequest(to: url) }.value
+        let socket = try await SMBReadFailureTCPClient.sendRequest(to: url)
         try await waitForRead(provider)
-        try SMBReadFailureTCPClient.closeWithReset(socket)
+        try await SMBReadFailureTCPClient.closeWithReset(socket)
         try await Task.sleep(for: .milliseconds(400))
         #expect(await provider.completed == 1)
         #expect(await server.readFailure() == nil && observer.errors.isEmpty)
@@ -58,19 +58,19 @@ import FilmDomain
         let observer = SMBReadFailureObserver()
         let server = makeServer(provider, size: 3, observer: observer)
         let url = try await server.start()
-        let socket = try await Task.detached { try SMBReadFailureTCPClient.sendRequest(to: url) }.value
+        let socket = try await SMBReadFailureTCPClient.sendRequest(to: url)
         try await waitForRead(provider)
         await server.stop()
-        Darwin.close(socket)
+        await SMBReadFailureTCPClient.close(socket)
         #expect(await server.readFailure() == nil && observer.errors.isEmpty)
         let secondProvider = SMBReadFailureProvider(bytes: Data([1, 2, 3]), behavior: .stall)
         var disposable: SMBStreamingServer? = makeServer(secondProvider, size: 3, observer: observer)
         let secondURL = try await #require(disposable).start()
-        let secondSocket = try await Task.detached { try SMBReadFailureTCPClient.sendRequest(to: secondURL) }.value
+        let secondSocket = try await SMBReadFailureTCPClient.sendRequest(to: secondURL)
         try await waitForRead(secondProvider)
         disposable = nil
         try await Task.sleep(for: .milliseconds(100))
-        Darwin.close(secondSocket)
+        await SMBReadFailureTCPClient.close(secondSocket)
         #expect(observer.errors.isEmpty)
     }
 
@@ -78,13 +78,13 @@ import FilmDomain
         let provider = SMBReadFailureProvider(bytes: Data([1, 2, 3]), behavior: .failAfter(0, .permissionDenied))
         let old = makeServer(provider, size: 3)
         let oldURL = try await old.start()
-        _ = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: oldURL, range: nil) }.value
+        _ = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: oldURL, range: nil)
         #expect(await old.readFailure() == .permissionDenied)
         await old.stop()
         await provider.setBehavior(.normal)
         let next = makeServer(provider, size: 3)
         let nextURL = try await next.start()
-        let full = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: nextURL, range: nil) }.value
+        let full = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: nextURL, range: nil)
         #expect(full.body == Data([1, 2, 3]))
         #expect(await next.readFailure() == nil)
         #expect(await old.readFailure() == .permissionDenied)
@@ -96,7 +96,7 @@ import FilmDomain
         let observer = SMBReadFailureObserver()
         let server = makeServer(provider, size: 3, observer: observer)
         let url = try await server.start()
-        let response = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: "bytes=3-") }.value
+        let response = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: "bytes=3-")
         #expect(response.status == 416)
         #expect(await provider.calls == 0)
         #expect(await server.readFailure() == nil && observer.errors.isEmpty)
@@ -119,7 +119,7 @@ import FilmDomain
             credentials: SMBCredentials(username: username, password: UUID().uuidString),
             path: "nested/sample.bin", size: 1_048_649, onReadFailure: { observer.record($0) })
         let url = try await server.start()
-        let response = try await Task.detached { try SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: nil) }.value
+        let response = try await SMBReadFailureTCPClient.receiveAfterHalfClosingWrite(to: url, range: nil)
         #expect(response.body.isEmpty)
         #expect(await server.readFailure() == .authenticationFailed)
         #expect(observer.errors == [.authenticationFailed])
@@ -192,7 +192,36 @@ private enum SMBReadFailureTCPClient {
         let body: Data
     }
 
-    static func sendRequest(to url: URL, range: String? = nil) throws -> Int32 {
+    // A detached Swift task still occupies the cooperative executor. These
+    // bounded BSD socket calls run on GCD so the actor-based server can reply.
+    private static let socketQueue = DispatchQueue(label: "com.aethernative.film.tests.read-failure-socket", attributes: .concurrent)
+
+    private static func socketOperation<T: Sendable>(_ operation: @escaping @Sendable () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            socketQueue.async {
+                do { continuation.resume(returning: try operation()) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+
+    static func sendRequest(to url: URL, range: String? = nil) async throws -> Int32 {
+        try await socketOperation { try sendRequestBlocking(to: url, range: range) }
+    }
+
+    static func closeWithReset(_ socket: Int32) async throws {
+        try await socketOperation { try closeWithResetBlocking(socket) }
+    }
+
+    static func close(_ socket: Int32) async {
+        try? await socketOperation { _ = Darwin.close(socket) }
+    }
+
+    static func receiveAfterHalfClosingWrite(to url: URL, range: String?) async throws -> Response {
+        try await socketOperation { try receiveAfterHalfClosingWriteBlocking(to: url, range: range) }
+    }
+
+    private static func sendRequestBlocking(to url: URL, range: String? = nil) throws -> Int32 {
         let socket = Darwin.socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
         guard socket >= 0 else { throw socketError() }
         do {
@@ -230,7 +259,7 @@ private enum SMBReadFailureTCPClient {
         } catch { Darwin.close(socket); throw error }
     }
 
-    static func closeWithReset(_ socket: Int32) throws {
+    private static func closeWithResetBlocking(_ socket: Int32) throws {
         defer { Darwin.close(socket) }
         var reset = linger(l_onoff: 1, l_linger: 0)
         guard setsockopt(socket, SOL_SOCKET, SO_LINGER, &reset, socklen_t(MemoryLayout.size(ofValue: reset))) == 0 else {
@@ -238,8 +267,8 @@ private enum SMBReadFailureTCPClient {
         }
     }
 
-    static func receiveAfterHalfClosingWrite(to url: URL, range: String?) throws -> Response {
-        let socket = try sendRequest(to: url, range: range)
+    private static func receiveAfterHalfClosingWriteBlocking(to url: URL, range: String?) throws -> Response {
+        let socket = try sendRequestBlocking(to: url, range: range)
         defer { Darwin.close(socket) }
         guard shutdown(socket, SHUT_WR) == 0 else { throw socketError() }
         var received = Data()

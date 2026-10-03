@@ -155,7 +155,7 @@ struct SMBStreamingServerTests {
             for _ in 0..<10 {
                 let before = await fixture.ranges.count
                 let cancelledBefore = await fixture.cancelledReads
-                let socket = try await Task.detached { try SMBTCPTestClient.sendRequest(to: url) }.value
+                let socket = try await SMBTCPTestClient.sendRequest(to: url)
                 for _ in 0..<50 {
                     if await fixture.ranges.count > before { break }
                     try await Task.sleep(for: .milliseconds(10))
@@ -164,7 +164,7 @@ struct SMBStreamingServerTests {
                 #expect(readStarted)
                 // A FIN alone cannot distinguish a discarded response from a valid half-close.
                 // SO_LINGER(1, 0) makes this full close an actual TCP reset.
-                try SMBTCPTestClient.closeWithReset(socket)
+                try await SMBTCPTestClient.closeWithReset(socket)
                 for _ in 0..<50 {
                     if await fixture.cancelledReads > cancelledBefore { break }
                     try await Task.sleep(for: .milliseconds(10))
@@ -189,9 +189,7 @@ struct SMBStreamingServerTests {
         let server = makeServer(provider: fixture, size: Int64(bytes.count))
         let url = try await server.start()
         do {
-            let response = try await Task.detached {
-                try SMBTCPTestClient.receiveAfterHalfClosingWrite(to: url, range: range)
-            }.value
+            let response = try await SMBTCPTestClient.receiveAfterHalfClosingWrite(to: url, range: range)
             #expect(response.status == status)
             #expect(response.length == expected.count)
             #expect(response.body == bytes.subdata(in: expected))
@@ -236,7 +234,32 @@ private enum SMBTCPTestClient {
         let body: Data
     }
 
-    static func sendRequest(to url: URL, range: String? = nil) throws -> Int32 {
+    // A detached Swift task still occupies the cooperative executor. These
+    // bounded BSD socket calls run on GCD so the actor-based server can reply.
+    private static let socketQueue = DispatchQueue(label: "com.aethernative.film.tests.http-stream-socket", attributes: .concurrent)
+
+    private static func socketOperation<T: Sendable>(_ operation: @escaping @Sendable () throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            socketQueue.async {
+                do { continuation.resume(returning: try operation()) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+
+    static func sendRequest(to url: URL, range: String? = nil) async throws -> Int32 {
+        try await socketOperation { try sendRequestBlocking(to: url, range: range) }
+    }
+
+    static func closeWithReset(_ socket: Int32) async throws {
+        try await socketOperation { try closeWithResetBlocking(socket) }
+    }
+
+    static func receiveAfterHalfClosingWrite(to url: URL, range: String?) async throws -> Response {
+        try await socketOperation { try receiveAfterHalfClosingWriteBlocking(to: url, range: range) }
+    }
+
+    private static func sendRequestBlocking(to url: URL, range: String? = nil) throws -> Int32 {
         let socket = Darwin.socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
         guard socket >= 0 else { throw socketError() }
         do {
@@ -274,7 +297,7 @@ private enum SMBTCPTestClient {
         } catch { Darwin.close(socket); throw error }
     }
 
-    static func closeWithReset(_ socket: Int32) throws {
+    private static func closeWithResetBlocking(_ socket: Int32) throws {
         defer { Darwin.close(socket) }
         var reset = linger(l_onoff: 1, l_linger: 0)
         guard setsockopt(socket, SOL_SOCKET, SO_LINGER, &reset, socklen_t(MemoryLayout.size(ofValue: reset))) == 0 else {
@@ -282,8 +305,8 @@ private enum SMBTCPTestClient {
         }
     }
 
-    static func receiveAfterHalfClosingWrite(to url: URL, range: String?) throws -> Response {
-        let socket = try sendRequest(to: url, range: range)
+    private static func receiveAfterHalfClosingWriteBlocking(to url: URL, range: String?) throws -> Response {
+        let socket = try sendRequestBlocking(to: url, range: range)
         defer { Darwin.close(socket) }
         guard shutdown(socket, SHUT_WR) == 0 else { throw socketError() }
         var received = Data()
