@@ -18,6 +18,18 @@ public actor SMBStreamingServer {
     private var generation = UUID()
     private var sourceReadFailure: SMBError?
     private let readFailureObserver: (@Sendable (SMBError) -> Void)?
+#if DEBUG
+    private let debugRecorder = SMBStreamTraceRecorder()
+    private var debugRequests: [UUID: SMBStreamTraceRequest] = [:]
+
+    /// Enable once before playback; the origin can share a test's monotonic timeline.
+    public func debugEnableTrace(origin: ContinuousClock.Instant = .now, capacity: Int = 1_024) {
+        debugRecorder.enable(origin: origin, capacity: capacity)
+    }
+
+    /// A bounded numeric snapshot; nil until explicitly enabled. Encoding occurs outside the recorder lock.
+    public func debugTraceData() -> Data? { debugRecorder.data() }
+#endif
 
     /// A real source read failure remains set until retry creates a new stream.
     public func readFailure() -> SMBError? { sourceReadFailure }
@@ -31,6 +43,9 @@ public actor SMBStreamingServer {
         }
         // Publish on the service actor before the failing HTTP response closes.
         sourceReadFailure = error
+#if DEBUG
+        debugRequests[requestID]?.record(.sourceReadFailure)
+#endif
         readFailureObserver?(error)
     }
 
@@ -46,6 +61,9 @@ public actor SMBStreamingServer {
     }
 
     deinit {
+#if DEBUG
+        debugRecorder.record(.serverDeinit)
+#endif
         listener?.cancel()
         startTask?.cancel()
         for (connection, task) in sessions.values {
@@ -63,9 +81,18 @@ public actor SMBStreamingServer {
         let listener = try NWListener(using: parameters, on: .any)
         let generation = self.generation
         self.listener = listener
+#if DEBUG
+        let debugRecorder = self.debugRecorder
+        listener.newConnectionHandler = { [weak self] connection in
+            SMBStreamTraceScope.$request.withValue(debugRecorder.beginRequest()) {
+                Task { await self?.accept(connection, generation: generation) }
+            }
+        }
+#else
         listener.newConnectionHandler = { [weak self] connection in
             Task { await self?.accept(connection, generation: generation) }
         }
+#endif
         let queue = self.queue, route = self.route
         let task = Task<URL, any Error> {
             try await withSMBDeadline(seconds: 5) {
@@ -98,6 +125,11 @@ public actor SMBStreamingServer {
     }
 
     public func stop() async {
+#if DEBUG
+        debugRecorder.record(.stop, count: Int64(sessions.count))
+        for request in debugRequests.values { request.record(.cancelRequested) }
+        debugRequests.removeAll()
+#endif
         generation = UUID()
         listener?.cancel(); listener = nil
         startTask?.cancel(); startTask = nil
@@ -105,14 +137,31 @@ public actor SMBStreamingServer {
         sessions.removeAll()
         for (connection, task) in active { task.cancel(); connection.cancel() }
         for (_, task) in active { await task.value }
+#if DEBUG
+        debugRecorder.record(.stopComplete)
+#endif
     }
 
     private func accept(_ client: NWConnection, generation: UUID) {
-        guard sourceReadFailure == nil, generation == self.generation, listener != nil, sessions.count < 8 else { client.cancel(); return }
+        guard sourceReadFailure == nil, generation == self.generation, listener != nil, sessions.count < 8 else {
+#if DEBUG
+            SMBStreamTraceScope.request?.record(.requestRejected)
+#endif
+            client.cancel(); return
+        }
         let id = UUID()
+#if DEBUG
+        let debugRequest = SMBStreamTraceScope.request
+        debugRequest?.record(.requestAccepted)
+        debugRequests[id] = debugRequest
+#endif
         client.stateUpdateHandler = { [weak self] state in
             switch state {
             case .failed, .cancelled:
+#if DEBUG
+                if case .failed = state { debugRequest?.record(.connectionFailed) }
+                else { debugRequest?.record(.connectionCancelled) }
+#endif
                 Task { await self?.cancelSession(id) }
             default: break
             }
@@ -127,16 +176,27 @@ public actor SMBStreamingServer {
                              onReadFailure: { [weak self] error in
                                  await self?.recordReadFailure(error, requestID: id, generation: generation)
                              })
+#if DEBUG
+            SMBStreamTraceScope.request?.record(.requestFinished)
+#endif
             client.cancel()
             await self?.finished(id)
         }
         sessions[id] = (client, task)
     }
 
-    private func finished(_ id: UUID) { sessions.removeValue(forKey: id) }
+    private func finished(_ id: UUID) {
+        sessions.removeValue(forKey: id)
+#if DEBUG
+        debugRequests.removeValue(forKey: id)
+#endif
+    }
 
     private func cancelSession(_ id: UUID) {
         guard let (client, task) = sessions.removeValue(forKey: id) else { return }
+#if DEBUG
+        debugRequests.removeValue(forKey: id)?.record(.cancelRequested)
+#endif
         task.cancel()
         client.cancel()
     }
@@ -146,6 +206,9 @@ public actor SMBStreamingServer {
                                          path: String, size: Int64, route: String, mimeType: String,
                                          onConsumerClosed: @escaping @Sendable () -> Void,
                                          onReadFailure: @escaping @Sendable (SMBError) async -> Void) async {
+#if DEBUG
+        let debugRequest = SMBStreamTraceScope.request
+#endif
         var headersSent = false
         do {
             let request: SMBHTTPRequest
@@ -163,7 +226,11 @@ public actor SMBStreamingServer {
             }
             // RFC 9112 § 9.6: a client write half-close does not abandon the response.
             // Only transport errors cancel consumption; stop/deinit and write failures also release reads.
-            client.receive(minimumIncompleteLength: 1, maximumLength: 1) { _, _, _, error in
+            client.receive(minimumIncompleteLength: 1, maximumLength: 1) { _, _, complete, error in
+#if DEBUG
+                if error != nil { debugRequest?.record(.consumerTransportError) }
+                else if complete { debugRequest?.record(.consumerWriteEOF) }
+#endif
                 if error != nil { onConsumerClosed() }
             }
             // HTTP Range is defined for GET. HEAD describes the complete representation.
@@ -178,12 +245,18 @@ public actor SMBStreamingServer {
                                                          extraHeaders: ["Content-Range": "bytes */\(size)"]).data)
                 return
             }
+#if DEBUG
+            debugRequest?.record(.rangeReceived, offset: range.lowerBound, count: range.length)
+#endif
             var extraHeaders: [String: String] = [:]
             if rangeHeader != nil { extraHeaders["Content-Range"] = "bytes \(range.lowerBound)-\(range.upperBound)/\(size)" }
             let response = SMBHTTPResponse(status: rangeHeader == nil ? 200 : 206, length: range.length,
                                            contentType: mimeType, extraHeaders: extraHeaders)
             try await client.sendHTTP(response.data)
             headersSent = true
+#if DEBUG
+            debugRequest?.record(.headersSent, offset: range.lowerBound, count: range.length, httpStatus: response.status)
+#endif
             guard request.method == "GET" else { return }
             var offset = range.lowerBound
             let end = range.upperBound + 1
@@ -192,9 +265,19 @@ public actor SMBStreamingServer {
                 let chunkEnd = offset + min(512 * 1_024, end - offset)
                 let data: Data
                 do {
+#if DEBUG
+                    debugRequest?.record(.readerSubmit, offset: offset, count: chunkEnd - offset)
+#endif
                     data = try await provider.readFile(connection, credentials: credentials, path: path, range: offset..<chunkEnd)
+#if DEBUG
+                    debugRequest?.record(.readerComplete, offset: offset, count: Int64(data.count))
+#endif
                     guard !data.isEmpty, Int64(data.count) <= chunkEnd - offset else { throw SMBError.invalidResponse }
                 } catch {
+#if DEBUG
+                    debugRequest?.record(Task.isCancelled || error is CancellationError ? .readerCancelled : .readerFailed,
+                                         offset: offset, count: chunkEnd - offset)
+#endif
                     if !Task.isCancelled, !(error is CancellationError) {
                         let failure = SMBError.sanitized(error) as? SMBError ?? .invalidResponse
                         await onReadFailure(failure)
@@ -202,6 +285,9 @@ public actor SMBStreamingServer {
                     throw error
                 }
                 try await client.sendHTTP(data)
+#if DEBUG
+                debugRequest?.record(.chunkSendComplete, offset: offset, count: Int64(data.count))
+#endif
                 offset += Int64(data.count)
             }
         } catch {
@@ -303,9 +389,16 @@ private extension NWConnection {
     }
 
     func sendHTTP(_ data: Data) async throws {
+#if DEBUG
+        let debugRequest = SMBStreamTraceScope.request
+        let byteCount = Int64(data.count)
+#endif
         let _: Bool = try await withSMBDeadline(seconds: 15) {
             try await SMBNetworkWait.run(cancel: { self.cancel() }) { completion in
                 self.send(content: data, completion: .contentProcessed { error in
+#if DEBUG
+                    debugRequest?.record(error == nil ? .sendCallbackComplete : .sendCallbackFailed, count: byteCount)
+#endif
                     if error != nil { completion(.failure(SMBError.connectionFailed)) }
                     else { completion(.success(true)) }
                 })

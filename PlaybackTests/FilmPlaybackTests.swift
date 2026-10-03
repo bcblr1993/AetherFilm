@@ -32,6 +32,7 @@ final class FilmPlaybackTests: XCTestCase {
         #if os(macOS)
         window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
                           styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
         surface = VLCVideoView(frame: NSRect(x: 0, y: 0, width: 640, height: 360))
         surface.backColor = .black
         window.contentView = surface
@@ -319,6 +320,9 @@ final class FilmPlaybackTests: XCTestCase {
     }
 
     func testRealSMBStreamRepeatedSeekAndReopenReleasesReads() async throws {
+        #if DEBUG
+        player.debugEnableLifecycleTrace(origin: diagnosticOrigin)
+        #endif
         let configuration = try await SMBPlaybackFixture.configuration()
         let connection = SMBConnection(name: "Playback fixture", host: "127.0.0.1", port: configuration.port,
                                        share: configuration.share, rootPath: configuration.mediaPath)
@@ -331,6 +335,9 @@ final class FilmPlaybackTests: XCTestCase {
         for cycle in 0..<2 {
             let server = SMBStreamingServer(provider: provider, connection: connection, credentials: credentials,
                                             path: path, size: size)
+            #if DEBUG
+            await server.debugEnableTrace(origin: diagnosticOrigin)
+            #endif
             do {
                 let previousBytes = await provider.bytesRead
                 player.load(url: try await server.start())
@@ -364,10 +371,14 @@ final class FilmPlaybackTests: XCTestCase {
                 XCTAssertFalse(player.isPlaying)
                 XCTAssertNil(player.errorMessage)
             } catch {
+                #if DEBUG
+                await attachSMBFailureDiagnostics(server: server, provider: provider)
+                #else
+                await attachSMBReadTimeline(provider)
+                #endif
                 player.stop()
                 await server.stop()
                 await provider.close()
-                await attachSMBReadTimeline(provider)
                 throw error
             }
         }
@@ -382,6 +393,23 @@ final class FilmPlaybackTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+
+    #if DEBUG
+    private func attachSMBFailureDiagnostics(server: SMBStreamingServer, provider: CountingSMBProvider) async {
+        var snapshot: [String: Any] = ["schemaVersion": 1]
+        let traces = ["playerLifecycle": player.debugLifecycleTraceData(),
+                      "streamingHTTP": await server.debugTraceData(),
+                      "countingProvider": try? await provider.diagnosticData()]
+        for (key, data) in traces {
+            if let data, let object = try? JSONSerialization.jsonObject(with: data) { snapshot[key] = object }
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: snapshot, options: [.sortedKeys]) else { return }
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "Generated SMB fixture playback failure timeline"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    #endif
 
     private func fixture(_ filename: String) throws -> URL {
         let bundle = Bundle(for: Self.self)

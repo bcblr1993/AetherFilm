@@ -39,6 +39,7 @@ final class EOFPlaybackTests: XCTestCase {
         #if os(macOS)
         window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
                           styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
         surface = VLCVideoView(frame: NSRect(x: 0, y: 0, width: 640, height: 360))
         surface.backColor = .black
         window.contentView = surface
@@ -168,6 +169,9 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
     private func realSMBTail(fails: Bool) async throws {
+        #if DEBUG
+        player.debugEnableLifecycleTrace(origin: origin)
+        #endif
         let fixture = try await EOFSMBFixture.configuration()
         let credentials = SMBCredentials(username: fixture.username, password: fixture.password)
         let connection = SMBConnection(name: "fixture", host: "127.0.0.1", port: fixture.port, share: fixture.share, rootPath: fixture.mediaPath)
@@ -182,6 +186,9 @@ final class EOFPlaybackTests: XCTestCase {
         let size = try await provider.fileSize(connection, credentials: credentials, path: path)
         XCTAssertEqual(size, metadata.fileBytes)
         let stream = SMBStreamingServer(provider: provider, connection: connection, credentials: credentials, path: path, size: size)
+        #if DEBUG
+        await stream.debugEnableTrace(origin: origin)
+        #endif
         var validatorCalls = 0
         var rejected = false
         player.completionValidator = {
@@ -226,6 +233,9 @@ final class EOFPlaybackTests: XCTestCase {
             await stream.stop()
             await provider.close()
         } catch {
+            #if DEBUG
+            await attachSMBFailureDiagnostics(stream)
+            #endif
             await provider.resolve(fails: true)
             player.stop()
             await stream.stop()
@@ -233,6 +243,21 @@ final class EOFPlaybackTests: XCTestCase {
             throw error
         }
     }
+
+    #if DEBUG
+    private func attachSMBFailureDiagnostics(_ stream: SMBStreamingServer) async {
+        var snapshot: [String: Any] = ["schemaVersion": 1]
+        let traces = ["playerLifecycle": player.debugLifecycleTraceData(), "streamingHTTP": await stream.debugTraceData()]
+        for (key, data) in traces {
+            if let data, let object = try? JSONSerialization.jsonObject(with: data) { snapshot[key] = object }
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: snapshot, options: [.sortedKeys]) else { return }
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "Generated SMB fixture EOF failure timeline"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    #endif
 
     private func outputReady(_ label: String) async throws {
         try await wait(label) {

@@ -3,6 +3,9 @@ import Observation
 import FilmDomain
 import VLCKit
 import AetherVLCBridge
+#if DEBUG
+import Synchronization
+#endif
 #if os(iOS)
 import AVFAudio
 #endif
@@ -140,6 +143,35 @@ public final class FilmPlayer: NSObject {
     var backendChapterID: Int? { engine.map { Int($0.currentChapterIndex) } }
 
     #if DEBUG
+    @ObservationIgnored fileprivate var debugLifecycleTrace: PlaybackLifecycleTrace?
+    @ObservationIgnored fileprivate var debugTraceGeneration = 0
+
+    /// Explicit integration-test opt-in. No paths, URLs or credentials enter
+    /// this bounded trace, and Release builds omit its storage and callbacks.
+    func debugEnableLifecycleTrace(origin: ContinuousClock.Instant = .now, capacity: Int = 2_048) {
+        debugLifecycleTrace = PlaybackLifecycleTrace(origin: origin, capacity: capacity)
+    }
+
+    func debugLifecycleTraceData() -> Data? { debugLifecycleTrace?.snapshotData() }
+
+    fileprivate func debugRecordLifecycle(_ event: PlaybackLifecycleTrace.Event,
+                                         generation: Int? = nil, sourceSequence: Int? = nil,
+                                         state: Int? = nil, time: Int64? = nil,
+                                         systemDate: Int64? = nil, target: Double? = nil,
+                                         accepted: Bool? = nil) {
+        guard let debugLifecycleTrace else { return }
+        #if os(iOS)
+        let preparingAudio = pendingAudioActivation != nil
+        #else
+        let preparingAudio = false
+        #endif
+        debugLifecycleTrace.record(event, generation: generation ?? debugTraceGeneration,
+                                    sourceSequence: sourceSequence, state: state, time: time,
+                                    systemDate: systemDate, target: target,
+                                    modelPlaying: isPlaying, wantsToPlay: wantsToPlay,
+                                    audioPending: preparingAudio, accepted: accepted)
+    }
+
     // Isolated probe only: capture one actual paused callback and release it
     // through the same delegate Task after real playback has resumed.
     @ObservationIgnored private(set) var debugPausedCallbacksReceived = 0
@@ -153,6 +185,9 @@ public final class FilmPlayer: NSObject {
     #endif
 
     public func load(url: URL, startAt: Double = 0) {
+        #if DEBUG
+        debugRecordLifecycle(.commandLoad, target: startAt.isFinite ? startAt : nil)
+        #endif
         stop()
         errorMessage = nil
         subtitleErrorMessage = nil
@@ -191,6 +226,9 @@ public final class FilmPlayer: NSObject {
     }
 
     public func play() {
+        #if DEBUG
+        debugRecordLifecycle(.commandPlay)
+        #endif
         wantsToPlay = true
         guard drawable != nil, let engine else { return }
         if didEnd {
@@ -201,19 +239,28 @@ public final class FilmPlayer: NSObject {
         if engine.state == .stopped || engine.state == .nothingSpecial {
             startEngine()
         } else {
-            #if os(iOS)
-            requestAudioActivation(for: engine)
-            #else
-            engine.play()
+        #if os(iOS)
+        requestAudioActivation(for: engine)
+        #else
+        #if DEBUG
+        debugRecordLifecycle(.enginePlaySubmitted)
+        #endif
+        engine.play()
             #endif
         }
     }
 
     public func pause() {
+        #if DEBUG
+        debugRecordLifecycle(.commandPause)
+        #endif
         #if os(iOS)
         resumesAfterInterruption = false
         #endif
         wantsToPlay = false
+        #if DEBUG
+        debugRecordLifecycle(.enginePauseSubmitted)
+        #endif
         engine?.pause()
         isPlaying = false
         backendIsLoading = false
@@ -228,6 +275,9 @@ public final class FilmPlayer: NSObject {
     }
 
     public func seek(_ seconds: Double) {
+        #if DEBUG
+        debugRecordLifecycle(.commandSeek, target: seconds.isFinite ? seconds : nil)
+        #endif
         guard seconds.isFinite else { return }
         let target = duration > 0 ? min(duration, max(0, seconds)) : max(0, seconds)
         seekEvidenceTarget = target
@@ -348,6 +398,9 @@ public final class FilmPlayer: NSObject {
     /// Stops network/decoder work and releases security-scoped files. It never
     /// modifies or deletes the original film or subtitle.
     public func stop() {
+        #if DEBUG
+        debugRecordLifecycle(.commandStop)
+        #endif
         captureProgress()
         sessionID = UUID()
         stoppingReason = nil
@@ -407,6 +460,9 @@ public final class FilmPlayer: NSObject {
     }
 
     private func installEngine(media: VLCMedia) {
+        #if DEBUG
+        debugTraceGeneration += 1
+        #endif
         let player = AetherVLCMediaPlayer(options: ["--quiet", "--no-video-title-show", "--stats-min-report-interval=50"])
         if capturesDecoderEvidence {
             player.libraryInstance.loggers = [DecoderEvents(owner: self, sessionID: sessionID)]
@@ -469,6 +525,9 @@ public final class FilmPlayer: NSObject {
         requestAudioActivation(for: engine)
         #else
         armOpeningTimeout()
+        #if DEBUG
+        debugRecordLifecycle(.enginePlaySubmitted)
+        #endif
         engine.play()
         #endif
     }
@@ -502,8 +561,16 @@ public final class FilmPlayer: NSObject {
         let token = sessionID
         let engineID = ObjectIdentifier(engine)
         pendingAudioActivation = request
+        #if DEBUG
+        debugRecordLifecycle(.audioRequested)
+        let trace = debugLifecycleTrace
+        let generation = debugTraceGeneration
+        #endif
         refreshLoading()
         audioSessionCoordinator.activate(owner: audioSessionOwner) { [weak self] succeeded in
+            #if DEBUG
+            trace?.record(.audioWorkerFinished, generation: generation, accepted: succeeded)
+            #endif
             // Pass only values across the worker boundary, never a VLC object.
             Task { @MainActor [weak self] in
                 self?.finishAudioActivation(succeeded, request: request, token: token, engineID: engineID)
@@ -513,6 +580,11 @@ public final class FilmPlayer: NSObject {
 
     private func finishAudioActivation(_ succeeded: Bool, request: UUID, token: UUID,
                                        engineID: ObjectIdentifier) {
+        #if DEBUG
+        debugRecordLifecycle(.audioFinished, accepted: succeeded && token == sessionID
+                             && pendingAudioActivation == request
+                             && engine.map(ObjectIdentifier.init) == engineID)
+        #endif
         guard token == sessionID, pendingAudioActivation == request,
               let engine, ObjectIdentifier(engine) == engineID else { return }
         pendingAudioActivation = nil
@@ -536,6 +608,9 @@ public final class FilmPlayer: NSObject {
         }
         isPlaying = wantsToPlay && engine.state == .playing
         refreshLoading()
+        #if DEBUG
+        debugRecordLifecycle(.enginePlaySubmitted)
+        #endif
         engine.play()
         // Initial opening still waits for the real playing callback. Resuming
         // an existing session has finished its audio preparation here.
@@ -581,7 +656,13 @@ public final class FilmPlayer: NSObject {
         measuredInputTime = nil
         measuredClockTime = nil
         // NSNumber keeps long media timestamps outside the old Int32 API.
+        #if DEBUG
+        debugRecordLifecycle(.seekSubmitted, target: bounded)
+        #endif
         engine.time = VLCTime(number: NSNumber(value: bounded * 1_000))
+        #if DEBUG
+        debugRecordLifecycle(.seekApplied, target: bounded)
+        #endif
         position = bounded
         // Save paused-seek resume without treating the requested target as watched.
         onProgress?(position, duration, false)
@@ -683,8 +764,16 @@ public final class FilmPlayer: NSObject {
             // paused. Reconcile this late pause event with the latest intent.
             if wantsToPlay {
                 #if os(iOS)
-                if pendingAudioActivation == nil { engine.play() }
+                if pendingAudioActivation == nil {
+                    #if DEBUG
+                    debugRecordLifecycle(.enginePlaySubmitted)
+                    #endif
+                    engine.play()
+                }
                 #else
+                #if DEBUG
+                debugRecordLifecycle(.enginePlaySubmitted)
+                #endif
                 engine.play()
                 #endif
             }
@@ -857,6 +946,97 @@ private final class DecoderEvents: NSObject, VLCLogging {
     }
 }
 
+#if DEBUG
+/// A trace contains only immutable values supplied by the integration test,
+/// commands and existing callbacks. Its lock never encloses a backend call.
+fileprivate nonisolated final class PlaybackLifecycleTrace: Sendable {
+    enum Event: Int, Codable, Sendable, CaseIterable {
+        case commandLoad = 1, commandPlay, commandPause, commandSeek, seekApplied, commandStop
+        case audioRequested = 10, audioFinished, audioWorkerFinished
+        case enginePlaySubmitted = 15, enginePauseSubmitted, seekSubmitted
+        case callbackState = 20, deliveryState, appliedState
+        case callbackClock = 30, deliveryClock
+        case callbackInput = 40, deliveryInput
+        case callbackStopping = 50, deliveryStopping
+        case callbackTime = 60, callbackBuffering, callbackLength
+    }
+
+    private struct Record: Encodable, Sendable {
+        let sequence: Int
+        let elapsedSeconds: Double
+        let eventCode: Int
+        let generation: Int
+        let sourceSequence: Int?
+        let state: Int?
+        let timeMicroseconds: Int64?
+        let systemDateMicroseconds: Int64?
+        let clockRunning: Bool?
+        let targetSeconds: Double?
+        let modelPlaying: Bool?
+        let wantsToPlay: Bool?
+        let audioPending: Bool?
+        let accepted: Bool?
+    }
+
+    private struct State: Sendable {
+        var records: [Record?]
+        var cursor = 0
+        var sequence = 0
+    }
+
+    private struct Snapshot: Encodable {
+        let capacity: Int
+        let totalEvents: Int
+        let evictedEvents: Int
+        let eventCodes: [String: Int]
+        let records: [Record]
+    }
+
+    private let origin: ContinuousClock.Instant
+    private let capacity: Int
+    private let storage: Mutex<State>
+
+    init(origin: ContinuousClock.Instant, capacity: Int) {
+        self.origin = origin
+        self.capacity = min(4_096, max(1, capacity))
+        storage = Mutex(State(records: Array(repeating: nil, count: self.capacity)))
+    }
+
+    @discardableResult
+    func record(_ event: Event, generation: Int, sourceSequence: Int? = nil,
+                state: Int? = nil, time: Int64? = nil, systemDate: Int64? = nil,
+                target: Double? = nil, modelPlaying: Bool? = nil, wantsToPlay: Bool? = nil,
+                audioPending: Bool? = nil, accepted: Bool? = nil) -> Int {
+        let elapsed = origin.duration(to: .now).components
+        let seconds = Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1e18
+        return storage.withLock { value in
+            value.sequence += 1
+            let sequence = value.sequence
+            value.records[value.cursor] = Record(sequence: sequence, elapsedSeconds: seconds,
+                eventCode: event.rawValue, generation: generation, sourceSequence: sourceSequence,
+                state: state, timeMicroseconds: time, systemDateMicroseconds: systemDate,
+                clockRunning: systemDate.map { $0 > 0 && $0 != Int64.max },
+                targetSeconds: target, modelPlaying: modelPlaying, wantsToPlay: wantsToPlay,
+                audioPending: audioPending, accepted: accepted)
+            value.cursor = (value.cursor + 1) % capacity
+            return sequence
+        }
+    }
+
+    func snapshotData() -> Data? {
+        let copied = storage.withLock { value in
+            (value.records.compactMap { $0 }.sorted { $0.sequence < $1.sequence }, value.sequence)
+        }
+        let codes = Dictionary(uniqueKeysWithValues: Event.allCases.map { (String(describing: $0), $0.rawValue) })
+        let snapshot = Snapshot(capacity: capacity, totalEvents: copied.1,
+            evictedEvents: max(0, copied.1 - copied.0.count), eventCodes: codes, records: copied.0)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return try? encoder.encode(snapshot)
+    }
+}
+#endif
+
 /// Delegate callbacks do not carry mutable VLC objects across executors.
 private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
     private weak var owner: FilmPlayer?
@@ -865,9 +1045,15 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
     @MainActor init(owner: FilmPlayer, sessionID: UUID) {
         self.owner = owner
         self.sessionID = sessionID
+        #if DEBUG
+        lifecycleTrace = owner.debugLifecycleTrace
+        traceGeneration = owner.debugTraceGeneration
+        #endif
     }
 
     #if DEBUG
+    private let lifecycleTrace: PlaybackLifecycleTrace?
+    private let traceGeneration: Int
     private let debugPauseLock = NSLock()
     private var debugHoldNextPause = false
     private var debugHeldPause: VLCMediaPlayerState?
@@ -895,17 +1081,47 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
 
     func mediaPlayerStopping(reason: AetherVLCMediaStoppingReason, inputTime: Int64, hadError: Bool) {
         let token = sessionID
-        Task { @MainActor [weak owner] in owner?.receiveStoppingReason(reason, inputTime: inputTime, hadError: hadError, token: token) }
+        #if DEBUG
+        let generation = traceGeneration
+        let occurrence = lifecycleTrace?.record(.callbackStopping, generation: generation,
+            state: Int(reason.rawValue), time: inputTime, accepted: !hadError)
+        #endif
+        Task { @MainActor [weak owner] in
+            #if DEBUG
+            owner?.debugRecordLifecycle(.deliveryStopping, generation: generation, sourceSequence: occurrence,
+                state: Int(reason.rawValue), time: inputTime, accepted: !hadError)
+            #endif
+            owner?.receiveStoppingReason(reason, inputTime: inputTime, hadError: hadError, token: token)
+        }
     }
 
     func mediaPlayerClockPoint(time: Int64, position: Double, systemDate: Int64) {
         let token = sessionID
-        Task { @MainActor [weak owner] in owner?.receiveClockPoint(time, position: position, systemDate: systemDate, token: token) }
+        #if DEBUG
+        let generation = traceGeneration
+        let occurrence = lifecycleTrace?.record(.callbackClock, generation: generation, time: time, systemDate: systemDate)
+        #endif
+        Task { @MainActor [weak owner] in
+            #if DEBUG
+            owner?.debugRecordLifecycle(.deliveryClock, generation: generation, sourceSequence: occurrence,
+                time: time, systemDate: systemDate)
+            #endif
+            owner?.receiveClockPoint(time, position: position, systemDate: systemDate, token: token)
+        }
     }
 
     func mediaPlayerInputPositionChanged(time: Int64, position: Double) {
         let token = sessionID
-        Task { @MainActor [weak owner] in owner?.receiveInputTime(time, position: position, token: token) }
+        #if DEBUG
+        let generation = traceGeneration
+        let occurrence = lifecycleTrace?.record(.callbackInput, generation: generation, time: time)
+        #endif
+        Task { @MainActor [weak owner] in
+            #if DEBUG
+            owner?.debugRecordLifecycle(.deliveryInput, generation: generation, sourceSequence: occurrence, time: time)
+            #endif
+            owner?.receiveInputTime(time, position: position, token: token)
+        }
     }
 
     func mediaPlayerStateChanged(_ newState: VLCMediaPlayerState) {
@@ -924,21 +1140,42 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
 
     private func enqueueState(_ newState: VLCMediaPlayerState) {
         let token = sessionID
-        Task { @MainActor [weak owner] in owner?.receive(state: newState, token: token) }
+        #if DEBUG
+        let generation = traceGeneration
+        let occurrence = lifecycleTrace?.record(.callbackState, generation: generation, state: Int(newState.rawValue))
+        #endif
+        Task { @MainActor [weak owner] in
+            #if DEBUG
+            owner?.debugRecordLifecycle(.deliveryState, generation: generation, sourceSequence: occurrence, state: Int(newState.rawValue))
+            #endif
+            owner?.receive(state: newState, token: token)
+            #if DEBUG
+            owner?.debugRecordLifecycle(.appliedState, generation: generation, sourceSequence: occurrence, state: Int(newState.rawValue))
+            #endif
+        }
     }
 
     func mediaPlayerTimeChanged(_ notification: Notification) {
         let token = sessionID
+        #if DEBUG
+        lifecycleTrace?.record(.callbackTime, generation: traceGeneration)
+        #endif
         Task { @MainActor [weak owner] in owner?.receiveTime(token: token) }
     }
 
     func mediaPlayerBufferingChanged(_ progress: Float) {
         let token = sessionID
+        #if DEBUG
+        lifecycleTrace?.record(.callbackBuffering, generation: traceGeneration, target: progress.isFinite ? Double(progress) : nil)
+        #endif
         Task { @MainActor [weak owner] in owner?.receiveBuffering(progress, token: token) }
     }
 
     func mediaPlayerLengthChanged(_ length: Int64) {
         let token = sessionID
+        #if DEBUG
+        lifecycleTrace?.record(.callbackLength, generation: traceGeneration, time: length)
+        #endif
         Task { @MainActor [weak owner] in owner?.receiveLength(length, token: token) }
     }
 

@@ -177,4 +177,18 @@ iPad 的独立自建 Pro 11-inch（M5）/ iOS 26.5 Simulator 共 **4 项布局�
 
 `e4d7ff0` 的完整 App / 修改 wrapper 对应源码候选已独立分阶段核验：`.build/CorrespondingSourceCandidates/e4d7ff0-51b82e86/stage-review.json`、`relink-review.json`、`archive-review.json`。源码清单与归档通过；隔离修改一个 wrapper 文件后，macOS 基线 / 修改版各两个架构（arm64、x86_64）实际重新链接，修改版双架构有 marker、基线无 marker，最低版本保持 26.0；CLI 执行返回该修改的 marker。未执行 iOS 重新链接或 App GUI。此证据不等于完整 libVLC 引擎重建、App 图形播放或分发验收。候选未发布；下一最终提交仍需新的独立源码归档及未变生产实现 / 构建产物的哈希绑定，不能将早期依赖源码输入包当作完整同提交源码。
 
-磁盘中的 c790607 DMG 为旧候选，VM 54 项只认证旧 5e12be2 包。当前源码尚无新的签名 / 公证 DMG，也未做新包安装、首启 / 播放或公开下载。macOS VM 图形验收仍需用户登录，真实 iPhone 仍锁定；未更改登录、安全设置或账户。新提交 CI、最终源码资产 / 二进制绑定、VM GUI、真机安装 / 播放、GitHub tag / release 和官网上线均未完成。
+磁盘中的 c790607 DMG 为旧候选，VM 54 项只认证旧 5e12be2 包。当前源码尚无新的签名 / 公证 DMG，也未做新包安装、首启 / 播放或公开下载。真实 iPhone 仍锁定；未更改登录、安全设置或账户。最终源码资产 / 二进制绑定、当前包 VM 验收、真机安装 / 播放、GitHub tag / release 和官网上线均未完成。
+
+## 最新 CI 与 macOS Aqua 验收（2026-10-03）
+
+`fb65037810a241b35b5e09c9e4b9f71a84a0e008` 的 GitHub run `37084529322` **整轮失败**：共享 **41/41、0 failures、0 skipped**，三个平台构建通过；iOS 27.0 正式测试 **26/29、3 个失败 case、0 skipped**。两个真实 SMB 近片尾用例在实际输出到达门控前超时，重复 seek 用例在首个 seek 超时；6 条 failure records 属于这 3 个 case，不是 6 个失败用例。精确 artifact `11260201844` 的 SHA256 与下载 digest 一致，证据 `.build/CITestSocketFixEvidence/review.json`。同一正式产品在本机 iOS 26.5 的原 3 项聚焦回归 **3/3、0 failure、0 skipped，38.298 秒**，源码和产品运行前后字节未变，证据 `.build/PlaybackEvidence/CI-fb650-Focused3/review.json`。本机通过不代替远程失败，也尚不能确定差异根因。官方 iOS 27.0 / 24A434 arm64 runtime 已下载并注册，用新自建设备复现；原设备保留。
+
+Tart `macos27` 当前已有用户 Aqua 图形会话，实际显示器为 1920×1080。SSH 中的空显示报告和截屏权限失败不能证明没有显示设备。测试使用现有同用户 Aqua launchd job；没有修改账户、自动登录、Gatekeeper、TCC 或 Developer Tools 安全设置。最初 SSH 上下文 UI 初始化因 automation mode 超时而未执行 case，保留该结果，不算应用 UI 用例失败。
+
+现有正式 e4 实现的 Aqua UI 全组实际结果 **11 passed、7 failed、1 opt-in skipped，204.137 秒**；系统减少透明度为 false，专项跳过不能算通过。原始 xcresult、日志、summary、截图和可访问性树在 `.build/ReleaseEvidence/candidate-fb650378/GUIReadiness-native-ui-c4fd83c4/Results-AquaUI-20261003-c4fd83c4/`。失败覆盖 accessibility description、窄窗实际仍 980 点、全屏返回后的关闭、原生文件选择器查询、播放时间推进 / 控制层查询和 SMB 表单取消后的状态。浅深色原始列表截图已审核，失败正按应用行为和测试查询分别诊断，尚未修复后重认证。
+
+Mac 正式应用测试共 **21 项**（AppStore 8、EOF 4、Playback 9；8 项音频生命周期测试仅适用于 iOS）。此前 SSH 上下文全组为 **8 passed、13 failed、0 skipped，204.251 秒**，实际视频输出为零，崩溃栈记录 objc_release / autorelease / XCTest。测试 NSWindow 已增加 `isReleasedWhenClosed=false` 以保留 ARC 所有权；仍需在现有 Aqua 会话用新测试 bundle 重跑，不能将测试崩溃修复推导为视频已恢复。
+
+新增 DEBUG 诊断默认关闭，只保存有硬容量上限的数字 / 固定事件枚举，并仅在失败时附加 JSON；不记录片源 URL、路径、认证或错误文本。共享包原 41 项加 4 项诊断边界测试，共 **45/45、0 failure、0 skipped**；Release 编译与符号检查确认该包的诊断 API / recorder 均排除，证据 `.build/SMBDebugTraceEvidence/review.json`。原播放 / 读取断言、超时、Range、取消逻辑、512KiB chunk 和依赖均未改变。此结果只认证诊断边界，不代表 CI 播放问题已解决。
+
+同源新诊断产品在 iOS 26.5 的原三个聚焦用例 **3/3、0 failure、0 skipped，38.824 秒**，结果 `.build/results/AetherFilm-debugtrace-focused3-20261003-0142.xcresult`；iOS 27 对照及新提交远程 CI 尚待结果。Mac 新 ARC guard 测试 bundle 构建通过，Aqua 实跑仍待完成。
