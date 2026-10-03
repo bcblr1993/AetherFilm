@@ -54,6 +54,7 @@ def main():
     required = (
         "clip-h264.mp4", "clip-hevc.mov", "clip-mpeg4.avi", "clip-multitrack.mkv",
         "clip-smb-long.mp4", "clip-4k-hevc.mp4", "external.srt", "external.ass", "external.vtt", "broken.mkv",
+        "clip-short-gop.mp4", "clip-short-gop-tail.json",
     )
     missing = [name for name in required if not (media / name).is_file()]
     if missing:

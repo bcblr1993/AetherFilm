@@ -16,9 +16,27 @@ public actor SMBStreamingServer {
     private var startTask: Task<URL, any Error>?
     private var sessions: [UUID: (NWConnection, Task<Void, Never>)] = [:]
     private var generation = UUID()
+    private var sourceReadFailure: SMBError?
+    private let readFailureObserver: (@Sendable (SMBError) -> Void)?
+
+    /// A real source read failure remains set until retry creates a new stream.
+    public func readFailure() -> SMBError? { sourceReadFailure }
+
+    private func recordReadFailure(_ error: SMBError, requestID: UUID, generation: UUID) {
+        guard !Task.isCancelled, sourceReadFailure == nil, self.generation == generation,
+              listener != nil, let (client, task) = sessions[requestID], !task.isCancelled else { return }
+        switch client.state {
+        case .failed, .cancelled: return
+        default: break
+        }
+        // Publish on the service actor before the failing HTTP response closes.
+        sourceReadFailure = error
+        readFailureObserver?(error)
+    }
 
     public init(provider: any SMBFileProviding, connection: SMBConnection, credentials: SMBCredentials,
-                path: String, size: Int64) {
+                path: String, size: Int64, onReadFailure: (@Sendable (SMBError) -> Void)? = nil) {
+        readFailureObserver = onReadFailure
         self.provider = provider; self.connection = connection; self.credentials = credentials
         self.path = path; self.size = size
         let fileExtension = (path as NSString).pathExtension.lowercased()
@@ -37,6 +55,7 @@ public actor SMBStreamingServer {
     }
 
     public func start() async throws -> URL {
+        if let sourceReadFailure { throw sourceReadFailure }
         if let startTask { return try await startTask.value }
         guard size >= 0 else { throw FilmError.invalidRange }
         let parameters = NWParameters.tcp
@@ -89,7 +108,7 @@ public actor SMBStreamingServer {
     }
 
     private func accept(_ client: NWConnection, generation: UUID) {
-        guard generation == self.generation, listener != nil, sessions.count < 8 else { client.cancel(); return }
+        guard sourceReadFailure == nil, generation == self.generation, listener != nil, sessions.count < 8 else { client.cancel(); return }
         let id = UUID()
         client.stateUpdateHandler = { [weak self] state in
             switch state {
@@ -104,7 +123,10 @@ public actor SMBStreamingServer {
         let task = Task { [weak self] in
             await Self.serve(client, provider: provider, connection: connection, credentials: credentials,
                              path: path, size: size, route: route, mimeType: mimeType,
-                             onConsumerClosed: { [weak self] in Task { await self?.cancelSession(id) } })
+                             onConsumerClosed: { [weak self] in Task { await self?.cancelSession(id) } },
+                             onReadFailure: { [weak self] error in
+                                 await self?.recordReadFailure(error, requestID: id, generation: generation)
+                             })
             client.cancel()
             await self?.finished(id)
         }
@@ -122,7 +144,8 @@ public actor SMBStreamingServer {
     private nonisolated static func serve(_ client: NWConnection, provider: any SMBFileProviding,
                                          connection: SMBConnection, credentials: SMBCredentials,
                                          path: String, size: Int64, route: String, mimeType: String,
-                                         onConsumerClosed: @escaping @Sendable () -> Void) async {
+                                         onConsumerClosed: @escaping @Sendable () -> Void,
+                                         onReadFailure: @escaping @Sendable (SMBError) async -> Void) async {
         var headersSent = false
         do {
             let request: SMBHTTPRequest
@@ -167,8 +190,17 @@ public actor SMBStreamingServer {
             while offset < end {
                 try Task.checkCancellation()
                 let chunkEnd = offset + min(512 * 1_024, end - offset)
-                let data = try await provider.readFile(connection, credentials: credentials, path: path, range: offset..<chunkEnd)
-                guard !data.isEmpty, Int64(data.count) <= chunkEnd - offset else { throw SMBError.invalidResponse }
+                let data: Data
+                do {
+                    data = try await provider.readFile(connection, credentials: credentials, path: path, range: offset..<chunkEnd)
+                    guard !data.isEmpty, Int64(data.count) <= chunkEnd - offset else { throw SMBError.invalidResponse }
+                } catch {
+                    if !Task.isCancelled, !(error is CancellationError) {
+                        let failure = SMBError.sanitized(error) as? SMBError ?? .invalidResponse
+                        await onReadFailure(failure)
+                    }
+                    throw error
+                }
                 try await client.sendHTTP(data)
                 offset += Int64(data.count)
             }

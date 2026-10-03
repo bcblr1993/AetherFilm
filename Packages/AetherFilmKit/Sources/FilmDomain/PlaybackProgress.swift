@@ -7,13 +7,14 @@ public struct PlaybackProgress: Codable, Hashable, Sendable {
     public var updatedAt: Date
     public var isWatched: Bool
 
-    public init(itemID: String, position: Double, duration: Double, updatedAt: Date = Date(), isWatched: Bool = false) {
+    /// Unconfirmed seek targets may be saved for resume without marking them watched.
+    public init(itemID: String, position: Double, duration: Double, updatedAt: Date = Date(), isWatched: Bool = false, allowsAutomaticWatched: Bool = true) {
         self.itemID = itemID
         self.duration = duration.isFinite ? max(0, duration) : 0
         self.position = position.isFinite ? max(0, position) : 0
         if self.duration > 0 { self.position = min(self.position, self.duration) }
         self.updatedAt = updatedAt
-        self.isWatched = isWatched || (self.duration > 0 && self.position / self.duration >= 0.95)
+        self.isWatched = isWatched || (allowsAutomaticWatched && self.duration > 0 && self.position / self.duration >= 0.95)
     }
 
     public var fraction: Double { duration > 0 ? min(1, max(0, position / duration)) : 0 }

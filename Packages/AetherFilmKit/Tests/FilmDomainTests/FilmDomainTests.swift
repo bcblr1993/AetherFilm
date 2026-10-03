@@ -39,6 +39,19 @@ import Testing
         #expect(!PlaybackProgress(itemID: "a", position: 0, duration: 10).canContinue)
     }
 
+    @Test func unconfirmedSeekRemainsResumableAfterPersistence() throws {
+        let checkpoint = PlaybackProgress(itemID: "a", position: 11.5, duration: 12, allowsAutomaticWatched: false)
+        let data = try JSONEncoder().encode(checkpoint)
+        let restored = try JSONDecoder().decode(PlaybackProgress.self, from: data)
+        #expect(!restored.isWatched && restored.canContinue)
+        #expect(restored.resumePosition == 11.5)
+
+        let confirmed = PlaybackProgress(itemID: restored.itemID, position: 11.5, duration: 12)
+        #expect(confirmed.isWatched && confirmed.resumePosition == 0)
+        let marked = PlaybackProgress(itemID: "a", position: 0, duration: 12, isWatched: true, allowsAutomaticWatched: false)
+        #expect(marked.isWatched)
+    }
+
     @Test func relativePathNormalizationDoesNotDecodeLiteralNames() throws {
         #expect(try SMBPath.normalized("//电影/./第一集.mkv/") == "电影/第一集.mkv")
         #expect(try SMBPath.normalized("literal%2Fname.mkv") == "literal%2Fname.mkv")

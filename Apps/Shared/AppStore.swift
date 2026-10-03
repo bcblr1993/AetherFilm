@@ -16,6 +16,10 @@ enum AppSection: Hashable, Identifiable {
 }
 
 @MainActor @Observable final class AppStore {
+    struct PreparedPlayback: Sendable {
+        let url: URL
+        let sessionID: UUID
+    }
     var snapshot = LibrarySnapshot()
     var section: AppSection = .local
     var currentPath = ""
@@ -24,9 +28,11 @@ enum AppSection: Hashable, Identifiable {
     var isImporting = false
     var errorMessage: String?
     var playingItem: MediaItem?
+    private(set) var playbackErrorMessage: String?
 
     @ObservationIgnored private let library: LibraryStore
     @ObservationIgnored private let smb: any SMBFileProviding
+    @ObservationIgnored private let credentialsReader: (@MainActor (SMBConnection) throws -> SMBCredentials)?
     @ObservationIgnored private var browseGeneration = UUID()
     @ObservationIgnored private var stream: SMBStreamingServer?
     @ObservationIgnored private var activeAccess: URL?
@@ -41,7 +47,9 @@ enum AppSection: Hashable, Identifiable {
     @ObservationIgnored private var fixtureMarker: URL?
     #endif
 
-    init(library: LibraryStore? = nil, smb: (any SMBFileProviding)? = nil) {
+    init(library: LibraryStore? = nil, smb: (any SMBFileProviding)? = nil,
+         credentialsReader: (@MainActor (SMBConnection) throws -> SMBCredentials)? = nil) {
+        self.credentialsReader = credentialsReader
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
@@ -195,10 +203,11 @@ enum AppSection: Hashable, Identifiable {
         playingItem = item
     }
 
-    func preparePlayback(_ item: MediaItem) async throws -> URL {
+    func preparePlayback(_ item: MediaItem) async throws -> PreparedPlayback {
         let generation = UUID()
         playbackGeneration = generation
         playbackItemID = item.id
+        playbackErrorMessage = nil
         await releasePlaybackResources()
         try Task.checkCancellation()
         guard playbackGeneration == generation else { throw CancellationError() }
@@ -208,13 +217,20 @@ enum AppSection: Hashable, Identifiable {
             let size = try await smb.fileSize(connection, credentials: credentials, path: item.path)
             try Task.checkCancellation()
             guard playbackGeneration == generation else { throw CancellationError() }
-            let next = SMBStreamingServer(provider: smb, connection: connection, credentials: credentials, path: item.path, size: size)
+            let next = SMBStreamingServer(provider: smb, connection: connection, credentials: credentials, path: item.path, size: size,
+                onReadFailure: { [weak self] failure in
+                    Task { @MainActor [weak self] in
+                        guard let self, self.isCurrentPlayback(item, sessionID: generation) else { return }
+                        self.playbackErrorMessage = failure.localizedDescription
+                        await self.stream?.stop()
+                    }
+                })
             do {
                 let url = try await next.start()
                 try Task.checkCancellation()
                 guard playbackGeneration == generation else { throw CancellationError() }
                 stream = next
-                return url
+                return PreparedPlayback(url: url, sessionID: generation)
             } catch { await next.stop(); throw error }
         }
         var url = URL(fileURLWithPath: item.path)
@@ -226,7 +242,7 @@ enum AppSection: Hashable, Identifiable {
         }
         #endif
         guard FileManager.default.fileExists(atPath: url.path) else { throw FilmError.missingFile }
-        return url
+        return PreparedPlayback(url: url, sessionID: generation)
     }
 
     func subtitleCandidates(for item: MediaItem) async throws -> [MediaItem] {
@@ -265,10 +281,11 @@ enum AppSection: Hashable, Identifiable {
         return URL(fileURLWithPath: subtitle.path)
     }
 
-    func recordProgress(_ item: MediaItem, position: Double, duration: Double) {
+    func recordProgress(_ item: MediaItem, position: Double, duration: Double, allowsAutomaticWatched: Bool = true) {
         guard position.isFinite, duration.isFinite, duration > 0 else { return }
         if let sourceID = item.sourceID, !connections.contains(where: { $0.id == sourceID }) { return }
-        snapshot.progress[item.id] = PlaybackProgress(itemID: item.id, position: position, duration: duration)
+        snapshot.progress[item.id] = PlaybackProgress(itemID: item.id, position: position, duration: duration,
+            isWatched: snapshot.progress[item.id]?.isWatched ?? false, allowsAutomaticWatched: allowsAutomaticWatched)
         snapshot.recentItems.removeAll { $0.id == item.id }
         snapshot.recentItems.insert(item, at: 0)
         if snapshot.recentItems.count > 500 { snapshot.recentItems.removeLast(snapshot.recentItems.count - 500) }
@@ -287,9 +304,40 @@ enum AppSection: Hashable, Identifiable {
         return queue[index + 1]
     }
 
-    func playNext(after item: MediaItem, markCompleted: Bool = false) async {
-        if markCompleted { await markWatched(item) }
-        else { await flushProgress() }
+    func playbackSession(for item: MediaItem) -> UUID? {
+        playbackItemID == item.id ? playbackGeneration : nil
+    }
+
+    func canCompletePlayback(after item: MediaItem, sessionID: UUID) async -> Bool {
+        guard isCurrentPlayback(item, sessionID: sessionID) else { return false }
+        let currentStream = stream
+        let failure = await currentStream?.readFailure()
+        guard isCurrentPlayback(item, sessionID: sessionID) else { return false }
+        if let failure {
+            playbackErrorMessage = failure.localizedDescription
+            return false
+        }
+        return playbackErrorMessage == nil
+    }
+
+    func completePlayback(after item: MediaItem, sessionID: UUID) async {
+        guard await canCompletePlayback(after: item, sessionID: sessionID),
+              isCurrentPlayback(item, sessionID: sessionID) else { return }
+        await markWatched(item)
+        guard await canCompletePlayback(after: item, sessionID: sessionID),
+              isCurrentPlayback(item, sessionID: sessionID) else { return }
+        if let next = nextItem(after: item) { playingItem = next }
+    }
+
+    private func isCurrentPlayback(_ item: MediaItem, sessionID: UUID) -> Bool {
+        playbackGeneration == sessionID && playbackItemID == item.id && playingItem?.id == item.id
+    }
+
+    func playNext(after item: MediaItem) async {
+        let sessionID = playbackGeneration
+        guard playingItem?.id == item.id else { return }
+        await flushProgress()
+        guard playbackGeneration == sessionID, playingItem?.id == item.id else { return }
         if let next = nextItem(after: item) { playingItem = next }
     }
 
@@ -328,10 +376,12 @@ enum AppSection: Hashable, Identifiable {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    func stopStreaming(for itemID: String? = nil) async {
+    func stopStreaming(for itemID: String? = nil, sessionID: UUID? = nil) async {
         guard itemID == nil || playbackItemID == itemID else { return }
+        guard sessionID == nil || playbackGeneration == sessionID else { return }
         playbackGeneration = UUID()
         playbackItemID = nil
+        playbackErrorMessage = nil
         await releasePlaybackResources()
     }
 
@@ -349,6 +399,7 @@ enum AppSection: Hashable, Identifiable {
     private func persist() async throws { try await library.save(snapshot) }
 
     private func credentials(for connection: SMBConnection) throws -> SMBCredentials {
+        if let credentialsReader { return try credentialsReader(connection) }
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--ui-testing"), connection.host == "fixture.invalid" {
             return SMBCredentials(username: "fixture", password: "")

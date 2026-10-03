@@ -32,4 +32,6 @@ Shared domain and service modules use Swift Package Manager. Platform app target
 
 ## License
 
-Application code is MIT licensed. VLCKit, AMSMB2 and libsmb2 retain their own licenses. See [third-party notices](THIRD_PARTY_NOTICES.md) and [corresponding-source evidence](docs/BACKEND_EVIDENCE.md).
+Original application code in `Apps`, shared services and tools is MIT licensed. The derived player wrapper and vendored headers in [AetherVLCBridge](Packages/AetherVLCBridge/README.md) retain their LGPL-2.1-or-later and per-file notices; the repository's MIT license does not relicense them. VLCKit, AMSMB2 and libsmb2 retain their own licenses.
+
+The bridge includes fixed upstream inputs, an exact patch, dated modification notices and deterministic generators. Its 22 generated source files reproduce the compiled package bytes, and its typed callbacks compile and strongly link on all five supported platform / architecture combinations. Complete application source and pinned dependency materials are required for rebuilding and relinking a modified static bridge. The final source asset and application relink proof remain release gates; this package verification does not establish an independent full engine rebuild. See [third-party notices](THIRD_PARTY_NOTICES.md), [bridge provenance](Packages/AetherVLCBridge/Provenance/inputs.json) and [corresponding-source evidence](docs/BACKEND_EVIDENCE.md).

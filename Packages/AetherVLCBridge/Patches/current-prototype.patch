@@ -1,0 +1,162 @@
+--- src/AetherVLCMediaPlayer.m
++++ src/AetherVLCMediaPlayer.m
+@@ -117,11 +117,17 @@
+ - (void)mediaPlayerTitleListChanged:(NSString *)newTitleList;
+ - (void)mediaPlayerCapabilitiesChanged;
+ 
++- (void)aetherRecordInputTime:(int64_t)time;
++- (void)aetherRecordError;
++- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
+ - (void)mediaPlayerSnapshot:(NSString *)fileName;
+ @end
+ 
+ @interface AetherVLCMediaPlayer ()
+ {
++    NSLock *_aetherSnapshotLock;
++    int64_t _aetherInputTime;
++    BOOL _aetherHadError;
+     VLCLibrary *_privateLibrary;                ///< Internal
+     libvlc_media_player_t * _playerInstance;    ///< Internal
+     VLCMedia * _media;                          ///< Current media being played
+@@ -164,6 +170,8 @@
+         [eventsHandler handleEvent:^(id _Nonnull object) {
+             AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+             [mediaPlayer mediaPlayerLastTimePointUpdated:newValue];
++            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerClockTime:position:systemDate:)])
++                [mediaPlayer.delegate mediaPlayerClockTime:newValue.ts_us position:newValue.position systemDate:newValue.system_date_us];
+         }];
+     }
+ }
+@@ -236,6 +244,9 @@
+ 
+     @autoreleasepool {
+         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
++        // Capture the error before any configured event dispatch can reorder it.
++        if (newState == VLCMediaPlayerStateError)
++            [(AetherVLCMediaPlayer *)eventsHandler.object aetherRecordError];
+         [eventsHandler handleEvent:^(id _Nonnull object) {
+             AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+             [mediaPlayer mediaPlayerStateChanged: newState];
+@@ -634,21 +645,46 @@
+     }
+ }
+ 
++static_assert(AetherVLCMediaStoppingReasonError == (NSInteger)libvlc_stopping_reason_error
++           && AetherVLCMediaStoppingReasonEndOfStream == (NSInteger)libvlc_stopping_reason_eos
++           && AetherVLCMediaStoppingReasonUser == (NSInteger)libvlc_stopping_reason_user,
++              "Stopping reasons must match the fixed public libVLC ABI");
++
+ static void AetherHandleMediaStopping(void *opaque, libvlc_media_t *media,
+                                      libvlc_stopping_reason_t reason)
+ {
+     (void)media;
+     @autoreleasepool {
+         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
++        int64_t inputTime = -1;
++        BOOL hadError = NO;
++        AetherVLCMediaPlayer *source = (AetherVLCMediaPlayer *)eventsHandler.object;
++        [source aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
++        // The immutable values are captured in the original libVLC callback.
++        // No delegate or libVLC operation is called while our lock is held.
+         [eventsHandler handleEvent:^(id object) {
+             AetherVLCMediaPlayer *player = object;
+-            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:)])
+-                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason];
++            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:inputTime:hadError:)])
++                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason inputTime:inputTime hadError:hadError];
++        }];
++    }
++}
++
++static void AetherHandleInputPosition(void *opaque, libvlc_time_t time, double position)
++{
++    @autoreleasepool {
++        VLCEventsHandler *handler = (__bridge VLCEventsHandler *)opaque;
++        [(AetherVLCMediaPlayer *)handler.object aetherRecordInputTime:time];
++        [handler handleEvent:^(id object) {
++            AetherVLCMediaPlayer *player = object;
++            if ([player.delegate respondsToSelector:@selector(mediaPlayerInputTime:position:)])
++                [player.delegate mediaPlayerInputTime:time position:position];
+         }];
+     }
+ }
+ 
+ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
++    .on_position_changed = AetherHandleInputPosition,
+     .on_media_stopping = AetherHandleMediaStopping,
+     .version = 0,
+     .on_state_changed = HandleMediaInstanceStateChanged,
+@@ -696,6 +732,28 @@
+     return dict[key];
+ }
+ 
++- (void)aetherRecordInputTime:(int64_t)time
++{
++    [_aetherSnapshotLock lock];
++    _aetherInputTime = time;
++    [_aetherSnapshotLock unlock];
++}
++
++- (void)aetherRecordError
++{
++    [_aetherSnapshotLock lock];
++    _aetherHadError = YES;
++    [_aetherSnapshotLock unlock];
++}
++
++- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError
++{
++    [_aetherSnapshotLock lock];
++    *time = _aetherInputTime;
++    *hadError = _aetherHadError;
++    [_aetherSnapshotLock unlock];
++}
++
+ /* Constructor */
+ - (instancetype)init
+ {
+@@ -705,6 +763,9 @@
+ - (instancetype)initCommon
+ {
+     if (self = [super init]) {
++        _aetherSnapshotLock = [[NSLock alloc] init];
++        _aetherInputTime = -1;
++        _aetherHadError = NO;
+         _adjustFilter = [VLCAdjustFilter createWithVLCMediaPlayer:(id)self];
+         _timeChangeLockQueue = dispatch_queue_create("org.videolan.vlcmediaplayer.timechangelock", DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL);
+         _lastTimePoint.ts_us = -1;
+@@ -1494,10 +1555,17 @@
+         
+         int64_t system_now_us = _systemDateOfDiscontinuity > 0 ? _systemDateOfDiscontinuity : libvlc_clock();
+ 
+-        libvlc_media_player_time_point_interpolate(&_lastTimePoint,
+-                                                   system_now_us,
+-                                                   &_lastInterpolatedTime,
+-                                                   &_lastInterpolatedPosition);
++        int64_t interpolatedTime = _lastInterpolatedTime;
++        double interpolatedPosition = _lastInterpolatedPosition;
++        if (libvlc_media_player_time_point_interpolate(&_lastTimePoint,
++                                                      system_now_us,
++                                                      &interpolatedTime,
++                                                      &interpolatedPosition) != 0) {
++            isChangeValid = NO;
++            return;
++        }
++        _lastInterpolatedTime = interpolatedTime;
++        _lastInterpolatedPosition = interpolatedPosition;
+     });
+     if(!isChangeValid)
+         return;
+--- include/AetherVLCMediaPlayer.h
++++ include/AetherVLCMediaPlayer.h
+@@ -97,7 +97,9 @@
+ @protocol AetherVLCMediaPlayerDelegate <NSObject>
+ 
+ @optional
+-- (void)mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason;
++- (void)mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason inputTime:(int64_t)inputTime hadError:(BOOL)hadError NS_SWIFT_NAME(mediaPlayerStopping(reason:inputTime:hadError:));
++- (void)mediaPlayerClockTime:(int64_t)time position:(double)position systemDate:(int64_t)systemDate NS_SWIFT_NAME(mediaPlayerClockPoint(time:position:systemDate:));
++- (void)mediaPlayerInputTime:(int64_t)time position:(double)position NS_SWIFT_NAME(mediaPlayerInputPositionChanged(time:position:));
+ /**
+  * Called when the media player signal that it changed to another playback state.
+  * \param newState the current new state

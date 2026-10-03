@@ -1,0 +1,7 @@
+{
+  "ConsumerContract.swift": "1548390b3bf889807282fb7affc5d627285fa5ec0fd1cdefb8ca4cc1112803f9",
+  "generate_namespaced_wrapper.py": "5b55a572012790ad382b3d2d446dc45a045df200eefa5fc28937d7f5d0b7d9d8",
+  "generate_package_sources.py": "51ecff1002f05fcfceff3f39398562fdeebbe28e8bad5107058b325bffa2fb47",
+  "prepare_local_mirror.py": "9a9da1cef54882ee0530dff392c8cde152bc45fb8d5de716b86af2e27ca26aec",
+  "verify_package_consumers.py": "4934c22c24059f082fcc0c0065feb1542669f620bc1993df53a3837687cc68c6"
+}

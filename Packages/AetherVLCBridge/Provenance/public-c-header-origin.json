@@ -1,0 +1,159 @@
+{
+  "files": [
+    {
+      "file": "libvlc.h",
+      "SHA256": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+      "slices": {
+        "macos-arm64_x86_64": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "ios-arm64": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "ios-arm64_x86_64-simulator": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_dialog.h",
+      "SHA256": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+      "slices": {
+        "macos-arm64_x86_64": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "ios-arm64": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "ios-arm64_x86_64-simulator": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_downloader.h",
+      "SHA256": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
+      "slices": {
+        "macos-arm64_x86_64": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
+        "ios-arm64": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
+        "ios-arm64_x86_64-simulator": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media.h",
+      "SHA256": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+      "slices": {
+        "macos-arm64_x86_64": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "ios-arm64": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "ios-arm64_x86_64-simulator": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media_discoverer.h",
+      "SHA256": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+      "slices": {
+        "macos-arm64_x86_64": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "ios-arm64": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "ios-arm64_x86_64-simulator": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media_list.h",
+      "SHA256": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+      "slices": {
+        "macos-arm64_x86_64": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "ios-arm64": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "ios-arm64_x86_64-simulator": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media_list_player.h",
+      "SHA256": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+      "slices": {
+        "macos-arm64_x86_64": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "ios-arm64": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "ios-arm64_x86_64-simulator": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media_player.h",
+      "SHA256": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+      "slices": {
+        "macos-arm64_x86_64": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "ios-arm64": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "ios-arm64_x86_64-simulator": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_media_track.h",
+      "SHA256": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+      "slices": {
+        "macos-arm64_x86_64": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "ios-arm64": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "ios-arm64_x86_64-simulator": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_parser.h",
+      "SHA256": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+      "slices": {
+        "macos-arm64_x86_64": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "ios-arm64": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "ios-arm64_x86_64-simulator": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_picture.h",
+      "SHA256": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+      "slices": {
+        "macos-arm64_x86_64": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "ios-arm64": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "ios-arm64_x86_64-simulator": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_renderer_discoverer.h",
+      "SHA256": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+      "slices": {
+        "macos-arm64_x86_64": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "ios-arm64": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "ios-arm64_x86_64-simulator": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_version.h",
+      "SHA256": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
+      "slices": {
+        "macos-arm64_x86_64": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
+        "ios-arm64": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
+        "ios-arm64_x86_64-simulator": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122"
+      },
+      "identical": true
+    },
+    {
+      "file": "libvlc_video.h",
+      "SHA256": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+      "slices": {
+        "macos-arm64_x86_64": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "ios-arm64": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "ios-arm64_x86_64-simulator": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32"
+      },
+      "identical": true
+    },
+    {
+      "file": "vlc.h",
+      "SHA256": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+      "slices": {
+        "macos-arm64_x86_64": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "ios-arm64": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "ios-arm64_x86_64-simulator": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f"
+      },
+      "identical": true
+    }
+  ],
+  "allThreeSupportedSliceHeadersIdentical": true,
+  "headerOrigin": "The 15 public vlc headers delivered in all three slices of the pinned official VLCKit XCFramework; not guessed replacements from another VLC checkout",
+  "binaryArchiveSHA256": "f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb",
+  "fixedWrapperRevision": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
+  "libvlcHeaderVersionMacros": "4.0.0; this is a header macro, not proof of a released LibVLC 4.0 build"
+}

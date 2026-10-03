@@ -14,6 +14,7 @@ struct PlayerScreen: View {
     @State private var openingError: String?
     @State private var subtitleError: String?
     @State private var subtitles: [MediaItem] = []
+    @State private var playbackSessionID: UUID?
     @State private var showingSubtitlePicker = false
     @State private var showingOptions = false
     @State private var isScrubbing = false
@@ -62,7 +63,7 @@ struct PlayerScreen: View {
                         .allowsHitTesting(controlsVisible)
                         .accessibilityHidden(!controlsVisible)
                     Spacer()
-                    if let error = openingError ?? player.errorMessage {
+                    if let error = openingError ?? store.playbackErrorMessage ?? player.errorMessage {
                         VStack(spacing: 14) {
                             Image(systemName: "exclamationmark.triangle").font(.largeTitle)
                             Text(error).multilineTextAlignment(.center)
@@ -100,18 +101,25 @@ struct PlayerScreen: View {
         .task(id: "\(controlsInteraction)-\(player.isPlaying)-\(showingOptions)-\(isScrubbing)-\(voiceOverEnabled)") {
             guard player.isPlaying, !showingOptions, !isScrubbing, !voiceOverEnabled else { return }
             do { try await Task.sleep(for: .seconds(4)) } catch { return }
-            guard !Task.isCancelled, player.isPlaying, openingError == nil, player.errorMessage == nil else { return }
+            guard !Task.isCancelled, player.isPlaying, openingError == nil, store.playbackErrorMessage == nil, player.errorMessage == nil else { return }
             withAnimation(.easeInOut(duration: 0.2)) { controlsVisible = false }
         }
         .onChange(of: player.isPlaying) { _, playing in if !playing { revealControls() } }
         .onChange(of: player.errorMessage) { _, message in if message != nil { revealControls() } }
+        .onChange(of: store.playbackErrorMessage) { _, message in
+            if message != nil { player.stop(); revealControls() }
+        }
         .onChange(of: player.subtitleErrorMessage) { _, message in
             if let message { subtitleError = message; revealControls() }
         }
         .onChange(of: showingOptions) { _, _ in revealControls() }
         .onDisappear {
+            let sessionID = playbackSessionID
             player.stop()
-            Task { await store.flushProgress(); await store.stopStreaming(for: item.id) }
+            Task {
+                await store.flushProgress()
+                if let sessionID { await store.stopStreaming(for: item.id, sessionID: sessionID) }
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             #if os(iOS)
@@ -133,14 +141,16 @@ struct PlayerScreen: View {
     private var header: some View {
         HStack(spacing: 12) {
             Button {
+                guard store.playingItem?.id == item.id else { return }
+                let sessionID = playbackSessionID
                 player.stop()
+                store.playingItem = nil
+                #if os(iOS)
+                dismiss()
+                #endif
                 Task {
                     await store.flushProgress()
-                    await store.stopStreaming(for: item.id)
-                    store.playingItem = nil
-                    #if os(iOS)
-                    dismiss()
-                    #endif
+                    if let sessionID { await store.stopStreaming(for: item.id, sessionID: sessionID) }
                 }
             } label: { Image(systemName: "xmark").frame(width: 44, height: 44).contentShape(Rectangle()) }
             .buttonStyle(.glass)
@@ -297,18 +307,36 @@ struct PlayerScreen: View {
         player.setRate(Float(preferredPlaybackRate))
         player.setPreferredLanguages(audio: preferredAudioLanguage.isEmpty ? nil : preferredAudioLanguage,
             subtitles: preferredSubtitleLanguage.isEmpty ? nil : preferredSubtitleLanguage)
-        player.onProgress = { position, duration in store.recordProgress(item, position: position, duration: duration) }
-        player.onEnded = { Task { await store.playNext(after: item, markCompleted: true) } }
+        player.onProgress = { position, duration, confirmed in
+            store.recordProgress(item, position: position, duration: duration, allowsAutomaticWatched: confirmed)
+        }
+        player.onEnded = nil
+        player.completionValidator = nil
+        var preparedSessionID: UUID?
         do {
-            let url = try await store.preparePlayback(item)
+            let source = try await store.preparePlayback(item)
+            let sessionID = source.sessionID
+            preparedSessionID = sessionID
             try Task.checkCancellation()
-            player.load(url: url, startAt: store.progress(for: item)?.resumePosition ?? 0)
+            guard store.playbackSession(for: item) == sessionID, store.playingItem?.id == item.id else { throw CancellationError() }
+            playbackSessionID = sessionID
+            player.completionValidator = { await store.canCompletePlayback(after: item, sessionID: sessionID) }
+            player.onEnded = { Task { await store.completePlayback(after: item, sessionID: sessionID) } }
+            player.load(url: source.url, startAt: store.progress(for: item)?.resumePosition ?? 0)
             subtitles = (try? await store.subtitleCandidates(for: item)) ?? []
+            try Task.checkCancellation()
+            guard store.playbackSession(for: item) == sessionID, store.playingItem?.id == item.id else { throw CancellationError() }
             let base = (item.name as NSString).deletingPathExtension.lowercased()
             if let match = subtitles.first(where: { ($0.name as NSString).deletingPathExtension.lowercased() == base }) {
-                if let url = try? await store.subtitleURL(match) { player.addSubtitle(url) }
+                if let url = try? await store.subtitleURL(match) {
+                    try Task.checkCancellation()
+                    guard store.playbackSession(for: item) == sessionID, store.playingItem?.id == item.id else { throw CancellationError() }
+                    player.addSubtitle(url)
+                }
             }
-        } catch is CancellationError { }
+        } catch is CancellationError {
+            if let preparedSessionID { await store.stopStreaming(for: item.id, sessionID: preparedSessionID) }
+        }
         catch { openingError = error.localizedDescription }
     }
 

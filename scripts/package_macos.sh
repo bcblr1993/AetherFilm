@@ -57,6 +57,7 @@ spctl --assess --type execute "$APP"
 ln -s /Applications "$STAGE/Applications"
 mkdir "$STAGE/Notices"
 cp THIRD_PARTY_NOTICES.md LICENSE "$STAGE/Notices/"
+cp Apps/Resources/Notices/AetherVLCBridge-LICENSE.txt Apps/Resources/Notices/AetherVLCBridge-SOURCE.txt "$STAGE/Notices/"
 cat > "$STAGE/安装说明.txt" <<'TEXT'
 将 AetherFilm 拖入 Applications（应用程序）。最低系统为 macOS 26。
 在应用中选择自己的视频，或连接 NAS 的 SMB 共享。

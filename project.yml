@@ -12,6 +12,8 @@ configFiles:
 packages:
   AetherFilmKit:
     path: Packages/AetherFilmKit
+  AetherVLCBridge:
+    path: Packages/AetherVLCBridge
   VLCKit:
     url: https://github.com/videolan/vlckit.git
     revision: 8f5ce02f09a7da5d061a24ddac3cb432f2a9b332
@@ -96,6 +98,7 @@ targets:
       - package: AetherFilmKit
         product: FilmSources
       - package: VLCKit
+      - package: AetherVLCBridge
   AetherFilm-iOS:
     type: application
     platform: iOS
@@ -144,6 +147,7 @@ targets:
       - package: AetherFilmKit
         product: FilmSources
       - package: VLCKit
+      - package: AetherVLCBridge
   AetherFilmPlaybackTests-macOS:
     type: bundle.unit-test
     platform: macOS
@@ -157,6 +161,8 @@ targets:
         optional: true
     dependencies:
       - target: AetherFilm-macOS
+      - package: AetherVLCBridge
+        link: false
       - package: VLCKit
       - package: AetherFilmKit
         product: FilmDomain
@@ -183,6 +189,8 @@ targets:
         optional: true
     dependencies:
       - target: AetherFilm-iOS
+      - package: AetherVLCBridge
+        link: false
       - package: VLCKit
       - package: AetherFilmKit
         product: FilmDomain

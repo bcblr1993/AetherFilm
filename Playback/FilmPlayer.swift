@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import FilmDomain
 import VLCKit
+import AetherVLCBridge
 #if os(iOS)
 import AVFAudio
 #endif
@@ -28,9 +29,10 @@ public final class FilmPlayer: NSObject {
     public private(set) var subtitleScale: Float = 1
     public private(set) var fillsScreen = false
 
-    @ObservationIgnored public var onProgress: (@MainActor (Double, Double) -> Void)?
+    @ObservationIgnored public var onProgress: (@MainActor (Double, Double, Bool) -> Void)?
+    @ObservationIgnored public var completionValidator: (@MainActor () async -> Bool)?
     @ObservationIgnored public var onEnded: (@MainActor () -> Void)?
-    @ObservationIgnored private var engine: VLCMediaPlayer?
+    @ObservationIgnored private var engine: AetherVLCMediaPlayer?
     @ObservationIgnored private var events: PlayerEvents?
     @ObservationIgnored private var sessionID = UUID()
     @ObservationIgnored private weak var drawable: AnyObject?
@@ -40,6 +42,21 @@ public final class FilmPlayer: NSObject {
     @ObservationIgnored private var backendIsLoading = false
     @ObservationIgnored private var didStart = false
     @ObservationIgnored private var didEnd = false
+    @ObservationIgnored private var stoppingReason: AetherVLCMediaStoppingReason?
+    @ObservationIgnored private var didBackendStop = false
+    @ObservationIgnored private var stoppingInputTime: Double?
+    @ObservationIgnored private var stoppingHadError = false
+    @ObservationIgnored private var measuredInputTime: Double?
+    @ObservationIgnored private var seekEvidenceTarget: Double?
+    @ObservationIgnored private var seekOutputBaseline: UInt64 = 0
+    @ObservationIgnored private var completionEvaluation: Task<Void, Never>?
+    var backendEngineForTesting: AetherVLCMediaPlayer? { engine }
+    @ObservationIgnored private var measuredClockTime: Double?
+    var backendClockTime: Double? { measuredClockTime }
+    @ObservationIgnored private var measuredClockSystemDate: Int64?
+    var backendClockIsRunning: Bool { measuredClockSystemDate.map { $0 > 0 && $0 != Int64.max } ?? false }
+    var backendInputTime: Double? { measuredInputTime }
+    var backendStoppingReason: Int? { stoppingReason.map { Int($0.rawValue) } }
     @ObservationIgnored private var openingTimeout: Task<Void, Never>?
     @ObservationIgnored private var subtitleLoadingTask: Task<Void, Never>?
     @ObservationIgnored private var preferredAudioLanguage: String?
@@ -75,6 +92,7 @@ public final class FilmPlayer: NSObject {
     #endif
 
     isolated deinit {
+        completionEvaluation?.cancel()
         openingTimeout?.cancel()
         subtitleLoadingTask?.cancel()
         engine?.delegate = nil
@@ -128,6 +146,10 @@ public final class FilmPlayer: NSObject {
     func debugHoldNextPausedCallback() { events?.debugHoldNextPausedCallback() }
     var debugHasHeldPausedCallback: Bool { events?.debugHasHeldPausedCallback ?? false }
     func debugReleaseHeldPausedCallback() { events?.debugReleaseHeldPausedCallback() }
+    func debugRetainHeldPausedRelease() -> @MainActor () -> Void {
+        let previous = events
+        return { previous?.debugReleaseHeldPausedCallback() }
+    }
     #endif
 
     public func load(url: URL, startAt: Double = 0) {
@@ -162,17 +184,7 @@ public final class FilmPlayer: NSObject {
         }
         if let language = preferredAudioLanguage { media.addOption(":audio-language=\(language)") }
         if let language = preferredSubtitleLanguage { media.addOption(":sub-language=\(language)") }
-        let player = VLCMediaPlayer(options: ["--quiet", "--no-video-title-show"])
-        if capturesDecoderEvidence {
-            player.libraryInstance.loggers = [DecoderEvents(owner: self, sessionID: sessionID)]
-        }
-        let delegate = PlayerEvents(owner: self, sessionID: sessionID)
-        player.delegate = delegate
-        player.timeChangeUpdateInterval = 0.25
-        player.media = media
-        player.drawable = drawable
-        engine = player
-        events = delegate
+        installEngine(media: media)
         // Wait for SwiftUI's native surface before starting video output. This
         // also prevents VLC from opening an independent desktop video window.
         if drawable != nil { startEngine() }
@@ -184,6 +196,7 @@ public final class FilmPlayer: NSObject {
         if didEnd {
             didEnd = false
             pendingSeek = 0
+            position = 0
         }
         if engine.state == .stopped || engine.state == .nothingSpecial {
             startEngine()
@@ -217,6 +230,10 @@ public final class FilmPlayer: NSObject {
     public func seek(_ seconds: Double) {
         guard seconds.isFinite else { return }
         let target = duration > 0 ? min(duration, max(0, seconds)) : max(0, seconds)
+        seekEvidenceTarget = target
+        seekOutputBaseline = displayedVideoFrames
+        measuredInputTime = nil
+        measuredClockTime = nil
         pendingSeek = target
         applyPendingSeek()
     }
@@ -333,6 +350,16 @@ public final class FilmPlayer: NSObject {
     public func stop() {
         captureProgress()
         sessionID = UUID()
+        stoppingReason = nil
+        didBackendStop = false
+        stoppingInputTime = nil
+        stoppingHadError = false
+        measuredInputTime = nil
+        measuredClockTime = nil
+        seekEvidenceTarget = nil
+        seekOutputBaseline = 0
+        completionEvaluation?.cancel()
+        completionEvaluation = nil
         openingTimeout?.cancel()
         openingTimeout = nil
         subtitleLoadingTask?.cancel()
@@ -379,7 +406,59 @@ public final class FilmPlayer: NSObject {
         drawable = nil
     }
 
+    private func installEngine(media: VLCMedia) {
+        let player = AetherVLCMediaPlayer(options: ["--quiet", "--no-video-title-show", "--stats-min-report-interval=50"])
+        if capturesDecoderEvidence {
+            player.libraryInstance.loggers = [DecoderEvents(owner: self, sessionID: sessionID)]
+        }
+        let delegate = PlayerEvents(owner: self, sessionID: sessionID)
+        player.delegate = delegate
+        player.timeChangeUpdateInterval = 0.25
+        // Normal clock points and input statistics arrive at most 20 times/sec.
+        // This captures final input progress after a near-end seek; UI time
+        // notifications remain at 4Hz. No extra C clock polling is required.
+        player.minimalTimePeriod = 50_000
+        player.media = media
+        player.drawable = drawable
+        engine = player
+        events = delegate
+    }
+
+    private func replaceFinishedEngine() {
+        guard let previous = engine, let media = previous.media else { return }
+        // Reuse the media item, including imported slaves and metadata, but give
+        // every replay a fresh C player and immutable delegate generation.
+        previous.delegate = nil
+        previous.drawable = nil
+        previous.media = nil
+        sessionID = UUID()
+        completionEvaluation?.cancel()
+        completionEvaluation = nil
+        openingTimeout?.cancel()
+        openingTimeout = nil
+        subtitleLoadingTask?.cancel()
+        subtitleLoadingTask = nil
+        #if os(iOS)
+        pendingAudioActivation = nil
+        audioSessionCoordinator.deactivate(owner: audioSessionOwner)
+        #endif
+        didStart = false
+        stoppingReason = nil
+        didBackendStop = false
+        stoppingInputTime = nil
+        stoppingHadError = false
+        measuredInputTime = nil
+        measuredClockTime = nil
+        measuredClockSystemDate = nil
+        seekEvidenceTarget = nil
+        seekOutputBaseline = 0
+        backendIsLoading = true
+        refreshLoading()
+        installEngine(media: media)
+    }
+
     private func startEngine() {
+        if didBackendStop { replaceFinishedEngine() }
         guard let engine else { return }
         engine.rate = rate
         engine.audio?.volume = Int32((volume * 100).rounded())
@@ -411,7 +490,7 @@ public final class FilmPlayer: NSObject {
     }
 
     #if os(iOS)
-    private func requestAudioActivation(for engine: VLCMediaPlayer) {
+    private func requestAudioActivation(for engine: AetherVLCMediaPlayer) {
         // The deadline includes waiting for the background audio worker. A
         // repeated play request shares the activation already in flight.
         armOpeningTimeout()
@@ -496,18 +575,41 @@ public final class FilmPlayer: NSObject {
         pendingSeek = nil
         let bounded = min(duration > 0 ? min(duration, target) : target,
                           Double(Int64.max / 1_000_000) - 1)
+        // Include initial/resume seeks in the same evidence boundary.
+        seekEvidenceTarget = bounded
+        seekOutputBaseline = displayedVideoFrames
+        measuredInputTime = nil
+        measuredClockTime = nil
         // NSNumber keeps long media timestamps outside the old Int32 API.
         engine.time = VLCTime(number: NSNumber(value: bounded * 1_000))
         position = bounded
-        onProgress?(position, duration)
+        // Save paused-seek resume without treating the requested target as watched.
+        onProgress?(position, duration, false)
     }
 
     private func captureProgress() {
         guard let engine, didStart, !didEnd else { return }
         guard let raw = engine.time.value?.doubleValue, raw.isFinite, raw >= 0 else { return }
-        let safe = PlaybackProgress(itemID: "", position: raw / 1_000, duration: duration)
-        position = safe.position
-        onProgress?(position, duration)
+        let seconds = raw / 1_000
+        // A failed upstream interpolation can otherwise fabricate an enormous
+        // time, which must never be clamped into a believable completed film.
+        guard duration > 0, seconds <= duration + 1 else { return }
+        guard displayedVideoFrames > 0 || playedAudioBuffers > 0 else { return }
+        guard let clock = measuredClockTime else { return }
+        // A timer can report the nominal duration for an incomplete source.
+        // Only the completion validator may publish that final point.
+        if completionValidator != nil, seconds >= duration { return }
+        position = min(duration, max(0, seconds))
+        if let target = seekEvidenceTarget {
+            guard displayedVideoFrames > seekOutputBaseline, abs(clock - target) < 1 else {
+                onProgress?(position, duration, false)
+                return
+            }
+            seekEvidenceTarget = nil
+        }
+        // The UI may still contain an immediate seek estimate. A real normal
+        // clock point must reach that position before it can mark the film watched.
+        onProgress?(position, duration, seconds <= clock)
     }
 
     private func refreshTracks() {
@@ -597,24 +699,65 @@ public final class FilmPlayer: NSObject {
             backendIsLoading = false
             isLoading = false
             isPlaying = false
-            // Recoverable subtitle errors must not prevent a completed video
-            // from recording its end. Playback failures clear wantsToPlay.
-            guard didStart, wantsToPlay, !didEnd else { return }
-            // VLC 4 reports natural completion as stopped. A stop before the
-            // known end is treated as an interrupted source, not as watched.
-            if duration > 0 && position >= max(0, duration - 1.5) {
-                didEnd = true
-                wantsToPlay = false
-                position = duration
-                onProgress?(position, duration)
-                onEnded?()
-            } else {
-                fail("播放已中断，请检查片源连接后重试。")
-            }
+            didBackendStop = true
+            evaluateCompletion()
         case .nothingSpecial:
             break
         @unknown default:
             break
+        }
+    }
+
+    fileprivate func receiveStoppingReason(_ reason: AetherVLCMediaStoppingReason, inputTime: Int64, hadError: Bool, token: UUID) {
+        guard token == sessionID, engine != nil else { return }
+        stoppingReason = reason
+        stoppingInputTime = inputTime >= 0 ? Double(inputTime) / 1_000_000 : nil
+        stoppingHadError = hadError
+        evaluateCompletion()
+    }
+
+    fileprivate func receiveClockPoint(_ time: Int64, position: Double, systemDate: Int64, token: UUID) {
+        guard token == sessionID, engine != nil, time >= 0 else { return }
+        measuredClockTime = Double(time) / 1_000_000
+        measuredClockSystemDate = systemDate
+        if didBackendStop { evaluateCompletion() }
+    }
+
+    fileprivate func receiveInputTime(_ time: Int64, position: Double, token: UUID) {
+        guard token == sessionID, engine != nil, time >= 0 else { return }
+        measuredInputTime = Double(time) / 1_000_000
+        if didBackendStop { evaluateCompletion() }
+    }
+
+    private func evaluateCompletion() {
+        guard didBackendStop, stoppingReason != nil, completionEvaluation == nil,
+              didStart, wantsToPlay, !didEnd, errorMessage == nil, let engine else { return }
+        let token = sessionID
+        let identity = ObjectIdentifier(engine)
+        guard stoppingReason == .endOfStream, !stoppingHadError,
+              let clock = stoppingInputTime, duration > 0,
+              clock >= duration - 0.25,
+              displayedVideoFrames > 0 || playedAudioBuffers > 0 else {
+            fail("播放已中断，请检查片源连接后重试。")
+            return
+        }
+        let validator = completionValidator
+        completionEvaluation = Task { [weak self] in
+            let allowed = await validator?() ?? true
+            guard let self, !Task.isCancelled, self.sessionID == token,
+                  self.engine.map(ObjectIdentifier.init) == identity,
+                  self.didBackendStop, self.wantsToPlay, !self.didEnd,
+                  self.errorMessage == nil else { return }
+            self.completionEvaluation = nil
+            guard allowed else {
+                self.fail("播放已中断，请检查片源连接后重试。")
+                return
+            }
+            self.didEnd = true
+            self.wantsToPlay = false
+            self.position = self.duration
+            self.onProgress?(self.position, self.duration, true)
+            self.onEnded?()
         }
     }
 
@@ -715,7 +858,7 @@ private final class DecoderEvents: NSObject, VLCLogging {
 }
 
 /// Delegate callbacks do not carry mutable VLC objects across executors.
-private final class PlayerEvents: NSObject, VLCMediaPlayerDelegate {
+private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
     private weak var owner: FilmPlayer?
     private let sessionID: UUID
 
@@ -749,6 +892,21 @@ private final class PlayerEvents: NSObject, VLCMediaPlayerDelegate {
         if let held { enqueueState(held) }
     }
     #endif
+
+    func mediaPlayerStopping(reason: AetherVLCMediaStoppingReason, inputTime: Int64, hadError: Bool) {
+        let token = sessionID
+        Task { @MainActor [weak owner] in owner?.receiveStoppingReason(reason, inputTime: inputTime, hadError: hadError, token: token) }
+    }
+
+    func mediaPlayerClockPoint(time: Int64, position: Double, systemDate: Int64) {
+        let token = sessionID
+        Task { @MainActor [weak owner] in owner?.receiveClockPoint(time, position: position, systemDate: systemDate, token: token) }
+    }
+
+    func mediaPlayerInputPositionChanged(time: Int64, position: Double) {
+        let token = sessionID
+        Task { @MainActor [weak owner] in owner?.receiveInputTime(time, position: position, token: token) }
+    }
 
     func mediaPlayerStateChanged(_ newState: VLCMediaPlayerState) {
         #if DEBUG

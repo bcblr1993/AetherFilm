@@ -1,8 +1,9 @@
 # Playback backend evidence
 
 Inspected on 2026-10-03 (Asia/Shanghai). This records upstream and artifact
-evidence. It is not an assertion that AetherFilm playback or device acceptance
-has passed; executed results belong in `TEST_MATRIX.md`.
+evidence and scoped diagnostic results. These results are not an assertion
+that the final combined AetherFilm candidate or device acceptance has passed;
+the release acceptance matrix remains in `TEST_MATRIX.md`.
 
 ## Fixed official dependency
 
@@ -154,6 +155,94 @@ Publish any changes to the LGPL components. Record the chosen distribution
 method and its evidence in the release checklist. A public AetherFilm source
 repository by itself does not prove all component obligations are satisfied.
 
+## Typed completion and SMB source health
+
+The stock fixed VLCKit wrapper exposes a stopped state without the typed
+libVLC stopping reason needed here. Its cached time can also contain a seek
+target before playback reaches that target. The source-controlled
+[`AetherVLCBridge`](../Packages/AetherVLCBridge/README.md) derives a namespaced
+player from the exact official wrapper inputs and adds stopping reason,
+input time/error, clock and input-position callbacks. Primitive stopping
+values are copied under an owned lock before the delegate event is queued;
+the stopping enum has a compile-time check against the fixed public C ABI.
+The fixed libVLC binary is unchanged. This route neither adopts the private
+handle of a stock player nor swizzles its class, and retains the original
+LGPL notices and generated-source provenance.
+
+The frozen bridge's optional Swift delegate calls and Objective-C selectors
+compiled and strongly linked on macOS arm64/x86_64, iOS arm64 and Simulator
+arm64/x86_64, with minimum version 26.0. The exact inputs and five-platform
+records are in `Packages/AetherVLCBridge/Provenance/consumer-build-review.json`.
+Those were independent consumers using a verified local mirror of the fixed
+binary, not a full app test or a libVLC framework rebuild.
+
+Typed EOS does not establish source integrity. An isolated 12-second
+frequent-keyframe fixture held back the last **391 of 796257 bytes**, after
+actual video/audio output had reached the tail. Both active FIN and RST then
+produced typed EOS and input time 12.0; a near-end time gate alone incorrectly
+called completion. The FIN run recorded actual clock 11.984114, displayed
+counter 7 and played-audio counter 82 before the fault. Healthy release of
+the held bytes passed. The failing controls remain in
+`.build/NamespacedVLCWrapperProbe/near-tail-negative-review.json`,
+`tail-fin-http-evidence.json`, `tail-rst-http-evidence.json` and their test logs.
+These generic HTTP fixtures established the failure mode, not a physical NAS
+outage or a successful SMB health integration.
+
+The shared `SMBStreamingServer` now publishes a sticky sanitized
+`readFailure()` on its actor before invoking the observer and closing a
+failed response. Provider errors, premature empty data and oversized replies
+qualify; valid nonempty short chunks continue. Consumer RST/send errors,
+cancelled or obsolete requests, seek cancellation and stop do not qualify.
+The state survives stop, failed instances reject new connections, and
+explicit Retry creates a clean instance. The application observer supplies
+the error/retry UI, but completion awaits the actor query directly. Its
+`canCompletePlayback` rechecks generation, source item and presented item
+after the await; completion checks again after persistence. Manual next and
+cleanup retain their originating generation, including same-item reopen.
+
+The 95% watched policy is separate from final completion and automatic next.
+`allowsAutomaticWatched: false` persists an unconfirmed near-end seek as a
+resume checkpoint without marking watched. Confirmed playback that already
+crossed 95% may legitimately remain watched after a later source failure;
+that history does not authorize an EOS callback to advance the queue or
+replace the last checkpoint with duration.
+
+Scoped executed evidence on 2026-10-03:
+
+- The complete shared package run passed **41/41, zero failed, zero skipped**:
+  28 source/protocol tests, 9 domain tests and 4 persistence tests. The local
+  Impacket 0.13.0 loopback fixture enabled the real SMB cases, including wrong
+  credentials; fake readers exercised late cancellation, early empty data,
+  sticky failure, clean Retry and actual TCP RST/half-close behavior. Log:
+  `.build/shared-source-health-full-smb.log`, SHA256
+  `a50f45887a6ea93f2d38c6d7e08f56d67d72a05dfe23ecc2597ce3774d40c6da`;
+  provenance: `.build/ConfirmedProgressEvidence/source-health-shared-review.json`
+  and `.build/EOFSourceHealthProbe/formal-provenance.json`. This is shared
+  service/domain/storage evidence, without a decoded-video claim.
+- The isolated final-wrapper playback candidate passed **21/21, zero skipped**
+  in 75.359 seconds on iOS 26.5 Simulator. Its strict real SMB repeated-seek
+  case took 32.678 seconds and natural completion took 2.071 seconds. A real
+  local SMB provider plus a controlled provider failure at the held 391-byte
+  tail published source failure despite typed EOS/input 12.0; the validator
+  rejected completion, no `onEnded` fired, and the saved position remained
+  below duration. This is a controlled read-failure test, not a claim that an
+  external NAS was disconnected. Result/log:
+  `.build/NamespacedVLCWrapperProbe/candidate-final21.xcresult` and
+  `logs/candidate-final21-test.log`.
+- The separate isolated boundary selection passed **9/9** in 19.593 seconds,
+  covering paused seek 11.5 persistence without watched, explicit stop,
+  session replacement, transport faults, broken media and healthy natural
+  completion. Result/log:
+  `.build/NamespacedVLCWrapperProbe/candidate-final-faults.xcresult` and
+  `logs/candidate-final-faults-test.log`.
+
+These isolated runs used identified wrapper/player copies and a local binary
+mirror. Earlier stock-wrapper results below remain historical; neither they
+nor independent bridge linking certify the newly combined application.
+This record makes no final combined 29-test or new CI pass claim. macOS GUI,
+physical-iPhone playback, complete framework rebuilding/relinking and release
+distribution retain their separate evidence requirements.
+
 ## Planned first-release support
 
 The playback adapter uses the fixed VLCKit backend for MP4/MOV/MKV/AVI,
@@ -200,6 +289,11 @@ missing or unsupported subtitle files leave the video running, and a verified
 successful retry or opening another video clears the recoverable error.
 The corresponding XCTest cases assert actual resumed progression, track
 selection and decoded/displayed output rather than only optimistic UI state.
+
+### Earlier stock-wrapper results
+
+The following results predate the typed bridge and source-health integration
+above and do not certify the new combined candidate.
 
 The real SMB case has passed on the iOS Simulator through the production
 SMB2 provider, loopback HTTP Range server and VLC player: initial output before
