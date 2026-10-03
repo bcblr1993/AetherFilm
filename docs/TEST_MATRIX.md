@@ -2,26 +2,26 @@
 
 当前处于执行验收阶段，尚未发布。构建和部分协议 / 播放测试已有真实结果；失败、未测和未发布分别记录。每项执行后记录命令、环境、结果、证据文件和 commit。
 
-当前生产源码基准为 `e4d7ff0f8e91e99cec13c6bca66c60dda795ad3a`。正式 iOS App 本地与该提交 CI 的播放 / 持久化测试均为 **29 / 29、0 skipped**；完整 UI 全组 **18 通过、1 项 opt-in 跳过**，减少透明度专项另行 **1 / 1、0 skipped**，合计 19 个场景实际执行。旧 CI 整轮因共享测试 7 项失败而失败；两处 TCP 测试辅助代码改用独立 GCD queue 后，本地共享 **41 / 41、0 skipped**，新提交 CI 仍待验证。该辅助修复未改变生产 App、服务、桥接、工程规范或资源。历史结果保留，不能将单个绿色 job 或旧签名包视为当前发布完成。
+生产实现基准为 `e4d7ff0f8e91e99cec13c6bca66c60dda795ad3a`，本地及其旧 platform CI 为 **29/29**；随后 `fb650378` 整轮 CI 失败，共享 **41/41**、播放 **26/29**。诊断提交 `4d25379` 亦整轮失败：共享 Swift 6.3 编译歧义、平台 **27/29**，两个 EOF 准备失败，20 seek / 重开通过。现已明确 DEBUG Task 类型并修正 EOF 测试阶段，新增独立冷 SMB 续播起点检查；本机增强后官方 iOS 27 完整 **30/30**、iOS 26.5 的三个 SMB EOF **3/3**，独立从零起播反例按预期立即失败，共享加诊断边界 **45/45**；新 CI 和 Mac 22 项尚待验收。完整 iOS UI 为 **18 通过、1 项 opt-in 跳过**，减少透明度专项另行 **1/1**；当前 iPad 完整流程正在补跑。Mac Aqua UI 首轮 **11 通过、7 失败、1 opt-in 跳过**，正在修复；Mac 播放新 bundle 因共享 VM 正跑另一项目 UI 而等待串行窗口。历史结果保留，不将本地绿色、单个绿色 job 或旧签名包视为当前发布完成。
 
 | 层级 | 场景 | macOS | iOS |
 | --- | --- | --- | --- |
 | 构建 | 最低部署版本 26；Debug / Release；真机 archive | 当前正式桥接 Debug / tests 与 universal Release 构建通过；新签名 DMG 未制作 | 当前 Simulator Debug / tests、device build 与 Apple Development Release archive 构建通过；archive 57 项检查通过 |
 | 本地 | 导入、取消、重复、中文 / 空格路径、重启访问 | 待测 | 待测 |
-| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 28 项 Sources 回归通过；VM 播放、真实 NAS 与 SMB3 加密成功待测 | 本地及 CI Simulator 真实 SMB 播放、20 次远近 seek、停止后重开通过；真实尾部读错拒绝完成与新流重试通过；真机待测 |
-| 播放 | H.264 + AAC MP4；HEVC MOV；MPEG4 + MP3 AVI；多轨 MKV；实际画面 / 音频输出 / 时间推进；4K HEVC | VM 待登录运行 | 四种容器与 4K HEVC Simulator 实际输出通过；真机硬件解码待测 |
-| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | VM 待测 | 正式桥接 / 音频 / EOF / 持久化本地与 CI 29 / 29 通过；当前完整 UI 与减少透明度专项通过；真机待测 |
+| SMB | 共享 / 目录、认证、中文路径、随机读取、Range、错误密码、超时 / 取消、加密失败不回落 | 原 Sources 28 加诊断 4 项通过；VM 播放、真实 NAS 与 SMB3 加密成功待测 | 本地真实 SMB 两次打开 / 20 seek / 尾部健康与读错门控通过；fb650378 CI 三个 case 失败，新 CI 待结果；真机待测 |
+| 播放 | H.264 + AAC MP4；HEVC MOV；MPEG4 + MP3 AVI；多轨 MKV；实际画面 / 音频输出 / 时间推进；4K HEVC | SSH 上下文视频输出为零；现有 Aqua 新测试 bundle 待验收 | 四种容器与 4K HEVC Simulator 实际输出通过；真机硬件解码待测 |
+| 控制 | 暂停 / 继续、进度跳转、倍速、全屏、结束、切换影片、退出清理 | Aqua 全屏进入 / 退出几何通过，关闭与播放交互失败正修复；正式播放待新 bundle | 增强后本地 iOS 27 为 30/30；旧 4d CI 27/29，新 CI 待结果；完整 UI 与减少透明度专项通过，真机待测 |
 | 字幕 | SRT / ASS / VTT 中文、内嵌字幕、开关、跳转同步、无字幕 | VM 待测 | Simulator 内嵌 / 外挂 SRT、ASS、VTT 选择与关闭、章节跳转、坏字幕不中断视频与同片重试通过；视觉同步 / 真机待测 |
 | 音轨 | 单 / 多音轨、切换、无音轨、不可解码错误 | VM 待测 | 多轨选择通过；其余 UI / 真机待测 |
-| 记录 | 断点、重启恢复、片尾完成、已看、清除；库条目删除不删除原文件 | Domain 9 / Library 4 通过；AppStore / UI 待 VM 运行 | AppStore 8 case 与当前 UI 回归通过；未确认片尾 seek 可续播、已确认已看不被清除、源失败 / 旧会话拒绝完成通过 |
-| UI | 本地 / 续播空状态；导入入口；SMB 表单校验 / 取消；目录 / 返回 / 空目录；列表筛选；失败重试；格式 / 观看状态；播放入口 | 自动化已编写，待 VM 运行 | 全组 18 通过、1 opt-in 跳过；专项减少透明度 1 通过、0 skipped；19 场景已实跑，虚拟 NAS 状态不替代真实协议 / 真机 |
-| 可访问性 | 动态字体、可访问性描述、VoiceOver、实际系统减少透明度、键盘导航 | 待实际运行 / 人工验收 | 当前描述 audit / 减少透明度专项通过；历史设置页标准 / 大 / 最大系统字号与滑杆证据保留；全应用最大字号、真实 VoiceOver / 真机人工验收待测 |
-| 适配 | 980×680 / 620×440 窗口、浅深色；iPhone 小屏 / 横屏；iPad 分屏 | 自动化已编写，待截图审核 | 当前 iPhone 22 张 UI 截图已审核；历史 iPad 4 项布局烟测通过，当前完整 iPad / 分屏和键盘表单仍待测 |
+| 记录 | 断点、重启恢复、片尾完成、已看、清除；库条目删除不删除原文件 | Domain 9 / Library 4 与 AppStore 8 通过；UI 续播因 Mac 计时查询失败未完成，已看 / 清除 / 移除已实跑 | AppStore 8 case 与当前 UI 回归通过；未确认片尾 seek 可续播、已确认已看不被清除、源失败 / 旧会话拒绝完成通过 |
+| UI | 本地 / 续播空状态；导入入口；SMB 表单校验 / 取消；目录 / 返回 / 空目录；列表筛选；失败重试；格式 / 观看状态；播放入口 | Aqua 首轮 11 passed / 7 failed / 1 opt-in skipped；原失败保留，修复后待复跑 | 全组 18 通过、1 opt-in 跳过；专项减少透明度 1 通过、0 skipped；19 场景已实跑，虚拟 NAS 状态不替代真实协议 / 真机 |
+| 可访问性 | 动态字体、可访问性描述、VoiceOver、实际系统减少透明度、键盘导航 | 描述 audit 失败正在定位元素；减少透明度 false 而跳过，专项 / 人工验收待完成 | 当前描述 audit / 减少透明度专项通过；历史设置页标准 / 大 / 最大系统字号与滑杆证据保留；全应用最大字号、真实 VoiceOver / 真机人工验收待测 |
+| 适配 | 980×680 / 620×440 窗口、浅深色；iPhone 小屏 / 横屏；iPad 分屏 | 原浅深色截图已审核；窄窗仍为 980 点，DEBUG 尺寸 helper 正诊断 | 当前 iPhone 22 张 UI 截图已审核；历史 iPad 4 项布局烟测通过，当前完整 iPad / 分屏和键盘表单仍待测 |
 | 分发 | 签名、公证、DMG 标签和内容、安装、首启、公开下载 SHA256 | 磁盘 c790607 DMG 为旧候选；VM 54 项仅对应旧 5e12be2；当前源码的新签名 / 公证包、VM、首启 / 播放和公开下载待测 | 不适用 |
 | 分发 | 真机安装 / 播放、TestFlight 构建和安装、公开入口 | 不适用 | 当前 archive 57 项通过，Apple Development / get-task-allow=true；手机仍锁定，安装 / 播放 / TestFlight / 公开入口待测 |
 | 官网 | 中英介绍、真实截图、系统要求、下载 / 发布链接、线上访问 | 隔离候选 153 项测试及 16 个浏览器场景通过；实际截图、下载与线上部署待完成 | 开发状态页面候选通过；无公开 iOS 安装链接 |
 
-共享代码回归：文件格式 / 自然排序、目录边界、HTTP Range、进度边界、编码往返、损坏 / 未来版本数据、密钥不入普通持久化和源健康。当前两处 TCP 测试辅助修复后的完整共享测试 **41 / 41、0 failures、0 skipped**：Domain 9、Library 4、Sources 28，证据 `.build/SMBSocketQueueFixEvidence/review.json`。旧 `e4d7ff0` CI 的共享结果为 34 / 41、7 failures，原始失败保留，修复后新提交 CI 待验证。历史半关闭阶段的 33 / 33 日志 `.build/kit-full-halfclose-candidate.log` 和此前 31 项 `.build/kit-full-candidate.log` 仍保留。
+共享代码回归：文件格式 / 自然排序、目录边界、HTTP Range、进度边界、编码往返、损坏 / 未来版本数据、密钥不入普通持久化和源健康。TCP 测试辅助修复后，本地及 fb650378 CI 的原共享测试 **41/41、0 failures、0 skipped**：Domain 9、Library 4、Sources 28。最新 DEBUG 边界新增 4 项后本地 **45/45**，远程新提交待结果；证据 `.build/SMBSocketQueueFixEvidence/review.json`、`.build/SMBDebugTraceEvidence/review.json`。旧 e4d7ff0 的 34/41 与原始失败保留。历史半关闭阶段 33/33 与此前 31 项日志仍保留。
 
 协议集成使用隔离 SMB2 服务和自己生成的媒体样片，验证认证、读取、HTTP Range、取消、超时与失败路径。WebDAV / Jellyfin 未入选本期，不是本期验收项。
 
@@ -191,4 +191,10 @@ Mac 正式应用测试共 **21 项**（AppStore 8、EOF 4、Playback 9；8 项�
 
 新增 DEBUG 诊断默认关闭，只保存有硬容量上限的数字 / 固定事件枚举，并仅在失败时附加 JSON；不记录片源 URL、路径、认证或错误文本。共享包原 41 项加 4 项诊断边界测试，共 **45/45、0 failure、0 skipped**；Release 编译与符号检查确认该包的诊断 API / recorder 均排除，证据 `.build/SMBDebugTraceEvidence/review.json`。原播放 / 读取断言、超时、Range、取消逻辑、512KiB chunk 和依赖均未改变。此结果只认证诊断边界，不代表 CI 播放问题已解决。
 
-同源新诊断产品在 iOS 26.5 的原三个聚焦用例 **3/3、0 failure、0 skipped，38.824 秒**，结果 `.build/results/AetherFilm-debugtrace-focused3-20261003-0142.xcresult`；iOS 27 对照及新提交远程 CI 尚待结果。Mac 新 ARC guard 测试 bundle 构建通过，Aqua 实跑仍待完成。
+同源新诊断产品在 iOS 26.5 的原三个聚焦用例 **3/3、0 failure、0 skipped，38.824 秒**，结果 `.build/results/AetherFilm-debugtrace-focused3-20261003-0142.xcresult`；官方 iOS 27 对照 **3/3**，完整正式 **29/29、0 failure、0 skipped，82.917 秒**，证据 `.build/PlaybackEvidence/DebugTraceIntegration/27-full29-review.json`。Mac 新 ARC guard 测试 bundle 构建通过，Aqua 实跑仍待完成。
+
+诊断提交 `4d25379` 的 run `37086982680` **整轮失败**。共享在 Xcode 26.6 / Swift 6.3.3 编译 DEBUG Task 时存在重载歧义，尚未执行测试；平台三项构建通过，正式 **27/29、两 EOF 准备 case 失败、0 skipped**，20 次 SMB seek / 重开本轮通过，69.942 秒。精确 artifact `11261102382` 与 digest 一致，证据 `.build/CI4d25379Evidence/review.json`。两项失败没有到达尾部释放 / 读错注入，也没有执行 validator。记录到的 Swift delegate 到 MainActor 最大延迟为 7.53 / 1.83ms，HTTP 发送完成与后续协程恢复较快；上层前缀读取需 0.518–2.247 秒，正常 clock 在最后前缀发送后约 27 / 91ms 出现。未确定 C / context 锁或其他唯一原因，不能把旧 seek 失败标为已修复。
+
+修正仅明确 DEBUG `Task<Void, Never>` 类型，以及测试的阶段：先用既有 12 秒真实冷开片门，随后显式 seek10 / 原 6 秒近尾门；动态选取的尾部字节保持 withheld，原 frame / clock / health / validator 断言保留，并要求 seek 后新视频帧和音频各超过 seek 前基线 5。旧 CI 样片尾部为 410 字节，本地新样片为 391 字节，均由原 ffprobe 脚本选取最后音频包，不能硬编码字节数。另加独立未 held 的 SMB 冷续播10测试，首次观察到正常 clock 与实际画音时即检查起点至少 9.95 秒，以排除从零正常播放到10秒的误通过；原 clock/input >10.06、12 秒准备和 6 秒 EOS 门保留。独立静态复核 `.build/SMBDebugTraceEvidence/PhaseReview/review.json` 绑定 EOF SHA256 `58db08570eb573e3e370844735b069328dddfbacc8fc81913af565701556269c`；未包含首次起点门的早期 30/30 草稿不作最终证明。该改动调整测试准备，不改变生产超时或网络参数。
+
+增强后官方 iOS 27 完整 **30/30、0 failures、0 skipped**，78.575 秒，EOF 5、FilmPlayback 9（含原 20 SMB seeks / 重开）、AppStore 8、音频 8 均通过；三个 SMB EOF 在 iOS 26.5 另行 **3/3**，10.315 秒。冷续播首次正常 clock 为 10.133334 秒，真实 input 分别为 10.134432 / 10.148684 秒。独立 ignored 副本仅将该测试的 load 参数改为0，保留“请求10”断言与正式代码，在正常 clock 0.866667 / input 0.915167 秒即失败，2.051 秒，一失败 case；这是预期负向验证，不是正式产品回归。实际 xcresult 摘要保留于 `.build/PlaybackEvidence/PhaseGuard/{27-full30-summary.json,26.5-EOF3-summary.json,negative-summary.json}`，无 runtime warnings。新 CI 与 Mac 22 实播仍待验收。

@@ -168,6 +168,65 @@ final class EOFPlaybackTests: XCTestCase {
         try await realSMBTail(fails: false)
     }
 
+    func testRealSMBColdResumeHasOutputAndCompletes() async throws {
+        #if DEBUG
+        player.debugEnableLifecycleTrace(origin: origin)
+        #endif
+        let fixture = try await EOFSMBFixture.configuration()
+        let credentials = SMBCredentials(username: fixture.username, password: fixture.password)
+        let connection = SMBConnection(name: "fixture", host: "127.0.0.1", port: fixture.port, share: fixture.share, rootPath: fixture.mediaPath)
+        let path = fixture.mediaPath + "/clip-short-gop.mp4"
+        let provider = SMBProvider()
+        let size = try await provider.fileSize(connection, credentials: credentials, path: path)
+        let stream = SMBStreamingServer(provider: provider, connection: connection, credentials: credentials, path: path, size: size)
+        #if DEBUG
+        await stream.debugEnableTrace(origin: origin)
+        #endif
+        var validatorCalls = 0
+        player.completionValidator = {
+            validatorCalls += 1
+            return await stream.readFailure() == nil
+        }
+        let url = try await stream.start()
+        player.load(url: url, startAt: 10)
+        do {
+            var firstOutputClock: Double?
+            var firstOutputInput: Double?
+            try await wait("SMB initial resume real output", failIf: {
+                guard firstOutputClock == nil, self.player.backendClockIsRunning,
+                      let clock = self.player.backendClockTime, clock > 0.8,
+                      self.player.displayedVideoFrames > 0, self.player.playedAudioBuffers > 0 else { return }
+                firstOutputClock = clock
+                firstOutputInput = self.player.backendInputTime
+                print("EOF SMB first resume output clock=\(clock) input=\(firstOutputInput ?? -1) requested=10")
+                XCTAssertGreaterThanOrEqual(clock, 9.95, "The first actual output must honor the requested initial resume position.")
+                if clock < 9.95 { throw EOFPlaybackError.invalidResumePoint }
+            }) {
+                self.player.backendClockIsRunning && (self.player.backendClockTime ?? 0) > 10.06
+                    && (self.player.backendClockTime ?? 99) < self.player.duration
+                    && (self.player.backendInputTime ?? 0) > 10.06 && (self.player.backendInputTime ?? 99) < self.player.duration
+                    && self.player.isPlaying && self.player.displayedVideoFrames > 0 && self.player.playedAudioBuffers > 0
+            }
+            try await wait("SMB initial resume real EOS", timeout: 6) { self.ended == 1 }
+            XCTAssertEqual(validatorCalls, 1)
+            XCTAssertNil(player.errorMessage)
+            let failure = await stream.readFailure()
+            XCTAssertNil(failure)
+            snapshot("SMB initial resume completed once")
+            player.stop()
+            await stream.stop()
+            await provider.close()
+        } catch {
+            #if DEBUG
+            await attachSMBFailureDiagnostics(stream)
+            #endif
+            player.stop()
+            await stream.stop()
+            await provider.close()
+            throw error
+        }
+    }
+
     private func realSMBTail(fails: Bool) async throws {
         #if DEBUG
         player.debugEnableLifecycleTrace(origin: origin)
@@ -199,12 +258,19 @@ final class EOFPlaybackTests: XCTestCase {
             return failure == nil
         }
         let url = try await stream.start()
-        player.load(url: url, startAt: 10)
+        player.load(url: url)
         do {
+            // Cold opening has its existing real-output gate. The six-second
+            // tail gate then measures seeking and presentation on that input.
+            try await outputReady("SMB held source initial real output")
+            let displayedBeforeSeek = player.displayedVideoFrames
+            let playedBeforeSeek = player.playedAudioBuffers
+            player.seek(10)
             try await wait("SMB near-tail real output", timeout: 6) {
                 self.player.backendClockIsRunning && (self.player.backendClockTime ?? 0) > 11.8
                     && (self.player.backendTime ?? 0) > 11.85 && (self.player.backendTime ?? 99) < 12.05
                     && self.player.isPlaying && self.player.displayedVideoFrames > 5 && self.player.playedAudioBuffers > 5
+                    && self.player.displayedVideoFrames > displayedBeforeSeek + 5 && self.player.playedAudioBuffers > playedBeforeSeek + 5
             }
             let held = await provider.heldReadCount()
             XCTAssertGreaterThan(held, 0, "Actual pending NAS tail read must be reached before release/failure.")
@@ -267,10 +333,14 @@ final class EOFPlaybackTests: XCTestCase {
         }
     }
 
-    private func wait(_ label: String, timeout: Double = 12, condition: () -> Bool) async throws {
+    private func wait(_ label: String, timeout: Double = 12, failIf: (() throws -> Void)? = nil, condition: () -> Bool) async throws {
         snapshot(label + " begin")
         let deadline = ContinuousClock.now.advanced(by: .seconds(timeout))
-        while !condition() && .now < deadline { try await Task.sleep(for: .milliseconds(100)) }
+        while !condition() && .now < deadline {
+            try failIf?()
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        try failIf?()
         snapshot(label + (condition() ? " ready" : " timeout"))
         XCTAssertTrue(condition(), label)
         if !condition() { throw EOFPlaybackError.timeout }
@@ -330,7 +400,7 @@ private actor TailHeldSMBProvider: SMBFileProviding {
     func close() async { await provider.close() }
 }
 
-private enum EOFPlaybackError: Error { case timeout, fixtureUnavailable }
+private enum EOFPlaybackError: Error { case timeout, fixtureUnavailable, invalidResumePoint }
 
 private struct EOFSMBFixture: Decodable {
     let port: Int

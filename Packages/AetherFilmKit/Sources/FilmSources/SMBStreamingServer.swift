@@ -85,7 +85,7 @@ public actor SMBStreamingServer {
         let debugRecorder = self.debugRecorder
         listener.newConnectionHandler = { [weak self] connection in
             SMBStreamTraceScope.$request.withValue(debugRecorder.beginRequest()) {
-                Task { await self?.accept(connection, generation: generation) }
+                _ = Task<Void, Never> { await self?.accept(connection, generation: generation) }
             }
         }
 #else
