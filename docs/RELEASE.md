@@ -3,6 +3,13 @@
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. No App release has been published.
 
+The current ordered-save correction passed the unchanged AppStore14 on the
+iOS27 Simulator,14/0/0. The split PlayerScreen expressions and save correction
+also pass the standard SDK27 Mac Release build; SDK26 validation remains open.
+Physical numeric traces identify AVSampleBuffer and a rapid tail-buffer flush
+without entering the audio Drain function. The original two physical cases
+still fail, so no native completion fix or App release is certified.
+
 CI37200022745 for `38e187d` completed with failure: shared tests and all three
 ARM64 platform builds passed. Mac26 compilation still timed out in the subtitle
 import callback before playback; the typed callback correction passes the local

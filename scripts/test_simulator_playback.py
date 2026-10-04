@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--products", required=True, type=Path, help="build-for-testing Build/Products directory")
     parser.add_argument("--result", required=True, type=Path, help="Fresh .xcresult output path")
     parser.add_argument("--device-id", help="Optional existing iPhone Simulator UDID for local runs")
+    parser.add_argument("--numeric-transport-diagnostics", action="store_true", help="Enable bounded numeric timings in the owned SMB fixture")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     products = args.products.resolve()
@@ -71,8 +72,9 @@ def main():
         parser.error("Cannot select an existing iPhone Simulator: " + str(error))
     result.parent.mkdir(parents=True, exist_ok=True)
     print("Playback Simulator: " + device["name"] + " (" + runtime + ")", flush=True)
+    launcher_options = ["--numeric-transport-diagnostics"] if args.numeric_transport_diagnostics else []
     command = [
-        sys.executable, str(launcher), "--bootstrap-only", "--media-folder", str(media), "--",
+        sys.executable, str(launcher), *launcher_options, "--bootstrap-only", "--media-folder", str(media), "--",
         sys.executable, str(runner), "--all-playback", "--xctestrun", str(runs[0]),
         "--destination", "platform=iOS Simulator,id=" + device["udid"], "--result", str(result),
     ]

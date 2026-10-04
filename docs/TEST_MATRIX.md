@@ -1,5 +1,11 @@
 # v0.1.0 验收矩阵
 
+2026-10-04 当前保存修正将后台写入同步登记到既有有序队列，显式flush等待此前全部提交，保留95% / 会话 / 失败回滚条件。原AppStore14项在SDK27 / iOS27模拟器实际 **14通过 / 0失败 / 0跳过**，包含CI失败的暂停片尾原方法，测试源码未改。播放器长视图表达式拆为画面、生命周期和弹窗三个编译单元，所有修饰器与动作顺序保留；标准SDK27 Mac Release构建exit0。Mac26新CI `37201155076` 的原字幕message表达式仍类型检查超时，分块后的SDK26结果尚待下一提交验证。证据 `.build/AppStoreFlushValidation20261004-r1/{outcome-r2.json,AppStore14-r2.xcresult}`、`.build/CITypecheckFixValidation20261004-r1/body-split-mac-build-r3-outcome.json`。
+
+真机数字探针确认实际音频模块为AVSampleBuffer，原两专项仍 **0通过 / 2失败 / 0跳过**：尾部样本真实入队后数毫秒被flush，两个bounded数字附件均未记录无条件音频Drain入口。该结果不支持此前CoreAudio未知延迟假设；正在查输入结束 / 缓冲关闭分支，原两方法、6秒期限与完成门保持。证据 `.build/Native7PhysicalNativeDrainFileApp20261004-r1/Focused2-r1/`；独立诊断的原stderr全0结果另行保留。
+
+提交 `74e4422` 的CI `37201155076` 最终为失败，独立xcresult确认iOS完整61为 **59通过 / 2失败 / 0跳过**：完整SMB seek0预热和无surface准备后重新附加的实际音频输出等待；旧暂停片尾、自动95%读错控制这次通过，不能据此否认先前失败。两个失败都在实际输出前置门，未到seek0或回滚注错阶段。下一CI启用测试服务的bounded numeric command-handler耗时，原61、样片和期限保持；真实单连接list / 4096字节read / close smoke通过、10对entry / return / MID匹配，服务与临时文件清理。该日志不代表socket发送完成。证据 `.build/Native7CICommitDReview20261004-r1/PLATFORM_FAILURE_REVIEW.json` 和 `.build/SMBFixtureNumericTimingSmoke20261004-r2/ACTUAL_RESULT_READONLY_CONTINUATION.json`。
+
 2026-10-04 提交 `38e187d` 的 CI `37200022745` 已结束，整轮失败。共享测试与 Mac / ARM64 Simulator / iOS Device 三平台构建均通过；Mac26.6.2 / Xcode26.6 / SDK26.5 在字幕导入回调类型检查超时，尚未执行播放。iOS完整61的原始日志记录58通过、3失败、0跳过：暂停片尾已看状态、真实尾部读错撤销的等待、完整SMB seek0预热。原始失败与附件保留，不能据此记作全部通过。证据 `.build/Native7CICommitCReview20261004-r1/{SNAPSHOT-r4.json,macos26-job-api-r2.log,platform-job-api.log}`。
 
 字幕导入成功回调改为显式 `Result<URL, Error>` 私有方法，保留原成功动作、允许类型与修饰器顺序。本机标准 SDK27 / ARM64 Release 构建实际exit0；SDK26的完整编译与播放仍等待修正提交CI，语法parse不是其替代。证据 `.build/CITypecheckFixValidation20261004-r1/file-importer-mac-build-r2-outcome.json`。

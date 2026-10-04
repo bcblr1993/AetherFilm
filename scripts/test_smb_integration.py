@@ -39,6 +39,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 
 
 def run_command(command: list[str], environment: dict[str, str]) -> int:
@@ -55,11 +56,74 @@ def run_command(command: list[str], environment: dict[str, str]) -> int:
             return 130
 
 
+class NumericSMBTiming:
+    """Bounded command-handler timings; never read command bodies or auth fields."""
+
+    commands = (0, 1, 3, 5, 6, 8, 13, 16)
+
+    def __init__(self):
+        self.origin = time.monotonic()
+        self.lock = threading.Lock()
+        self.connections = {}
+        self.events = []
+        self.total = 0
+        self.omitted = 0
+
+    def record(self, connection, command, message_id, phase, status=None, duration=None):
+        with self.lock:
+            ordinal = self.connections.get(connection)
+            if ordinal is None and len(self.connections) < 256:
+                ordinal = len(self.connections) + 1
+                self.connections[connection] = ordinal
+            self.total += 1
+            if len(self.events) == 512:
+                self.omitted += 1
+                return
+            self.events.append({"sequence": self.total, "connection": ordinal or 0,
+                                "command": command, "messageID": message_id, "phase": phase,
+                                "elapsedSeconds": time.monotonic() - self.origin,
+                                "status": status, "durationSeconds": duration})
+
+    def call(self, original, command, connection, server, packet):
+        try:
+            value = packet["MessageID"]
+            message_id = int(value) if isinstance(value, int) else None
+        except (KeyError, TypeError):
+            message_id = None
+        began = time.monotonic()
+        self.record(connection, command, message_id, 0)
+        try:
+            result = original(connection, server, packet)
+        except BaseException:
+            self.record(connection, command, message_id, 2, duration=time.monotonic() - began)
+            raise
+        status = result[2] if isinstance(result, tuple) and len(result) == 3 and isinstance(result[2], int) else None
+        self.record(connection, command, message_id, 1, status=status, duration=time.monotonic() - began)
+        return result
+
+    def install_one(self, server, command):
+        original = None
+
+        def measured(connection, current_server, packet):
+            return self.call(original, command, connection, current_server, packet)
+
+        original = server.hookSmb2Command(command, measured)
+        if original is None:
+            raise RuntimeError("Missing expected SMB2 numeric command handler")
+
+    def snapshot(self):
+        with self.lock:
+            return {"schemaVersion": 1, "commands": list(self.commands), "capacity": 512,
+                    "connectionCapacity": 256, "totalEvents": self.total,
+                    "omittedEvents": self.omitted, "events": list(self.events)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--listen-address", default="127.0.0.1", help="Exact owned host IPv4 for physical tests; default loopback")
     parser.add_argument("--bootstrap-only", action="store_true", help="Keep the password out of the command environment; fetch credentials from the loopback bootstrap URL in memory")
     parser.add_argument("--media-folder", type=Path, help="Copy test video/subtitle fixtures into FILMS/media without modifying their originals")
+    parser.add_argument("--numeric-transport-diagnostics", action="store_true", help="Print bounded numeric SMB2 command-handler timings; no credentials, paths or payloads")
     parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to run, after --")
     arguments = parser.parse_args()
     try:
@@ -139,6 +203,10 @@ def main() -> int:
             return commands, packets, status
 
         original_setup = server.getServer().hookSmb2Command(smb3structs.SMB2_SESSION_SETUP, setup_reply)
+        timing = NumericSMBTiming() if arguments.numeric_transport_diagnostics else None
+        if timing is not None:
+            for command_id in timing.commands:
+                timing.install_one(server.getServer(), command_id)
         server_thread = threading.Thread(target=server.start, daemon=True)
         server_thread.start()
 
@@ -234,6 +302,8 @@ def main() -> int:
             server.getServer().shutdown()
             server.stop()
             server_thread.join(timeout=1)
+            if timing is not None:
+                print("SMB2 numeric timing " + json.dumps(timing.snapshot(), separators=(",", ":")), flush=True)
 
 
 if __name__ == "__main__":

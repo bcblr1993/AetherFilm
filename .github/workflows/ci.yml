@@ -50,7 +50,7 @@ jobs:
       - name: iOS device build
         run: xcodebuild build -project AetherFilm.xcodeproj -scheme AetherFilm-iOS -destination 'generic/platform=iOS' -configuration Release -derivedDataPath build/Device -clonedSourcePackagesDirPath build/SourcePackages CODE_SIGNING_ALLOWED=NO
       - name: iOS playback, persistence and real SMB stream
-        run: .build/test-venv/bin/python scripts/test_simulator_playback.py --products build/iOS/Build/Products --result build/Playback.xcresult
+        run: .build/test-venv/bin/python scripts/test_simulator_playback.py --products build/iOS/Build/Products --result build/Playback.xcresult --numeric-transport-diagnostics
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

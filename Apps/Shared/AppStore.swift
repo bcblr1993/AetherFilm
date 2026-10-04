@@ -318,7 +318,7 @@ enum AppSection: Hashable, Identifiable {
         if snapshot.recentItems.count > 500 { snapshot.recentItems.removeLast(snapshot.recentItems.count - 500) }
         if Date().timeIntervalSince(lastSavedAt) >= 5 {
             lastSavedAt = Date()
-            Task { await flushProgress() }
+            persistProgressInBackground()
         }
     }
 
@@ -331,7 +331,7 @@ enum AppSection: Hashable, Identifiable {
         // Keep the real resume point. Do not rerun the automatic 95% initializer.
         progress.isWatched = false
         snapshot.progress[item.id] = progress
-        Task { await flushProgress() }
+        persistProgressInBackground()
     }
 
     func flushProgress() async {
@@ -447,7 +447,21 @@ enum AppSection: Hashable, Identifiable {
         await oldStream?.stop()
     }
 
+    private func persistProgressInBackground() {
+        // Submit the real snapshot now. A later explicit flush must join this
+        // write even if its background completion observer has not run yet.
+        let save = enqueuePersistence()
+        Task { [weak self] in
+            do { try await save.value }
+            catch { self?.errorMessage = error.localizedDescription }
+        }
+    }
+
     private func persist() async throws {
+        try await enqueuePersistence().value
+    }
+
+    private func enqueuePersistence() -> Task<Void, Error> {
         let previous = persistenceTask
         let value = snapshot
         let next = Task { [library] in
@@ -457,7 +471,7 @@ enum AppSection: Hashable, Identifiable {
         persistenceTask = next
         // Preserve MainActor submission order across the library actor hop.
         // A periodic older save cannot overwrite a subsequently queued rollback.
-        try await next.value
+        return next
     }
 
     private func credentials(for connection: SMBConnection) throws -> SMBCredentials {

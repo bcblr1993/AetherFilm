@@ -34,6 +34,18 @@ struct PlayerScreen: View {
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
     var body: some View {
+        playbackLifecycle
+        .fileImporter(isPresented: $showingSubtitlePicker,
+                      allowedContentTypes: [.plainText, UTType(filenameExtension: "srt") ?? .data,
+                                            UTType(filenameExtension: "ass") ?? .data, UTType(filenameExtension: "vtt") ?? .data],
+                      onCompletion: handleSubtitleImport)
+        .sheet(isPresented: $showingOptions) { playbackOptions }
+        .alert("无法打开字幕", isPresented: Binding(get: { subtitleError != nil }, set: { if !$0 { subtitleError = nil } })) {
+            Button("好", role: .cancel) { subtitleError = nil }
+        } message: { Text(subtitleError ?? "") }
+    }
+
+    private var playbackContent: some View {
         GeometryReader { geometry in
             ZStack {
                 Color.black.ignoresSafeArea()
@@ -98,6 +110,10 @@ struct PlayerScreen: View {
                 .padding(16)
             }
         }
+    }
+
+    private var playbackLifecycle: some View {
+        playbackContent
         .preferredColorScheme(.dark)
         .tint(.mint)
         #if os(iOS)
@@ -131,14 +147,6 @@ struct PlayerScreen: View {
             #endif
             if phase != .active { Task { await store.flushProgress() } }
         }
-        .fileImporter(isPresented: $showingSubtitlePicker,
-                      allowedContentTypes: [.plainText, UTType(filenameExtension: "srt") ?? .data,
-                                            UTType(filenameExtension: "ass") ?? .data, UTType(filenameExtension: "vtt") ?? .data],
-                      onCompletion: handleSubtitleImport)
-        .sheet(isPresented: $showingOptions) { playbackOptions }
-        .alert("无法打开字幕", isPresented: Binding(get: { subtitleError != nil }, set: { if !$0 { subtitleError = nil } })) {
-            Button("好", role: .cancel) { subtitleError = nil }
-        } message: { Text(subtitleError ?? "") }
     }
 
     private func handleSubtitleImport(_ result: Result<URL, Error>) {
