@@ -15,6 +15,10 @@ struct RootView: View {
 
     var body: some View {
         navigation
+            #if os(macOS)
+            .background(NativeAccessibilityContext(label: store.playingItem == nil ? "AetherFilm 媒体库" : "视频播放器", scope: .windowContent)
+                .frame(width: 0, height: 0))
+            #endif
             #if DEBUG && os(macOS)
             .background(UITestWindowSizing())
             #endif
@@ -80,8 +84,18 @@ struct RootView: View {
             sidebar
                 .navigationTitle("AetherFilm")
                 .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 280)
+                #if os(macOS)
+                .background(NativeAccessibilityContext(label: "片源导航", scope: .splitColumn)
+                    .frame(width: 0, height: 0))
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("片源导航")
+                #endif
         } detail: {
             browserContent
+                #if os(macOS)
+                .background(NativeAccessibilityContext(label: "文件浏览", scope: .splitColumn)
+                    .frame(width: 0, height: 0))
+                #endif
                 .navigationTitle(navigationTitle)
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
@@ -110,15 +124,24 @@ struct RootView: View {
 
     private var sidebar: some View {
         List(selection: sidebarSelection) {
-            Section("观看") {
+            Section {
                 Label("本地文件", systemImage: "folder")
                     .tag(AppSection.local)
                     .accessibilityIdentifier("sidebar.local")
                 Label("继续观看", systemImage: "play.circle")
                     .tag(AppSection.continueWatching)
                     .accessibilityIdentifier("sidebar.continue")
+            } header: {
+                Text("观看")
+                    #if os(macOS)
+                    .background(NativeAccessibilityContext(label: "观看", scope: .sectionHeader)
+                        .frame(width: 0, height: 0))
+                    #endif
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("观看")
             }
-            Section("NAS") {
+            Section {
                 ForEach(store.connections) { source in
                     Label(source.name, systemImage: "externaldrive.connected.to.line.below")
                         .tag(AppSection.smb(source.id))
@@ -133,6 +156,15 @@ struct RootView: View {
                     Label("连接 SMB", systemImage: "plus.circle")
                 }
                 .accessibilityIdentifier("sidebar.connectSMB")
+            } header: {
+                Text("NAS")
+                    #if os(macOS)
+                    .background(NativeAccessibilityContext(label: "NAS", scope: .sectionHeader)
+                        .frame(width: 0, height: 0))
+                    #endif
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("NAS")
             }
         }
         .listStyle(.sidebar)
@@ -249,17 +281,36 @@ struct RootView: View {
     private var fileList: some View {
         List {
             if !folders.isEmpty {
-                Section("文件夹") {
+                Section {
                     ForEach(folders) { item in mediaButton(item) }
+                } header: {
+                    Text("文件夹")
+                        #if os(macOS)
+                        .background(NativeAccessibilityContext(label: "文件夹", scope: .sectionHeader)
+                            .frame(width: 0, height: 0))
+                        #endif
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("文件夹")
                 }
             }
             if !videos.isEmpty {
-                Section(store.section == .continueWatching ? "接着看" : "视频") {
+                Section {
                     ForEach(videos) { item in mediaButton(item) }
+                } header: {
+                    Text(store.section == .continueWatching ? "接着看" : "视频")
+                        #if os(macOS)
+                        .background(NativeAccessibilityContext(label: store.section == .continueWatching ? "接着看" : "视频", scope: .sectionHeader)
+                            .frame(width: 0, height: 0))
+                        #endif
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(store.section == .continueWatching ? "接着看" : "视频")
                 }
             }
         }
         .accessibilityIdentifier("browser.list")
+        .accessibilityLabel("文件列表")
     }
 
     private func mediaButton(_ item: MediaItem) -> some View {

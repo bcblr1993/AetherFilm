@@ -1,0 +1,42 @@
+{
+  "scope": "NATIVE5_SMALL_MATERIAL_AND_ACTUAL_ASSEMBLY_CHECKS_NOT_PORTABLE_REBUILD_OR_FINAL_APP",
+  "priorFivePatchPreparation": {
+    "path": "Packages/AetherVLCKit/Provenance/material-verification.json",
+    "bytes": 1052,
+    "sha256": "94dc6492d2e451e8f387f99bd9733270a4a6af3931bd6df8efed40542971ec0c"
+  },
+  "audioPatchActuallyAppliedWithoutFuzz": true,
+  "audioPatchedSourceSHA256": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+  "threeCompilerSourceSHA256": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+  "currentSmallLocalInputsSHA256Exact": 9,
+  "patchCount": 6,
+  "releaseSourcePinCount": 10,
+  "toolsASTValid": true,
+  "rebuildAndExtensionHelpActualExitZero": true,
+  "native5PackageManifestActualParseExitZero": true,
+  "bridgeCanonicalPackageManifestActualParseExitZero": true,
+  "actualBaseAndLuaSourceInputs": [
+    {
+      "path": ".build/CorrespondingSources/AetherFilm-v0.1.0-VLCKit-source-materials.tar.gz",
+      "bytes": 665341487,
+      "sha256": "350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72"
+    },
+    {
+      "path": ".build/NativeApertureCandidate20261003/Sources/VLC/contrib/tarballs/lua-5.4.4.tar.gz",
+      "bytes": 360876,
+      "sha256": "164c7849653b80ae67bec4b7473b884bf5cc8d2dca05653475ec2ed27b9ebf61"
+    }
+  ],
+  "sourceArchivesCopiedOrExtracted": false,
+  "NoticesEqual": true,
+  "Native4BuildRecordUnchanged": true,
+  "actualAssembly": {
+    "path": ".build/Native5Assembly20261004-r1/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2296,
+    "sha256": "565daef9f097c4a662fc6b9d95f9d75f992fa6ade105a0b117920ec2658bd5ba"
+  },
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssetAssembled": false,
+  "publicDistributionVerified": false,
+  "native5FinalAppAcceptanceClaimed": false
+}

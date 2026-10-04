@@ -1,11 +1,12 @@
 # Scope decisions
 
-Updated: 2026-10-02 (Asia/Shanghai).
+Updated: 2026-10-04 (Asia/Shanghai).
 
 ## Confirmed by the user
 
 - Product name: AetherFilm, aligned with AetherNative.
 - Native macOS 26+ and iOS 26+; native system glass design.
+- macOS first release supports Apple Silicon (arm64) only; the user cancelled Intel Mac compatibility on 2026-10-04.
 - Public GitHub repository direction; macOS v0.1.0 downloadable release first.
 - iOS build and testing alongside macOS, with TestFlight / App Store distribution advanced according to the developer account conditions.
 - Show Infuse's feature inventory first, then let the user select phase-one features.

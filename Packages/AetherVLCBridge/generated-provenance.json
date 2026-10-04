@@ -1,13 +1,13 @@
 {
-  "status": "FROZEN_OWNER_APPROVED_PACKAGE_CONSUMERS_PASSED",
+  "status": "FROZEN_EXACT_TESTED_CALLBACK_SOURCE_RELEASE_ACCEPTANCE_PENDING",
   "fixedWrapperRevision": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "fixedBinaryArchiveSHA256": "f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb",
   "modificationDate": "2026-10-03",
   "capturedPrototypeHashes": {
-    "src/AetherVLCMediaPlayer.m": "e0b838e84a90cc51871068ab01bb35dfb9f3d154481a10d487f38679de387a78",
-    "include/AetherVLCMediaPlayer.h": "d98973a367ee1bef347ea21956066a09635596873e7d0605baec47d3d946ff42"
+    "src/AetherVLCMediaPlayer.m": "b6861d0d719145baa984a28fb6410afc14df3ae56a20738d55010607cd9a279e",
+    "include/AetherVLCMediaPlayer.h": "8fdd178681de0729cec7a1a22d2dddb099f9494ec3a6bbcf13e6aff28315e9c3"
   },
-  "prototypePatchSHA256": "061ace69c8689db7a58a3db5dd67c2a7ec2304c33f129d6f9c35a30dcd81cb0b",
+  "prototypePatchSHA256": "efceaa696151e8584ee9d2c44b9fc1425a44cde6f1dafc256372221879d885eb",
   "frozenApproved": true,
   "patchSource": "Owner-frozen namespaced player snapshot; original C stopping callback copies input time/error under an owned NSLock, then queues only immutable values",
   "inputs": {
@@ -36,7 +36,6 @@
     "PinnedInputs/Wrapper/Headers/Public/Playback/VLCMediaPlayer.h": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943"
   },
   "patchStripComponents": 0,
-  "ownershipApproval": "Root explicitly authorized formal package integration after the five-platform consumer matrix; playback owner froze these m/h bytes and the three callback interfaces",
   "namespaceGeneratorReferenceSHA256": "6d556903eceb8c9c94ee5125bf947a1a62f80b5c552da9c3a0fc4f97fdd91a5a",
   "productionChanges": [
     "namespaced player class, delegate, notifications and globals",
@@ -45,10 +44,18 @@
     "checked clock interpolation; cache remains unchanged on interpolation failure",
     "fixed stopping-reason ABI compile-time assertions",
     "package-relative header imports and dated changes banners",
-    "prototype measuredCoreTime getter removed from final public API"
+    "prototype measuredCoreTime getter removed from final public API",
+    "typed on_seek callback sequence and immutable target/state snapshots",
+    "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status"
   ],
+  "fixedBinaryArchiveURL": "https://download.videolan.org/cocoapods/unstable/VLCKit-4.0-20260929-1631.zip",
+  "candidateSourceOrigin": "Exact source reproduced from the macOS / iOS Simulator / physical iPhone native3 seek-status candidate; see docs/TEST_MATRIX.md.",
+  "priorOwnershipApproval": "Root explicitly authorized formal package integration after the five-platform consumer matrix; playback owner froze these m/h bytes and the three callback interfaces",
+  "ownershipApproval": "Root promoted the exact previously tested typed-seek callback source after original four-case runtime checks on macOS, iOS Simulator and physical iPhone. This source freeze does not certify the new native4 artifact or distribution.",
+  "fixedBinaryMeaning": "Historical official archive and public-header baseline only; current locally rebuilt native4 binary and native modifications are recorded separately. No unchanged-core claim.",
+  "patchContextLines": 0,
   "generatedFiles": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "c7182f2d75cc53cc6630d403cee26d9da1a7eb6c42223e1635df18eb78b73b9a",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "49ebef69171c62d69d1e4a927a7d5238acfc61664d907583ee2e696e8b853bac",
     "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "63bc5cfa1b4635f674d2e9bf951ff8731dc2dcb0b76ee3a314669b4c169cdce6",
     "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "e1b2c6c6b638da39d02a2dc1e5e5325f9d0543871caa663ebf504b0e2a634b42",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
@@ -69,7 +76,6 @@
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_version.h": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
     "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
-    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "28b8670df7806adb5bc2da139849cf1ad1d7f356f56dd1f95cd552c6a9fbbf54"
-  },
-  "fixedBinaryArchiveURL": "https://download.videolan.org/cocoapods/unstable/VLCKit-4.0-20260929-1631.zip"
+    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "2bb90786e500e27eeedf1cc9c17920b7aa75781afcb27f176db0ede3adf33ba8"
+  }
 }

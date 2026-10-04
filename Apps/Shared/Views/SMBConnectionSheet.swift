@@ -30,6 +30,7 @@ struct SMBConnectionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft = SMBConnectionDraft()
     @State private var isConnecting = false
+    @State private var isAdvancedExpanded = false
     @State private var errorMessage: String?
     @State private var connectionTask: Task<Void, Never>?
 
@@ -59,7 +60,7 @@ struct SMBConnectionSheet: View {
                 .disabled(isConnecting)
 
                 Section {
-                    DisclosureGroup {
+                    DisclosureGroup(isExpanded: $isAdvancedExpanded) {
                         plainField("端口", text: $draft.port, identifier: "smb.port")
                         plainField("起始目录（可选）", text: $draft.directory, identifier: "smb.directory")
                         plainField("域（可选）", text: $draft.domain, identifier: "smb.domain")
@@ -76,6 +77,10 @@ struct SMBConnectionSheet: View {
                     } label: {
                         Text("高级选项")
                             .accessibilityIdentifier("smb.advanced")
+                        #if os(macOS)
+                            .contentShape(Rectangle())
+                            .onTapGesture { isAdvancedExpanded.toggle() }
+                        #endif
                     }
                 }
                 .disabled(isConnecting)
@@ -114,7 +119,7 @@ struct SMBConnectionSheet: View {
             }
         }
         #if os(macOS)
-        .frame(minWidth: 440, idealWidth: 480, minHeight: 470)
+        .frame(minWidth: 440, idealWidth: 480, minHeight: isAdvancedExpanded ? 650 : 470)
         #endif
         .onDisappear {
             connectionTask?.cancel()

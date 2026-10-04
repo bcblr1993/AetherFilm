@@ -1,0 +1,613 @@
+#include <stddef.h>
+#include <vlc_plugin.h>
+VLC_ENTRY_FUNC(vlc_entry__access_output_http);
+VLC_ENTRY_FUNC(vlc_entry__access_output_file);
+VLC_ENTRY_FUNC(vlc_entry__access_output_libaccess_output_shout);
+VLC_ENTRY_FUNC(vlc_entry__access_output_dummy);
+VLC_ENTRY_FUNC(vlc_entry__access_output_libaccess_output_rist);
+VLC_ENTRY_FUNC(vlc_entry__access_output_libaccess_http_put);
+VLC_ENTRY_FUNC(vlc_entry__misc_preparser_serializer_json_libpreparserserializer_json);
+VLC_ENTRY_FUNC(vlc_entry__misc_xml_libxml);
+VLC_ENTRY_FUNC(vlc_entry__misc_libsecuretransport);
+VLC_ENTRY_FUNC(vlc_entry__misc_inhibit_iokit_inhibit);
+VLC_ENTRY_FUNC(vlc_entry__audio_output_apple_libavsamplebuffer);
+VLC_ENTRY_FUNC(vlc_entry__audio_output_libafile);
+VLC_ENTRY_FUNC(vlc_entry__audio_output_adummy);
+VLC_ENTRY_FUNC(vlc_entry__audio_output_apple_auhal);
+VLC_ENTRY_FUNC(vlc_entry__audio_output_amem);
+VLC_ENTRY_FUNC(vlc_entry__audio_mixer_libfloat_mixer);
+VLC_ENTRY_FUNC(vlc_entry__audio_mixer_libinteger_mixer);
+VLC_ENTRY_FUNC(vlc_entry__logger_console);
+VLC_ENTRY_FUNC(vlc_entry__logger_json);
+VLC_ENTRY_FUNC(vlc_entry__logger_file);
+VLC_ENTRY_FUNC(vlc_entry__logger_syslog);
+VLC_ENTRY_FUNC(vlc_entry__mux_mpjpeg);
+VLC_ENTRY_FUNC(vlc_entry__mux_mpeg_libmux_ts);
+VLC_ENTRY_FUNC(vlc_entry__mux_libmux_ogg);
+VLC_ENTRY_FUNC(vlc_entry__mux_wav);
+VLC_ENTRY_FUNC(vlc_entry__mux_asf);
+VLC_ENTRY_FUNC(vlc_entry__mux_mpeg_ps);
+VLC_ENTRY_FUNC(vlc_entry__mux_dummy);
+VLC_ENTRY_FUNC(vlc_entry__mux_mp4_mp4);
+VLC_ENTRY_FUNC(vlc_entry__mux_avi);
+VLC_ENTRY_FUNC(vlc_entry__keystore_file);
+VLC_ENTRY_FUNC(vlc_entry__keystore_memory);
+VLC_ENTRY_FUNC(vlc_entry__keystore_libkeychain);
+VLC_ENTRY_FUNC(vlc_entry__access_dsm_libdsm);
+VLC_ENTRY_FUNC(vlc_entry__access_vdr);
+VLC_ENTRY_FUNC(vlc_entry__access_imem_access);
+VLC_ENTRY_FUNC(vlc_entry__access_mms_libaccess_mms);
+VLC_ENTRY_FUNC(vlc_entry__access_libnfs);
+VLC_ENTRY_FUNC(vlc_entry__access_udp);
+VLC_ENTRY_FUNC(vlc_entry__access_amt);
+VLC_ENTRY_FUNC(vlc_entry__access_imem);
+VLC_ENTRY_FUNC(vlc_entry__access_libavio);
+VLC_ENTRY_FUNC(vlc_entry__access_liblive555);
+VLC_ENTRY_FUNC(vlc_entry__access_libsmb2);
+VLC_ENTRY_FUNC(vlc_entry__access_gopher);
+VLC_ENTRY_FUNC(vlc_entry__access_libfilesystem);
+VLC_ENTRY_FUNC(vlc_entry__access_libnoidea);
+VLC_ENTRY_FUNC(vlc_entry__access_sdp);
+VLC_ENTRY_FUNC(vlc_entry__access_tcp);
+VLC_ENTRY_FUNC(vlc_entry__access_concat);
+VLC_ENTRY_FUNC(vlc_entry__access_timecode);
+VLC_ENTRY_FUNC(vlc_entry__access_webdav);
+VLC_ENTRY_FUNC(vlc_entry__access_ftp);
+VLC_ENTRY_FUNC(vlc_entry__access_satip);
+VLC_ENTRY_FUNC(vlc_entry__access_librist);
+VLC_ENTRY_FUNC(vlc_entry__access_idummy);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_mpeg4);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_opus);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_mpeg12);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_ac3);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_xiph);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_raw);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_h265);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_h264);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_librtp_pcm);
+VLC_ENTRY_FUNC(vlc_entry__access_rtp_librtp);
+VLC_ENTRY_FUNC(vlc_entry__access_http);
+VLC_ENTRY_FUNC(vlc_entry__access_data);
+VLC_ENTRY_FUNC(vlc_entry__access_libsftp);
+VLC_ENTRY_FUNC(vlc_entry__access_http_access);
+VLC_ENTRY_FUNC(vlc_entry__codec_g711);
+VLC_ENTRY_FUNC(vlc_entry__codec_videotoolbox_libvideotoolbox);
+VLC_ENTRY_FUNC(vlc_entry__codec_subsusf);
+VLC_ENTRY_FUNC(vlc_entry__codec_liblibass);
+VLC_ENTRY_FUNC(vlc_entry__codec_edummy);
+VLC_ENTRY_FUNC(vlc_entry__codec_spdif);
+VLC_ENTRY_FUNC(vlc_entry__codec_rtpvideo);
+VLC_ENTRY_FUNC(vlc_entry__codec_librav1e);
+VLC_ENTRY_FUNC(vlc_entry__codec_uleaddvaudio);
+VLC_ENTRY_FUNC(vlc_entry__codec_telx);
+VLC_ENTRY_FUNC(vlc_entry__codec_libvpx);
+VLC_ENTRY_FUNC(vlc_entry__codec_libopus);
+VLC_ENTRY_FUNC(vlc_entry__codec_subsdec);
+VLC_ENTRY_FUNC(vlc_entry__codec_libtheora);
+VLC_ENTRY_FUNC(vlc_entry__codec_rtp_rawvid);
+VLC_ENTRY_FUNC(vlc_entry__codec_ttml_ttml);
+VLC_ENTRY_FUNC(vlc_entry__codec_araw);
+VLC_ENTRY_FUNC(vlc_entry__codec_aes3);
+VLC_ENTRY_FUNC(vlc_entry__codec_liboggspots);
+VLC_ENTRY_FUNC(vlc_entry__codec_svcdsub);
+VLC_ENTRY_FUNC(vlc_entry__codec_audiotoolbox_midi);
+VLC_ENTRY_FUNC(vlc_entry__codec_png);
+VLC_ENTRY_FUNC(vlc_entry__codec_libaom);
+VLC_ENTRY_FUNC(vlc_entry__codec_scte18);
+VLC_ENTRY_FUNC(vlc_entry__codec_libzvbi);
+VLC_ENTRY_FUNC(vlc_entry__codec_videotoolbox_libvideotoolbox_enc);
+VLC_ENTRY_FUNC(vlc_entry__codec_textst);
+VLC_ENTRY_FUNC(vlc_entry__codec_scte27);
+VLC_ENTRY_FUNC(vlc_entry__codec_libopenapv);
+VLC_ENTRY_FUNC(vlc_entry__codec_arib_libaribcaption);
+VLC_ENTRY_FUNC(vlc_entry__codec_libvorbis);
+VLC_ENTRY_FUNC(vlc_entry__codec_adpcm);
+VLC_ENTRY_FUNC(vlc_entry__codec_webvtt_libwebvtt);
+VLC_ENTRY_FUNC(vlc_entry__codec_jpeg);
+VLC_ENTRY_FUNC(vlc_entry__codec_cvdsub);
+VLC_ENTRY_FUNC(vlc_entry__codec_vpx_alpha);
+VLC_ENTRY_FUNC(vlc_entry__codec_libflac);
+VLC_ENTRY_FUNC(vlc_entry__codec_dvbsub);
+VLC_ENTRY_FUNC(vlc_entry__codec_rawvideo);
+VLC_ENTRY_FUNC(vlc_entry__codec_libmpg123);
+VLC_ENTRY_FUNC(vlc_entry__codec_libfluidsynth);
+VLC_ENTRY_FUNC(vlc_entry__codec_lpcm);
+VLC_ENTRY_FUNC(vlc_entry__codec_cdg);
+VLC_ENTRY_FUNC(vlc_entry__codec_libdav1d);
+VLC_ENTRY_FUNC(vlc_entry__codec_spudec_libspudec);
+VLC_ENTRY_FUNC(vlc_entry__codec_avcodec_libavcodec);
+VLC_ENTRY_FUNC(vlc_entry__codec_cc);
+VLC_ENTRY_FUNC(vlc_entry__codec_libspeex);
+VLC_ENTRY_FUNC(vlc_entry__codec_stl);
+VLC_ENTRY_FUNC(vlc_entry__codec_ddummy);
+VLC_ENTRY_FUNC(vlc_entry__codec_substx3g);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libpl_scale);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_libopencv_wrapper);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_deinterlace_libdeinterlace);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_rotate);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_scale);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_libopencv_example);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_formatcrop);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_blend);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_adjust);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_libopengl_filter);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_fps);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_libci_filters);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_canvas);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_edgedetection);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_transform);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_dither);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_libgladjust);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_croppadd);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_deinterlace_libglblend);
+VLC_ENTRY_FUNC(vlc_entry__video_filter_freeze);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_yuvp);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_orient);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_i422_i420);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_libi420_nv12);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_cvpx);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_yuy2_i420);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_i420_rgb);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_grey_yuv);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_libswscale);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_chain);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_yuy2_i422);
+VLC_ENTRY_FUNC(vlc_entry__video_chroma_rv32);
+VLC_ENTRY_FUNC(vlc_entry__services_discovery_libupnp);
+VLC_ENTRY_FUNC(vlc_entry__services_discovery_radio);
+VLC_ENTRY_FUNC(vlc_entry__services_discovery_libsap);
+VLC_ENTRY_FUNC(vlc_entry__services_discovery_libbonjour);
+VLC_ENTRY_FUNC(vlc_entry__spu_marq);
+VLC_ENTRY_FUNC(vlc_entry__spu_logo);
+VLC_ENTRY_FUNC(vlc_entry__spu_subsdelay);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_chorus_flanger);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_channel_mixer_dolby);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_limiter);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_libebur128);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_libscaletempo_pitch);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_normvol);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_channel_mixer_libsimple_channel_mixer);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_channel_mixer_libspatialaudio);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_expander);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_resampler_ugly);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_equalizer);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_stereo_widen);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_compressor);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_karaoke);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_channel_mixer_mono);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_spatializer_spatializer);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_gate);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_channel_mixer_trivial);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_resampler_libsoxr);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_converter_tospdif);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_gain);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_librnnoise);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_converter_libaudio_format);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_param_eq);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_stereo_pan);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_scaletempo);
+VLC_ENTRY_FUNC(vlc_entry__audio_filter_center);
+VLC_ENTRY_FUNC(vlc_entry__text_renderer_tdummy);
+VLC_ENTRY_FUNC(vlc_entry__text_renderer_freetype_libfreetype);
+VLC_ENTRY_FUNC(vlc_entry__text_renderer_nsspeechsynthesizer);
+VLC_ENTRY_FUNC(vlc_entry__demux_caf);
+VLC_ENTRY_FUNC(vlc_entry__demux_filter_noseek);
+VLC_ENTRY_FUNC(vlc_entry__demux_avi_avi);
+VLC_ENTRY_FUNC(vlc_entry__demux_rawdv);
+VLC_ENTRY_FUNC(vlc_entry__demux_mjpeg);
+VLC_ENTRY_FUNC(vlc_entry__demux_adaptive_libadaptive);
+VLC_ENTRY_FUNC(vlc_entry__demux_asf_asf);
+VLC_ENTRY_FUNC(vlc_entry__demux_mpeg_mpgv);
+VLC_ENTRY_FUNC(vlc_entry__demux_mpeg_ps);
+VLC_ENTRY_FUNC(vlc_entry__demux_mpeg_es);
+VLC_ENTRY_FUNC(vlc_entry__demux_hx);
+VLC_ENTRY_FUNC(vlc_entry__demux_mp4_mp4);
+VLC_ENTRY_FUNC(vlc_entry__demux_image);
+VLC_ENTRY_FUNC(vlc_entry__demux_g64rtp);
+VLC_ENTRY_FUNC(vlc_entry__demux_libytdl);
+VLC_ENTRY_FUNC(vlc_entry__demux_avformat_libavformat);
+VLC_ENTRY_FUNC(vlc_entry__demux_directory);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_chromecast_libdemux_chromecast);
+VLC_ENTRY_FUNC(vlc_entry__demux_libflacsys);
+VLC_ENTRY_FUNC(vlc_entry__demux_mkv_libmkv);
+VLC_ENTRY_FUNC(vlc_entry__demux_mpeg_h26x);
+VLC_ENTRY_FUNC(vlc_entry__demux_ty);
+VLC_ENTRY_FUNC(vlc_entry__demux_xa);
+VLC_ENTRY_FUNC(vlc_entry__demux_nsv);
+VLC_ENTRY_FUNC(vlc_entry__demux_libmod);
+VLC_ENTRY_FUNC(vlc_entry__demux_mpeg_libts);
+VLC_ENTRY_FUNC(vlc_entry__demux_libogg);
+VLC_ENTRY_FUNC(vlc_entry__demux_wav);
+VLC_ENTRY_FUNC(vlc_entry__demux_nuv);
+VLC_ENTRY_FUNC(vlc_entry__demux_aiff);
+VLC_ENTRY_FUNC(vlc_entry__demux_libdemux_stl);
+VLC_ENTRY_FUNC(vlc_entry__demux_voc);
+VLC_ENTRY_FUNC(vlc_entry__demux_libdemux_cdg);
+VLC_ENTRY_FUNC(vlc_entry__demux_dmxmus);
+VLC_ENTRY_FUNC(vlc_entry__demux_rawaud);
+VLC_ENTRY_FUNC(vlc_entry__demux_vobsub);
+VLC_ENTRY_FUNC(vlc_entry__demux_playlist_playlist);
+VLC_ENTRY_FUNC(vlc_entry__demux_tta);
+VLC_ENTRY_FUNC(vlc_entry__demux_rawvid);
+VLC_ENTRY_FUNC(vlc_entry__demux_vc1);
+VLC_ENTRY_FUNC(vlc_entry__demux_au);
+VLC_ENTRY_FUNC(vlc_entry__demux_subtitle);
+VLC_ENTRY_FUNC(vlc_entry__demux_pva);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mpegaudio);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_flac);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mpeg4audio);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_a52);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_libpacketizer_avparser);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_h264);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_vc1);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_copy);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mjpeg);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mpegvideo);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mpeg4video);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_dts);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_h266);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_hevc);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_av1);
+VLC_ENTRY_FUNC(vlc_entry__packetizer_mlp);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_bridge);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_transcode_transcode);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_dummy);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_udp);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_cycle);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_smem);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_libstream_out_standard);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_autodel);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_chromecast_libstream_out_chromecast);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_duplicate);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_es);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_libstream_out_rtp);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_setid);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_trace);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_record);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_delay);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_hls_hls);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_display);
+VLC_ENTRY_FUNC(vlc_entry__stream_out_gather);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_hds_hds);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_decomp);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_record);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_skiptags);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_cache_read);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_adf);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_inflate);
+VLC_ENTRY_FUNC(vlc_entry__stream_filter_prefetch);
+VLC_ENTRY_FUNC(vlc_entry__video_output_yuv);
+VLC_ENTRY_FUNC(vlc_entry__video_output_vmem);
+VLC_ENTRY_FUNC(vlc_entry__video_output_wdummy);
+VLC_ENTRY_FUNC(vlc_entry__video_output_apple_libsamplebufferdisplay);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libglsampler_builtin);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libglinterop_cvpx);
+VLC_ENTRY_FUNC(vlc_entry__video_output_apple_libcvpx_gl);
+VLC_ENTRY_FUNC(vlc_entry__video_output_libvout_macosx);
+VLC_ENTRY_FUNC(vlc_entry__video_output_libcaopengllayer);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libglinterop_sw);
+VLC_ENTRY_FUNC(vlc_entry__video_output_splitter);
+VLC_ENTRY_FUNC(vlc_entry__video_output_libplacebo_libplacebo);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libgl);
+VLC_ENTRY_FUNC(vlc_entry__video_output_wextern);
+VLC_ENTRY_FUNC(vlc_entry__video_output_libplacebo_libplacebo_gl);
+VLC_ENTRY_FUNC(vlc_entry__video_output_opengl_libglfilter_draw);
+VLC_ENTRY_FUNC(vlc_entry__video_output_vdummy);
+VLC_ENTRY_FUNC(vlc_entry__video_output_flaschen);
+VLC_ENTRY_FUNC(vlc_entry__video_output_libwindow_macosx);
+VLC_ENTRY_FUNC(vlc_entry__video_output_vgl);
+VLC_ENTRY_FUNC(vlc_entry__isa_aarch64_simd_deinterlace);
+VLC_ENTRY_FUNC(vlc_entry__isa_aarch64_sve_deinterlace);
+VLC_ENTRY_FUNC(vlc_entry__stream_extractor_libarchive);
+VLC_ENTRY_FUNC(vlc_entry__control_dummy);
+VLC_ENTRY_FUNC(vlc_entry__meta_engine_folder);
+VLC_ENTRY_FUNC(vlc_entry__meta_engine_libtaglib);
+
+const vlc_plugin_cb vlc_static_modules[] = {
+
+    vlc_entry__access_output_http,
+    vlc_entry__access_output_file,
+    vlc_entry__access_output_libaccess_output_shout,
+    vlc_entry__access_output_dummy,
+    vlc_entry__access_output_libaccess_output_rist,
+    vlc_entry__access_output_libaccess_http_put,
+    vlc_entry__misc_preparser_serializer_json_libpreparserserializer_json,
+    vlc_entry__misc_xml_libxml,
+    vlc_entry__misc_libsecuretransport,
+    vlc_entry__misc_inhibit_iokit_inhibit,
+    vlc_entry__audio_output_apple_libavsamplebuffer,
+    vlc_entry__audio_output_libafile,
+    vlc_entry__audio_output_adummy,
+    vlc_entry__audio_output_apple_auhal,
+    vlc_entry__audio_output_amem,
+    vlc_entry__audio_mixer_libfloat_mixer,
+    vlc_entry__audio_mixer_libinteger_mixer,
+    vlc_entry__logger_console,
+    vlc_entry__logger_json,
+    vlc_entry__logger_file,
+    vlc_entry__logger_syslog,
+    vlc_entry__mux_mpjpeg,
+    vlc_entry__mux_mpeg_libmux_ts,
+    vlc_entry__mux_libmux_ogg,
+    vlc_entry__mux_wav,
+    vlc_entry__mux_asf,
+    vlc_entry__mux_mpeg_ps,
+    vlc_entry__mux_dummy,
+    vlc_entry__mux_mp4_mp4,
+    vlc_entry__mux_avi,
+    vlc_entry__keystore_file,
+    vlc_entry__keystore_memory,
+    vlc_entry__keystore_libkeychain,
+    vlc_entry__access_dsm_libdsm,
+    vlc_entry__access_vdr,
+    vlc_entry__access_imem_access,
+    vlc_entry__access_mms_libaccess_mms,
+    vlc_entry__access_libnfs,
+    vlc_entry__access_udp,
+    vlc_entry__access_amt,
+    vlc_entry__access_imem,
+    vlc_entry__access_libavio,
+    vlc_entry__access_liblive555,
+    vlc_entry__access_libsmb2,
+    vlc_entry__access_gopher,
+    vlc_entry__access_libfilesystem,
+    vlc_entry__access_libnoidea,
+    vlc_entry__access_sdp,
+    vlc_entry__access_tcp,
+    vlc_entry__access_concat,
+    vlc_entry__access_timecode,
+    vlc_entry__access_webdav,
+    vlc_entry__access_ftp,
+    vlc_entry__access_satip,
+    vlc_entry__access_librist,
+    vlc_entry__access_idummy,
+    vlc_entry__access_rtp_mpeg4,
+    vlc_entry__access_rtp_opus,
+    vlc_entry__access_rtp_mpeg12,
+    vlc_entry__access_rtp_ac3,
+    vlc_entry__access_rtp_xiph,
+    vlc_entry__access_rtp_raw,
+    vlc_entry__access_rtp_h265,
+    vlc_entry__access_rtp_h264,
+    vlc_entry__access_rtp_librtp_pcm,
+    vlc_entry__access_rtp_librtp,
+    vlc_entry__access_http,
+    vlc_entry__access_data,
+    vlc_entry__access_libsftp,
+    vlc_entry__access_http_access,
+    vlc_entry__codec_g711,
+    vlc_entry__codec_videotoolbox_libvideotoolbox,
+    vlc_entry__codec_subsusf,
+    vlc_entry__codec_liblibass,
+    vlc_entry__codec_edummy,
+    vlc_entry__codec_spdif,
+    vlc_entry__codec_rtpvideo,
+    vlc_entry__codec_librav1e,
+    vlc_entry__codec_uleaddvaudio,
+    vlc_entry__codec_telx,
+    vlc_entry__codec_libvpx,
+    vlc_entry__codec_libopus,
+    vlc_entry__codec_subsdec,
+    vlc_entry__codec_libtheora,
+    vlc_entry__codec_rtp_rawvid,
+    vlc_entry__codec_ttml_ttml,
+    vlc_entry__codec_araw,
+    vlc_entry__codec_aes3,
+    vlc_entry__codec_liboggspots,
+    vlc_entry__codec_svcdsub,
+    vlc_entry__codec_audiotoolbox_midi,
+    vlc_entry__codec_png,
+    vlc_entry__codec_libaom,
+    vlc_entry__codec_scte18,
+    vlc_entry__codec_libzvbi,
+    vlc_entry__codec_videotoolbox_libvideotoolbox_enc,
+    vlc_entry__codec_textst,
+    vlc_entry__codec_scte27,
+    vlc_entry__codec_libopenapv,
+    vlc_entry__codec_arib_libaribcaption,
+    vlc_entry__codec_libvorbis,
+    vlc_entry__codec_adpcm,
+    vlc_entry__codec_webvtt_libwebvtt,
+    vlc_entry__codec_jpeg,
+    vlc_entry__codec_cvdsub,
+    vlc_entry__codec_vpx_alpha,
+    vlc_entry__codec_libflac,
+    vlc_entry__codec_dvbsub,
+    vlc_entry__codec_rawvideo,
+    vlc_entry__codec_libmpg123,
+    vlc_entry__codec_libfluidsynth,
+    vlc_entry__codec_lpcm,
+    vlc_entry__codec_cdg,
+    vlc_entry__codec_libdav1d,
+    vlc_entry__codec_spudec_libspudec,
+    vlc_entry__codec_avcodec_libavcodec,
+    vlc_entry__codec_cc,
+    vlc_entry__codec_libspeex,
+    vlc_entry__codec_stl,
+    vlc_entry__codec_ddummy,
+    vlc_entry__codec_substx3g,
+    vlc_entry__video_output_opengl_libpl_scale,
+    vlc_entry__video_filter_libopencv_wrapper,
+    vlc_entry__video_filter_deinterlace_libdeinterlace,
+    vlc_entry__video_filter_rotate,
+    vlc_entry__video_filter_scale,
+    vlc_entry__video_filter_libopencv_example,
+    vlc_entry__video_filter_formatcrop,
+    vlc_entry__video_filter_blend,
+    vlc_entry__video_filter_adjust,
+    vlc_entry__video_filter_libopengl_filter,
+    vlc_entry__video_filter_fps,
+    vlc_entry__video_filter_libci_filters,
+    vlc_entry__video_filter_canvas,
+    vlc_entry__video_filter_edgedetection,
+    vlc_entry__video_filter_transform,
+    vlc_entry__video_filter_dither,
+    vlc_entry__video_filter_libgladjust,
+    vlc_entry__video_filter_croppadd,
+    vlc_entry__video_filter_deinterlace_libglblend,
+    vlc_entry__video_filter_freeze,
+    vlc_entry__video_chroma_yuvp,
+    vlc_entry__video_chroma_orient,
+    vlc_entry__video_chroma_i422_i420,
+    vlc_entry__video_chroma_libi420_nv12,
+    vlc_entry__video_chroma_cvpx,
+    vlc_entry__video_chroma_yuy2_i420,
+    vlc_entry__video_chroma_i420_rgb,
+    vlc_entry__video_chroma_grey_yuv,
+    vlc_entry__video_chroma_libswscale,
+    vlc_entry__video_chroma_chain,
+    vlc_entry__video_chroma_yuy2_i422,
+    vlc_entry__video_chroma_rv32,
+    vlc_entry__services_discovery_libupnp,
+    vlc_entry__services_discovery_radio,
+    vlc_entry__services_discovery_libsap,
+    vlc_entry__services_discovery_libbonjour,
+    vlc_entry__spu_marq,
+    vlc_entry__spu_logo,
+    vlc_entry__spu_subsdelay,
+    vlc_entry__audio_filter_chorus_flanger,
+    vlc_entry__audio_filter_channel_mixer_dolby,
+    vlc_entry__audio_filter_limiter,
+    vlc_entry__audio_filter_libebur128,
+    vlc_entry__audio_filter_libscaletempo_pitch,
+    vlc_entry__audio_filter_normvol,
+    vlc_entry__audio_filter_channel_mixer_libsimple_channel_mixer,
+    vlc_entry__audio_filter_channel_mixer_libspatialaudio,
+    vlc_entry__audio_filter_expander,
+    vlc_entry__audio_filter_resampler_ugly,
+    vlc_entry__audio_filter_equalizer,
+    vlc_entry__audio_filter_stereo_widen,
+    vlc_entry__audio_filter_compressor,
+    vlc_entry__audio_filter_karaoke,
+    vlc_entry__audio_filter_channel_mixer_mono,
+    vlc_entry__audio_filter_spatializer_spatializer,
+    vlc_entry__audio_filter_gate,
+    vlc_entry__audio_filter_channel_mixer_trivial,
+    vlc_entry__audio_filter_resampler_libsoxr,
+    vlc_entry__audio_filter_converter_tospdif,
+    vlc_entry__audio_filter_gain,
+    vlc_entry__audio_filter_librnnoise,
+    vlc_entry__audio_filter_converter_libaudio_format,
+    vlc_entry__audio_filter_param_eq,
+    vlc_entry__audio_filter_stereo_pan,
+    vlc_entry__audio_filter_scaletempo,
+    vlc_entry__audio_filter_center,
+    vlc_entry__text_renderer_tdummy,
+    vlc_entry__text_renderer_freetype_libfreetype,
+    vlc_entry__text_renderer_nsspeechsynthesizer,
+    vlc_entry__demux_caf,
+    vlc_entry__demux_filter_noseek,
+    vlc_entry__demux_avi_avi,
+    vlc_entry__demux_rawdv,
+    vlc_entry__demux_mjpeg,
+    vlc_entry__demux_adaptive_libadaptive,
+    vlc_entry__demux_asf_asf,
+    vlc_entry__demux_mpeg_mpgv,
+    vlc_entry__demux_mpeg_ps,
+    vlc_entry__demux_mpeg_es,
+    vlc_entry__demux_hx,
+    vlc_entry__demux_mp4_mp4,
+    vlc_entry__demux_image,
+    vlc_entry__demux_g64rtp,
+    vlc_entry__demux_libytdl,
+    vlc_entry__demux_avformat_libavformat,
+    vlc_entry__demux_directory,
+    vlc_entry__stream_out_chromecast_libdemux_chromecast,
+    vlc_entry__demux_libflacsys,
+    vlc_entry__demux_mkv_libmkv,
+    vlc_entry__demux_mpeg_h26x,
+    vlc_entry__demux_ty,
+    vlc_entry__demux_xa,
+    vlc_entry__demux_nsv,
+    vlc_entry__demux_libmod,
+    vlc_entry__demux_mpeg_libts,
+    vlc_entry__demux_libogg,
+    vlc_entry__demux_wav,
+    vlc_entry__demux_nuv,
+    vlc_entry__demux_aiff,
+    vlc_entry__demux_libdemux_stl,
+    vlc_entry__demux_voc,
+    vlc_entry__demux_libdemux_cdg,
+    vlc_entry__demux_dmxmus,
+    vlc_entry__demux_rawaud,
+    vlc_entry__demux_vobsub,
+    vlc_entry__demux_playlist_playlist,
+    vlc_entry__demux_tta,
+    vlc_entry__demux_rawvid,
+    vlc_entry__demux_vc1,
+    vlc_entry__demux_au,
+    vlc_entry__demux_subtitle,
+    vlc_entry__demux_pva,
+    vlc_entry__packetizer_mpegaudio,
+    vlc_entry__packetizer_flac,
+    vlc_entry__packetizer_mpeg4audio,
+    vlc_entry__packetizer_a52,
+    vlc_entry__packetizer_libpacketizer_avparser,
+    vlc_entry__packetizer_h264,
+    vlc_entry__packetizer_vc1,
+    vlc_entry__packetizer_copy,
+    vlc_entry__packetizer_mjpeg,
+    vlc_entry__packetizer_mpegvideo,
+    vlc_entry__packetizer_mpeg4video,
+    vlc_entry__packetizer_dts,
+    vlc_entry__packetizer_h266,
+    vlc_entry__packetizer_hevc,
+    vlc_entry__packetizer_av1,
+    vlc_entry__packetizer_mlp,
+    vlc_entry__stream_out_bridge,
+    vlc_entry__stream_out_transcode_transcode,
+    vlc_entry__stream_out_dummy,
+    vlc_entry__stream_out_udp,
+    vlc_entry__stream_out_cycle,
+    vlc_entry__stream_out_smem,
+    vlc_entry__stream_out_libstream_out_standard,
+    vlc_entry__stream_out_autodel,
+    vlc_entry__stream_out_chromecast_libstream_out_chromecast,
+    vlc_entry__stream_out_duplicate,
+    vlc_entry__stream_out_es,
+    vlc_entry__stream_out_libstream_out_rtp,
+    vlc_entry__stream_out_setid,
+    vlc_entry__stream_out_trace,
+    vlc_entry__stream_out_record,
+    vlc_entry__stream_out_delay,
+    vlc_entry__stream_out_hls_hls,
+    vlc_entry__stream_out_display,
+    vlc_entry__stream_out_gather,
+    vlc_entry__stream_filter_hds_hds,
+    vlc_entry__stream_filter_decomp,
+    vlc_entry__stream_filter_record,
+    vlc_entry__stream_filter_skiptags,
+    vlc_entry__stream_filter_cache_read,
+    vlc_entry__stream_filter_adf,
+    vlc_entry__stream_filter_inflate,
+    vlc_entry__stream_filter_prefetch,
+    vlc_entry__video_output_yuv,
+    vlc_entry__video_output_vmem,
+    vlc_entry__video_output_wdummy,
+    vlc_entry__video_output_apple_libsamplebufferdisplay,
+    vlc_entry__video_output_opengl_libglsampler_builtin,
+    vlc_entry__video_output_opengl_libglinterop_cvpx,
+    vlc_entry__video_output_apple_libcvpx_gl,
+    vlc_entry__video_output_libvout_macosx,
+    vlc_entry__video_output_libcaopengllayer,
+    vlc_entry__video_output_opengl_libglinterop_sw,
+    vlc_entry__video_output_splitter,
+    vlc_entry__video_output_libplacebo_libplacebo,
+    vlc_entry__video_output_opengl_libgl,
+    vlc_entry__video_output_wextern,
+    vlc_entry__video_output_libplacebo_libplacebo_gl,
+    vlc_entry__video_output_opengl_libglfilter_draw,
+    vlc_entry__video_output_vdummy,
+    vlc_entry__video_output_flaschen,
+    vlc_entry__video_output_libwindow_macosx,
+    vlc_entry__video_output_vgl,
+    vlc_entry__isa_aarch64_simd_deinterlace,
+    vlc_entry__isa_aarch64_sve_deinterlace,
+    vlc_entry__stream_extractor_libarchive,
+    vlc_entry__control_dummy,
+    vlc_entry__meta_engine_folder,
+    vlc_entry__meta_engine_libtaglib,
+
+    NULL
+
+};

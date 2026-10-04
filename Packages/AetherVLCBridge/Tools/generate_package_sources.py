@@ -47,6 +47,9 @@ banner = ('/* Modified by AetherNative on ' + metadata['modificationDate'] + '.\
           ' * checked interpolation, and target-relative SwiftPM header imports.\n'
           ' * Original LGPL notices are retained.\n'
           ' */\n')
+# Candidate player notices changed; untouched helpers keep the original banner.
+player_banner = banner.replace(' * checked interpolation, and ',
+                               ' * checked interpolation, seek-state callback snapshots, and ')
 with tempfile.TemporaryDirectory(prefix='aether-bridge-generation-', dir=output) as temporary:
     namespace = Path(temporary) / 'Namespace'
     subprocess.run([sys.executable, str(package_root / 'Tools/generate_namespaced_wrapper.py'),
@@ -63,9 +66,9 @@ with tempfile.TemporaryDirectory(prefix='aether-bridge-generation-', dir=output)
     private.mkdir()
     vendor.mkdir(parents=True)
     header = (namespace / 'include/AetherVLCMediaPlayer.h').read_text()
-    (include / 'AetherVLCMediaPlayer.h').write_text(banner + header)
+    (include / 'AetherVLCMediaPlayer.h').write_text(player_banner + header)
     implementation = imports((namespace / 'src/AetherVLCMediaPlayer.m').read_text())
-    (target / 'AetherVLCMediaPlayer.m').write_text(banner + '#import "Private/AetherVLCPrefix.h"\n' + implementation)
+    (target / 'AetherVLCMediaPlayer.m').write_text(player_banner + '#import "Private/AetherVLCPrefix.h"\n' + implementation)
     for name in private_names:
         original = (namespace / 'include' / name).read_text()
         converted = imports(original)

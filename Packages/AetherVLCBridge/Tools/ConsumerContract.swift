@@ -28,6 +28,12 @@ final class TypedDelegate: NSObject, AetherVLCMediaPlayerDelegate {
             self?.snapshot = "\(time):\(position)"
         }
     }
+
+    nonisolated func mediaPlayerSeekingChanged(_ seeking: Bool, targetTime: Int64, sequence: UInt64) {
+        Task { @MainActor [weak self] in
+            self?.snapshot = "\(seeking):\(targetTime):\(sequence)"
+        }
+    }
 }
 
 @main
@@ -41,9 +47,13 @@ struct ContractConsumer {
         player.delegate?.mediaPlayerStopping?(reason: .endOfStream, inputTime: 1, hadError: false)
         player.delegate?.mediaPlayerClockPoint?(time: 1, position: 0.5, systemDate: 1)
         player.delegate?.mediaPlayerInputPositionChanged?(time: 1, position: 0.5)
+        player.delegate?.mediaPlayerSeekingChanged?(true, targetTime: 1, sequence: 1)
         _ = #selector(TypedDelegate.mediaPlayerStopping(reason:inputTime:hadError:))
         _ = #selector(TypedDelegate.mediaPlayerClockPoint(time:position:systemDate:))
         _ = #selector(TypedDelegate.mediaPlayerInputPositionChanged(time:position:))
+        _ = #selector(TypedDelegate.mediaPlayerSeekingChanged(_:targetTime:sequence:))
+        let _: UInt64 = player.seekCallbackSequence
+        let _: Int64 = player.diagnosticCoreTimeMicroseconds
         print(player.state.rawValue)
     }
 }

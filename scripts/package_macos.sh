@@ -34,13 +34,14 @@ while IFS= read -r -d '' framework; do
 done < <(find "$APP/Contents/Frameworks" -depth -type d -name '*.framework' -print0)
 codesign --force --timestamp --options runtime --entitlements Apps/macOS/AetherFilm.entitlements --sign "$SIGNING_IDENTITY" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
-BASENAME="AetherFilm-$VERSION-macos-universal"
-lipo "$APP/Contents/MacOS/AetherFilm" -verify_arch arm64
-lipo "$APP/Contents/MacOS/AetherFilm" -verify_arch x86_64
+BASENAME="AetherFilm-$VERSION-macos-arm64"
+verify_apple_silicon_binary() {
+  [[ "$(lipo -archs "$1")" == arm64 ]] || { echo "Expected an Apple Silicon arm64 binary: $1" >&2; exit 1; }
+}
+verify_apple_silicon_binary "$APP/Contents/MacOS/AetherFilm"
 while IFS= read -r -d '' binary; do
   if /usr/bin/file -b "$binary" | /usr/bin/grep -q 'Mach-O'; then
-    lipo "$binary" -verify_arch arm64
-    lipo "$binary" -verify_arch x86_64
+    verify_apple_silicon_binary "$binary"
   fi
 done < <(find "$APP/Contents/Frameworks" -type f -print0)
 ZIP="$STAGE/$BASENAME.zip"
@@ -59,7 +60,7 @@ mkdir "$STAGE/Notices"
 cp THIRD_PARTY_NOTICES.md LICENSE "$STAGE/Notices/"
 cp Apps/Resources/Notices/AetherVLCBridge-LICENSE.txt Apps/Resources/Notices/AetherVLCBridge-SOURCE.txt "$STAGE/Notices/"
 cat > "$STAGE/安装说明.txt" <<'TEXT'
-将 AetherFilm 拖入 Applications（应用程序）。最低系统为 macOS 26。
+将 AetherFilm 拖入 Applications（应用程序）。需要 Apple Silicon Mac 和 macOS 26 或更新系统。
 在应用中选择自己的视频，或连接 NAS 的 SMB 共享。
 从应用列表移除视频不会删除原文件。
 项目、支持与许可证：https://github.com/bcblr1993/AetherFilm

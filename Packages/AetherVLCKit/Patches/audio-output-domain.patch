@@ -1,0 +1,74 @@
+--- a/src/audio_output/dec.c
++++ b/src/audio_output/dec.c
+@@ -73,7 +73,7 @@
+     struct
+     {
+         vlc_mutex_t lock; /* Guard first_pts, last_drift, rate_system_ts,
+-                             rate_audio_ts, system_ts, audio_ts */
++                             rate_audio_ts, system_ts, audio_ts, output_audio_ts */
+ 
+         vlc_tick_t last_drift;
+ 
+@@ -85,6 +85,7 @@
+ 
+         vlc_tick_t system_ts;
+         vlc_tick_t audio_ts;
++        vlc_tick_t output_audio_ts; /* Before playback-rate correction */
+ 
+         vlc_tick_t pause_date;
+         float rate;
+@@ -132,8 +133,10 @@
+ {
+     vlc_mutex_assert(&stream->timing.lock);
+     vlc_tick_t system_ts = stream->timing.system_ts;
+-    vlc_tick_t audio_ts = stream->timing.audio_ts;
+-    if (system_ts == VLC_TICK_INVALID)
++    vlc_tick_t audio_ts = stream->timing.output_audio_ts;
++    if (system_ts == VLC_TICK_INVALID
++     || audio_ts == VLC_TICK_INVALID
++     || stream->timing.first_pts == VLC_TICK_INVALID)
+         return -1;
+ 
+     /* Interpolate the last updated point. */
+@@ -146,12 +149,11 @@
+                               stream->mixer_format.i_rate);
+     vlc_tick_t last_pts = stream->timing.first_pts + played_length;
+ 
+-    /* Equivalent to vlc_clock_ConvertToSystem(), but assume the
+-     * coefficient is 1.0 (audio at the same speed than the monotonic
+-     * clock) since the calculation is done on a very small interval
+-     * (generally less than 2 seconds). */
+-    vlc_tick_t play_date = (last_pts - audio_ts) / (double) stream->sync.rate
+-                         + system_ts;
++    /* Both the samples sent to the output and its original audio timestamp
++     * are in the output time domain. Playback-rate conversion has already
++     * been applied by the filters, so their remaining duration is physical
++     * time, independent of the current rate. */
++    vlc_tick_t play_date = last_pts - audio_ts + system_ts;
+     *delay = play_date - system_now;
+     return 0;
+ }
+@@ -273,6 +275,7 @@
+     stream->timing.last_drift = VLC_TICK_INVALID;
+     stream->timing.system_ts = VLC_TICK_INVALID;
+     stream->timing.audio_ts = VLC_TICK_INVALID;
++    stream->timing.output_audio_ts = VLC_TICK_INVALID;
+     vlc_mutex_unlock(&stream->timing.lock);
+ 
+     stream->timing.pause_date = VLC_TICK_INVALID;
+@@ -772,6 +775,7 @@
+ 
+     vlc_tick_t rate_audio_ts = stream->timing.rate_audio_ts;
+     vlc_tick_t rate_system_ts = stream->timing.rate_system_ts;
++    const vlc_tick_t output_audio_ts = audio_ts;
+ 
+     if (rate_audio_ts != VLC_TICK_INVALID)
+     {
+@@ -789,6 +793,7 @@
+ 
+     stream->timing.system_ts = system_ts;
+     stream->timing.audio_ts = audio_ts;
++    stream->timing.output_audio_ts = output_audio_ts;
+     vlc_clock_Lock(stream->sync.clock);
+     stream->timing.last_drift =
+         vlc_clock_Update(stream->sync.clock, system_ts,

@@ -4,7 +4,7 @@ let package = Package(
     name: "AetherVLCBridge",
     platforms: [.macOS("26.0"), .iOS("26.0")],
     products: [.library(name: "AetherVLCBridge", type: .static, targets: ["AetherVLCBridge"])],
-    dependencies: [.package(url: "https://github.com/videolan/vlckit.git", revision: "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332")],
+    dependencies: [.package(name: "VLCKit", path: "../AetherVLCKit")],
     targets: [
         .target(
             name: "AetherVLCBridge",

@@ -1,0 +1,156 @@
+{
+  "scope": "SMALL_FORMAL_NATIVE6_CORRESPONDING_SOURCE_MATERIALS",
+  "exclusions": [
+    "Package.swift and Provenance/artifact.json are separately frozen by release integration",
+    "SOURCE_MANIFEST.json excludes its own recursive hash",
+    "Original source/contrib archives, Lua archive, SDKs, build products and user caches are not copied into this package",
+    "Generated .build, .swiftpm and __pycache__ directories are excluded; their existing caches are untouched"
+  ],
+  "files": [
+    {
+      "path": "Configuration/build26.conf",
+      "bytes": 6263,
+      "sha256": "96317cc08ff6031e4f51d63c3079fce3befc2f1ddc50587f032c4efaf6a0b6e3"
+    },
+    {
+      "path": "Configuration/static-module-list-device.c",
+      "bytes": 25478,
+      "sha256": "0de531b493a448c29340a78a0631bed677fae0a541f2cdfb0b3c111f371e4011"
+    },
+    {
+      "path": "Configuration/static-module-list-mac.c",
+      "bytes": 25380,
+      "sha256": "0c32232d88d3916585b365b1e85107a8c00fceaefe47b8e350c69a538fb7541a"
+    },
+    {
+      "path": "Configuration/static-module-list-sim.c",
+      "bytes": 25478,
+      "sha256": "0de531b493a448c29340a78a0631bed677fae0a541f2cdfb0b3c111f371e4011"
+    },
+    {
+      "path": "Patches/audio-output-domain.patch",
+      "bytes": 2832,
+      "sha256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7"
+    },
+    {
+      "path": "Patches/decoder-flush-preview.patch",
+      "bytes": 3150,
+      "sha256": "d81e1cc7cd9530c65ebb23bf41f948318303d6da6c1103eb43df37c872912754"
+    },
+    {
+      "path": "Patches/gsm-deployment.patch",
+      "bytes": 355,
+      "sha256": "e1da8783adb775e36f7595cfa05bc501466291bcb8b9185497d9c947b024df5c"
+    },
+    {
+      "path": "Patches/held-io-recovery.patch",
+      "bytes": 2855,
+      "sha256": "2cd23d50c90440d8ecdda03bf872d03ddcb5cfd0e16166a7660a0fd990b77b6e"
+    },
+    {
+      "path": "Patches/native-aperture.patch",
+      "bytes": 15360,
+      "sha256": "cb180e2281271f55d625b654a38e29696237c7fee322cccdd51e5bd511136d0f"
+    },
+    {
+      "path": "Patches/output-clock-cadence.patch",
+      "bytes": 521,
+      "sha256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f"
+    },
+    {
+      "path": "Patches/paused-preview-core.patch",
+      "bytes": 4001,
+      "sha256": "38565703cd41ec5718480d5717f7231185e0170112dd150693a6b4a986414aa8"
+    },
+    {
+      "path": "Patches/wrapper-device.patch",
+      "bytes": 8424,
+      "sha256": "13d6338072f82b56338846601645bab794d6968ac1793d141aa97f0be94180ea"
+    },
+    {
+      "path": "Patches/wrapper-mac.patch",
+      "bytes": 7399,
+      "sha256": "07b2fb54e4eea5c0c27b6f3d127a11d3af8b2bba6a6cb10cdb4cef72a3b374f5"
+    },
+    {
+      "path": "Patches/wrapper-sim.patch",
+      "bytes": 8082,
+      "sha256": "eaecab2a120bc48b9601c42d24429cba0cb0d7d657bc569b5dd0933fc62716dc"
+    },
+    {
+      "path": "Provenance/COPYING",
+      "bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "path": "Provenance/COPYING.LIB",
+      "bytes": 26530,
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
+    },
+    {
+      "path": "Provenance/local-inputs.json",
+      "bytes": 6733,
+      "sha256": "503a20e4dab9a923a55833a1f45935bd65181d496a417a9a562647bdba300420"
+    },
+    {
+      "path": "Provenance/material-verification.json",
+      "bytes": 1052,
+      "sha256": "94dc6492d2e451e8f387f99bd9733270a4a6af3931bd6df8efed40542971ec0c"
+    },
+    {
+      "path": "Provenance/native4-build-record.json",
+      "bytes": 57551,
+      "sha256": "7032b41093a4ae55cf9a47c515ce90c025495efdc57800a9ffdd059046412a4f"
+    },
+    {
+      "path": "Provenance/native5-build-record.json",
+      "bytes": 31369,
+      "sha256": "ba3424e7f7e1253736b0a712e042126f506a79d19abcb0826bccb4a2f9f1712b"
+    },
+    {
+      "path": "Provenance/native5-material-verification.json",
+      "bytes": 1797,
+      "sha256": "fef4c614217cbaa25ce0a4217b421836d8279797c26d7a13ef03f507f8e9df9d"
+    },
+    {
+      "path": "Provenance/native6-build-record.json",
+      "bytes": 33444,
+      "sha256": "03c73137dd57064d2ac6f0137f4d4051f3268085eb0f003354588188fe43849a"
+    },
+    {
+      "path": "Provenance/native6-material-verification.json",
+      "bytes": 1930,
+      "sha256": "19e001189d1dc799c4e3e6bca31436c7f5bc139dcbc13a79180dc3e4a0253f6a"
+    },
+    {
+      "path": "Provenance/source-materials.json",
+      "bytes": 17070,
+      "sha256": "b05b3eb2c07c71b083ea52e786db7a60f659f07114fda102ee92ec588724b049"
+    },
+    {
+      "path": "README.md",
+      "bytes": 11042,
+      "sha256": "959219049ca74850cb60a91d78c0c5a69d91795935ba4d63a7cbd988076c0413"
+    },
+    {
+      "path": "Tools/assemble_source_extension.py",
+      "bytes": 3746,
+      "sha256": "c6a4ed2c4e9ad239c85233d62ffc0f44ff59f68cc60e41d86f11ed416ff96d2b"
+    },
+    {
+      "path": "Tools/rebuild_core.py",
+      "bytes": 8024,
+      "sha256": "cd32aa7d4932fac0c59eff004820b45b9c2e82c9036c7a72e0f8b272453b3a94"
+    },
+    {
+      "path": "Tools/verify_source_materials.py",
+      "bytes": 1679,
+      "sha256": "1f879fe4e2822c854600be7af98d99fe89cffd88b2a5b1160f25bb982ed487a7"
+    }
+  ],
+  "fileCount": 28,
+  "totalBytes": 355637,
+  "fullPortableRebuildExecuted": false,
+  "finalExtensionAssetAssembled": false,
+  "nativeGeneration": 6
+}

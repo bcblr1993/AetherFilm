@@ -1,0 +1,687 @@
+{
+  "scope": "THREE_ACTUAL_NATIVE6_ONE_REAL_AUDIO_RENDERER_CLOCK_OBJECT_FULL_ARCHIVE_REPLACEMENTS_AND_WRAPPERS_NOT_FINAL_APP_ACCEPTANCE",
+  "nativeGeneration": 6,
+  "productionPatch": {
+    "path": "Patches/output-clock-cadence.patch",
+    "bytes": 521,
+    "sha256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f"
+  },
+  "modifiedFile": {
+    "path": "modules/audio_output/apple/avsamplebuffer.m",
+    "modifiedBy": "AetherNative",
+    "modificationDate": "2026-10-04",
+    "beforeSHA256": "bce45adc3f68e13c5c81b14b3e0efb0cd7e22a0b89db3919759378b28285f68e",
+    "afterSHA256": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+    "change": "Real AVSampleBuffer renderer observation interval from1s to100ms; timing samples, rate conversion, reset/pause/observer removal remain original"
+  },
+  "native4BuildRecordRetained": {
+    "path": "${REPOSITORY}/Packages/AetherVLCKit/Provenance/native4-build-record.json",
+    "bytes": 57551,
+    "sha256": "7032b41093a4ae55cf9a47c515ce90c025495efdc57800a9ffdd059046412a4f"
+  },
+  "native5BuildRecordRetained": {
+    "path": "${REPOSITORY}/Packages/AetherVLCKit/Provenance/native5-build-record.json",
+    "bytes": 31369,
+    "sha256": "ba3424e7f7e1253736b0a712e042126f506a79d19abcb0826bccb4a2f9f1712b"
+  },
+  "threeSliceReady": {
+    "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/THREE_SLICE_READY.json",
+    "bytes": 45253,
+    "sha256": "d85b0764ba735bc48a264883f730234eda794648c65b95737b8d9a7948667c74"
+  },
+  "records": {
+    "sim": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r2/outcome.json",
+        "bytes": 2967,
+        "sha256": "aa4a2c5c39c0eaf026329eb31d80991213cbf9836cf75f54f99735a953709b02"
+      },
+      "actualNative": {
+        "platform": 7,
+        "encodedMinimum": 1703936,
+        "encodedSDK": 1769472,
+        "minimum": "26.0.0",
+        "sdk": "27.0.0"
+      },
+      "actualCompileArgv": [
+        "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-DHAVE_CONFIG_H",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/build-iphonesimulator-arm64/build/modules",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/modules",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/build-iphonesimulator-arm64/build",
+        "-DMODULE_STRING=\"avsamplebuffer\"",
+        "-DMODULE_NAME=audio_output_apple_libavsamplebuffer",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/modules/access",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/modules/codec",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/include",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/build-iphonesimulator-arm64/build/include",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk",
+        "-D_INTL_REDIRECT_MACROS",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/contrib/arm64-iphonesimulator27.0/include",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/compat/stdbit",
+        "-mbranch-protection=standard",
+        "-fobjc-arc",
+        "-mios-simulator-version-min=26.0",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk",
+        "-g",
+        "-Werror=invalid-command-line-argument",
+        "-Werror=unknown-warning-option",
+        "-Werror=partial-availability",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/contrib/arm64-iphonesimulator27.0/include",
+        "-F${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/contrib/arm64-iphonesimulator27.0",
+        "-F${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/contrib/arm64-iphonesimulator27.0/Frameworks",
+        "-Wall",
+        "-Wextra",
+        "-Wsign-compare",
+        "-Wundef",
+        "-Wpointer-arith",
+        "-Wvolatile-register-var",
+        "-Wformat",
+        "-Wformat-security",
+        "-fvisibility=hidden",
+        "-O3",
+        "-funroll-loops",
+        "-fomit-frame-pointer",
+        "-iquote",
+        "${REPOSITORY}/.build/NativeSourceBuildIOSSimulatorArm64-r1/Sources/VLC/modules/audio_output/apple",
+        "-MT",
+        "avsamplebuffer.o",
+        "-MD",
+        "-MP",
+        "-MF",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/Dependencies/avsamplebuffer.d",
+        "-c",
+        "-o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/Objects/avsamplebuffer.o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Sources/modules/audio_output/apple/avsamplebuffer.m"
+      ],
+      "actualCompileCwd": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1",
+      "actualCompileEvidence": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/compile-avsamplebuffer.json",
+        "bytes": 3583,
+        "sha256": "13539943979331bbc45a7956909caf5658f4e16f73ea87bf0af23dc67bb7776d"
+      },
+      "archiveProof": {
+        "fullArchive": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r2/libvlc-full-static.a",
+          "bytes": 822978968,
+          "sha256": "437321ea00bd5f538ef487e624afb5be69508e9dfb3870a846d716b11a3b2760"
+        },
+        "member": "libavsamplebuffer_plugin_la-avsamplebuffer.o",
+        "replacementIndex": 30,
+        "memberCount": 6266,
+        "allOtherNative5MembersContentAndOrderExact": 6265,
+        "newObject": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/Objects/avsamplebuffer.o",
+          "bytes": 76808,
+          "sha256": "a402497d5a2efa4b1c3e44eed1791b73ae1fa081ce8f24c80770a2ec38a50b91"
+        },
+        "coreArchiveReferencedUnmodified": {
+          "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-sim-r1/libvlccore.a",
+          "bytes": 6398920,
+          "sha256": "d3a1c46b300a9dfde984b7e39bf6ca0ff2df1540e725098258246dc7b86d0195"
+        },
+        "definedSymbolsExact": true,
+        "actualCompileEvidence": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/compile-avsamplebuffer.json",
+          "bytes": 3583,
+          "sha256": "13539943979331bbc45a7956909caf5658f4e16f73ea87bf0af23dc67bb7776d"
+        },
+        "originalIndexFailureRetained": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-sim-r1/outcome.json",
+          "bytes": 597,
+          "sha256": "6b3d58c200e0f25392e0688385478ac3e37cd991b3a890b2ea7b14c94a0d0f9e"
+        },
+        "normalRanlibFrontend": {
+          "path": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib",
+          "target": "libtool",
+          "resolvedPath": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool",
+          "resolvedTool": {
+            "path": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool",
+            "bytes": 360272,
+            "sha256": "2840879786eb8868f03c3d378eef6c71d8416e15d8b14aebbf0c0cb80ad81c24"
+          }
+        }
+      },
+      "coreArchiveUnmodified": {
+        "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-sim-r1/libvlccore.a",
+        "bytes": 6398920,
+        "sha256": "d3a1c46b300a9dfde984b7e39bf6ca0ff2df1540e725098258246dc7b86d0195"
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/outcome.json",
+        "bytes": 16079,
+        "sha256": "1fa79e06865215565aab569e507300e07b6245b0b13c1528b96367d3dfbe9a64"
+      },
+      "wrapperArgv": [
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphonesimulator27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildCaches/precompiled",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "build"
+        ],
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphonesimulator27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework Metal",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "build"
+        ]
+      ],
+      "compiledMachO": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-sim-r2/BuildProducts/Release/VLCKit.framework/VLCKit",
+        "bytes": 54321976,
+        "sha256": "92da04feee439f4bf90135f77bf720868650c2edc462e3f4428d4d0acb2bca92",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "90e61c79-9508-3b98-9a12-e89ed893b50c",
+        "TEXT": {
+          "offset": 5600,
+          "bytes": 31756492,
+          "sha256": "afa5e2083a210b0beec7021fca7d121a526a4ed37ae1ee053de0bdeccfadc52f"
+        },
+        "buildVersion": {
+          "platform": 7,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      },
+      "originalSourceAndInputGuardsExact": true,
+      "actualModulesAndPublicAPI": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "publicHeadersAndModulesByteExactAgainstNative5": true,
+      "allDefinedObjectSymbolsExact": true
+    },
+    "mac": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r3/outcome.json",
+        "bytes": 3255,
+        "sha256": "1938aef22bca8177334762e1d3f48c59666eba2fcc4ea2817a5504829c6b8963"
+      },
+      "actualNative": {
+        "platform": 1,
+        "encodedMinimum": 1703936,
+        "encodedSDK": 1769472,
+        "minimum": "26.0.0",
+        "sdk": "27.0.0"
+      },
+      "actualCompileArgv": [
+        "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-DHAVE_CONFIG_H",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/build-macosx-arm64/build/modules",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/modules",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/build-macosx-arm64/build",
+        "-DMODULE_STRING=\"avsamplebuffer\"",
+        "-DMODULE_NAME=audio_output_apple_libavsamplebuffer",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/modules/access",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/modules/codec",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/include",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/build-macosx-arm64/build/include",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+        "-D_INTL_REDIRECT_MACROS",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/contrib/arm64-macosx27.0/include",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/compat/stdbit",
+        "-mbranch-protection=standard",
+        "-fobjc-arc",
+        "-mmacosx-version-min=26.0",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+        "-g",
+        "-Werror=invalid-command-line-argument",
+        "-Werror=unknown-warning-option",
+        "-Werror=partial-availability",
+        "-I${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/contrib/arm64-macosx27.0/include",
+        "-F${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/contrib/arm64-macosx27.0",
+        "-F${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/contrib/arm64-macosx27.0/Frameworks",
+        "-Wall",
+        "-Wextra",
+        "-Wsign-compare",
+        "-Wundef",
+        "-Wpointer-arith",
+        "-Wvolatile-register-var",
+        "-Wformat",
+        "-Wformat-security",
+        "-fvisibility=hidden",
+        "-O3",
+        "-funroll-loops",
+        "-fomit-frame-pointer",
+        "-iquote",
+        "${REPOSITORY}/.build/NativeApertureCandidate20261003/Sources/VLC/modules/audio_output/apple",
+        "-MT",
+        "avsamplebuffer.o",
+        "-MD",
+        "-MP",
+        "-MF",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/Dependencies/avsamplebuffer.d",
+        "-c",
+        "-o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/Objects/avsamplebuffer.o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Sources/modules/audio_output/apple/avsamplebuffer.m"
+      ],
+      "actualCompileCwd": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2",
+      "actualCompileEvidence": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/compile-avsamplebuffer.json",
+        "bytes": 3399,
+        "sha256": "3d5e04556d4f94039fdd76aa5c2b306f3e02ee14e69bdeb9d900dd4cf68f1533"
+      },
+      "archiveProof": {
+        "fullArchive": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r3/libvlc-full-static.a",
+          "bytes": 941635456,
+          "sha256": "efd64622ed1bd79586b10e9c8daad181f1a27f4ef20b4435d6ec65e09e4a6b0d"
+        },
+        "member": "libavsamplebuffer_plugin_la-avsamplebuffer.o",
+        "replacementIndex": 30,
+        "memberCount": 6562,
+        "allOtherNative5MembersContentAndOrderExact": 6561,
+        "newObject": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/Objects/avsamplebuffer.o",
+          "bytes": 69616,
+          "sha256": "8f333cae32a60eea41f4917900612691fdb30cc73a0fefc15c0a485c3e575d5c"
+        },
+        "coreArchiveReferencedUnmodified": {
+          "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-mac-r1/libvlccore.a",
+          "bytes": 6937264,
+          "sha256": "951bdb8e480431b4052b871fd3e0c791ae474201ea510b0f4026d1122480bcc3"
+        },
+        "other29DefinedNamesExact": true,
+        "removedPrivateCompilerAvailabilityGuard": "___clang_at_available_requires_core_foundation_framework",
+        "removedGuardActualNMMetadata": "0000000000001250 (__TEXT,__text) weak private external [cold func] ___clang_at_available_requires_core_foundation_framework",
+        "actualCompileEvidence": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/compile-avsamplebuffer.json",
+          "bytes": 3399,
+          "sha256": "3d5e04556d4f94039fdd76aa5c2b306f3e02ee14e69bdeb9d900dd4cf68f1533"
+        },
+        "originalStrictSymbolFailureRetained": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-mac-r2/outcome.json",
+          "bytes": 608,
+          "sha256": "24194c17a9ccb36287bdd17b825affaa44b6227d83b1248b5c345da5f309d334"
+        },
+        "normalRanlibFrontend": {
+          "path": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib",
+          "target": "libtool",
+          "resolvedPath": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool",
+          "resolvedTool": {
+            "path": "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool",
+            "bytes": 360272,
+            "sha256": "2840879786eb8868f03c3d378eef6c71d8416e15d8b14aebbf0c0cb80ad81c24"
+          }
+        }
+      },
+      "coreArchiveUnmodified": {
+        "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-mac-r1/libvlccore.a",
+        "bytes": 6937264,
+        "sha256": "951bdb8e480431b4052b871fd3e0c791ae474201ea510b0f4026d1122480bcc3"
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/outcome.json",
+        "bytes": 18508,
+        "sha256": "08030f3019ba93c6f9913ae93537acfe1b421114e156a4fd7d89a6ee93a7b32c"
+      },
+      "wrapperArgv": [
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "macosx27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "MACOSX_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildCaches/precompiled",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "build"
+        ],
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "macosx27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "MACOSX_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework IOKit -framework SystemConfiguration",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "build"
+        ]
+      ],
+      "compiledMachO": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-mac-r2/BuildProducts/Release/VLCKit.framework/Versions/A/VLCKit",
+        "bytes": 62488552,
+        "sha256": "68587bfd70efcfaae70e181278165ca434bdf62371b38e2596e04a6c39a295d7",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "2fa866e3-1085-3542-8ef5-2577609079ab",
+        "TEXT": {
+          "offset": 5920,
+          "bytes": 36362960,
+          "sha256": "5b76bba4b1d81afcb09d19c0fe30fca51af72409399671ae24f5289fc1ebb962"
+        },
+        "buildVersion": {
+          "platform": 1,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      },
+      "originalSourceAndInputGuardsExact": true,
+      "actualModulesAndPublicAPI": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "publicHeadersAndModulesByteExactAgainstNative5": true,
+      "compilerAvailabilityMarkerException": {
+        "originalMakeFrontendMinimum": "10.13",
+        "originalMachOMetadataMinimum": "11.0.0",
+        "newFrontendAndObjectMinimum": "26.0.0",
+        "removedOnly": "___clang_at_available_requires_core_foundation_framework",
+        "originalVisibility": "weak private external [cold func]",
+        "allOther29DefinedNamesExact": true,
+        "actualReadOnlyProof": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/MacAvailabilityReadOnly-r1/REVIEW.json",
+          "bytes": 1783,
+          "sha256": "c72fabc70415b570d3b65d9352ec1c7e12db3e57987ce49a05e29ceaae3f6114"
+        }
+      }
+    },
+    "device": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/outcome.json",
+        "bytes": 1553,
+        "sha256": "58e227082259147cdd8d4b5a943d8849704e9605e14fc79b0963d5277622b8f1"
+      },
+      "actualNative": {
+        "platform": 2,
+        "encodedMinimum": 1703936,
+        "encodedSDK": 1769472,
+        "minimum": "26.0.0",
+        "sdk": "27.0.0"
+      },
+      "actualCompileArgv": [
+        "${DEVELOPER_DIR}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+        "-DHAVE_CONFIG_H",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/build-iphoneos-arm64/build/modules",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/modules",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/build-iphoneos-arm64/build",
+        "-DMODULE_STRING=\"avsamplebuffer\"",
+        "-DMODULE_NAME=audio_output_apple_libavsamplebuffer",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/modules/access",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/modules/codec",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/include",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/build-iphoneos-arm64/build/include",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.0.sdk",
+        "-D_INTL_REDIRECT_MACROS",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/contrib/arm64-iphoneos27.0/include",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/compat/stdbit",
+        "-mbranch-protection=standard",
+        "-fobjc-arc",
+        "-mios-version-min=26.0",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "${DEVELOPER_DIR}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.0.sdk",
+        "-g",
+        "-Werror=invalid-command-line-argument",
+        "-Werror=unknown-warning-option",
+        "-Werror=partial-availability",
+        "-I${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/contrib/arm64-iphoneos27.0/include",
+        "-F${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/contrib/arm64-iphoneos27.0",
+        "-F${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/contrib/arm64-iphoneos27.0/Frameworks",
+        "-Wall",
+        "-Wextra",
+        "-Wsign-compare",
+        "-Wundef",
+        "-Wpointer-arith",
+        "-Wvolatile-register-var",
+        "-Wformat",
+        "-Wformat-security",
+        "-fvisibility=hidden",
+        "-O3",
+        "-funroll-loops",
+        "-fomit-frame-pointer",
+        "-iquote",
+        "${REPOSITORY}/.build/NativeSourceBuildIOSDeviceArm64-r1/Sources/VLC/modules/audio_output/apple",
+        "-MT",
+        "avsamplebuffer.o",
+        "-MD",
+        "-MP",
+        "-MF",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/Dependencies/avsamplebuffer.d",
+        "-c",
+        "-o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/Objects/avsamplebuffer.o",
+        "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Sources/modules/audio_output/apple/avsamplebuffer.m"
+      ],
+      "actualCompileCwd": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2",
+      "actualCompileEvidence": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/compile-avsamplebuffer.json",
+        "bytes": 3466,
+        "sha256": "092ceba113c46f3bb4548428bf17b03dfd69137a5b62a72c3afbb551d741f4c3"
+      },
+      "archiveProof": {
+        "fullArchive": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/libvlc-full-static.a",
+          "bytes": 820052672,
+          "sha256": "1b1fd3a6ff47f7ef983dfb423c680ae2e4744a41dff0da1d3d4684de07b63c2a"
+        },
+        "member": "libavsamplebuffer_plugin_la-avsamplebuffer.o",
+        "replacementIndex": 30,
+        "memberCount": 6269,
+        "allOtherNative5MembersContentAndOrderExact": 6268,
+        "newObject": {
+          "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Native-device-r2/Objects/avsamplebuffer.o",
+          "bytes": 76568,
+          "sha256": "148527235b1ad7ba113552efaf76956757d46d52415f562ef81c0a65ec2dccf9"
+        },
+        "coreArchiveReferencedUnmodified": {
+          "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-device-r1/libvlccore.a",
+          "bytes": 6369496,
+          "sha256": "94528618394c572a2db2f3bef12885338db7cd3df19db1ac44f47babb2f99230"
+        },
+        "definedSymbolsExact": true
+      },
+      "coreArchiveUnmodified": {
+        "path": "${REPOSITORY}/.build/NativeAudioOutputDomainCandidate20261004-r1/Native-device-r1/libvlccore.a",
+        "bytes": 6369496,
+        "sha256": "94528618394c572a2db2f3bef12885338db7cd3df19db1ac44f47babb2f99230"
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/outcome.json",
+        "bytes": 16123,
+        "sha256": "43aba40c88aac8a74b20d3177760bde7b5dc69f1f5b225bc3f70991b06e944ed"
+      },
+      "wrapperArgv": [
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphoneos27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildCaches/precompiled",
+          "build"
+        ],
+        [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/Wrapper/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphoneos27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "SYMROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework Metal",
+          "build"
+        ]
+      ],
+      "compiledMachO": {
+        "path": "${REPOSITORY}/.build/NativeOutputClockCadenceCandidate20261004-r1/Wrapper-device-r2/BuildProducts/Release/VLCKit.framework/VLCKit",
+        "bytes": 52958304,
+        "sha256": "b79470e4a98c10988b49da052d682b836bb0af3bf6d018dd22c45f495447fcf8",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "14fcd066-4110-345b-a7bd-3d5389cbc8e1",
+        "TEXT": {
+          "offset": 16384,
+          "bytes": 30841836,
+          "sha256": "d59670a130c3874e2801b303d3596774c7a5b251226ef0f46860bbb67029b4fb"
+        },
+        "buildVersion": {
+          "platform": 2,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      },
+      "originalSourceAndInputGuardsExact": true,
+      "actualModulesAndPublicAPI": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "publicHeadersAndModulesByteExactAgainstNative5": true,
+      "allDefinedObjectSymbolsExact": true
+    }
+  },
+  "actualAssembly": {
+    "path": "${REPOSITORY}/.build/Native6Assembly20261004-r1/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2299,
+    "sha256": "b9bb8760fd8b8a396cbed618efefca52457ae9840471b15f40d1a03ee89413f0"
+  },
+  "binaryAsset": {
+    "plannedTag": "vlckit-8f5ce02-aether-20261004",
+    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004/VLCKit-AetherFilm-native6-arm64.xcframework.zip",
+    "filename": "VLCKit-AetherFilm-native6-arm64.xcframework.zip",
+    "bytes": 68725880,
+    "sha256": "ced058ad2baa7cb74b4b1a842abbc0573a6f3bf6ddcd11f83c04d997c8414005"
+  },
+  "allSixWrapperTargetsActuallyExitZero": true,
+  "allOtherNativeFullPayloadsAndOrderExact": true,
+  "allNative5CoreArchivesUnmodified": true,
+  "standaloneOriginalHalfSpeedFunctionCase": {
+    "path": "${REPOSITORY}/.build/Native6ClockCadenceSimApp20261004-r1/sim/Results-half-speed-eos-r1/outcome.json",
+    "bytes": 4942,
+    "sha256": "52d11764d1b98d2019edd9de5f10e121fa8fe07fca11bd37353b7df81a3d6885"
+  },
+  "standaloneRealClockCadenceReview": {
+    "path": "${REPOSITORY}/.build/Native6ClockCadenceSimApp20261004-r1/ACTUAL_HALF_CLOCK_REVIEW.json",
+    "bytes": 3784,
+    "sha256": "f2b252439de9f82c79e2ef402ad169d6bc45d3c5f07ed4315e3d075b3097ec57"
+  },
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssembled": false,
+  "AppAndRuntimeReleaseAccepted": false
+}

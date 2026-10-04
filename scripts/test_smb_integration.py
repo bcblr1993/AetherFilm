@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import ipaddress
 import logging
 import os
 from pathlib import Path
@@ -56,10 +57,19 @@ def run_command(command: list[str], environment: dict[str, str]) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--listen-address", default="127.0.0.1", help="Exact owned host IPv4 for physical tests; default loopback")
     parser.add_argument("--bootstrap-only", action="store_true", help="Keep the password out of the command environment; fetch credentials from the loopback bootstrap URL in memory")
     parser.add_argument("--media-folder", type=Path, help="Copy test video/subtitle fixtures into FILMS/media without modifying their originals")
     parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to run, after --")
     arguments = parser.parse_args()
+    try:
+        listen_address = str(ipaddress.IPv4Address(arguments.listen_address))
+        address = ipaddress.IPv4Address(listen_address)
+        allowed = (listen_address == "127.0.0.1" or any(address in ipaddress.IPv4Network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")))
+        if not allowed:
+            parser.error("--listen-address must be loopback or an exact owned LAN IPv4")
+    except ipaddress.AddressValueError:
+        parser.error("--listen-address must be a literal IPv4 address")
     command = arguments.command
     if command[:1] == ["--"]:
         command = command[1:]
@@ -104,7 +114,7 @@ def main() -> int:
             shutil.copytree(media_folder, root / "media", ignore=ignore_non_media)
 
         password = secrets.token_urlsafe(24)
-        server = smbserver.SimpleSMBServer(listenAddress="127.0.0.1", listenPort=0)
+        server = smbserver.SimpleSMBServer(listenAddress=listen_address, listenPort=0)
         server.setSMB2Support(True)
         server.addShare("FILMS", str(root), "AetherFilm isolated protocol fixture", readOnly="yes")
         server.addCredential("aetherfilm-fixture", 1000, compute_lmhash(password), compute_nthash(password))
@@ -154,6 +164,7 @@ def main() -> int:
         stalled_thread = threading.Thread(target=accept_stalled, daemon=True)
         stalled_thread.start()
         configuration = {
+            "host": listen_address,
             "port": server.getServer().server_address[1],
             "username": "aetherfilm-fixture",
             "password": password,
@@ -187,7 +198,7 @@ def main() -> int:
                 # Never record bootstrap requests or credential responses.
                 pass
 
-        bootstrap = ThreadingHTTPServer(("127.0.0.1", 0), BootstrapHandler)
+        bootstrap = ThreadingHTTPServer((listen_address, 0), BootstrapHandler)
         bootstrap.daemon_threads = True
         bootstrap_thread = threading.Thread(target=bootstrap.serve_forever, daemon=True)
         bootstrap_thread.start()
@@ -197,13 +208,14 @@ def main() -> int:
         environment.update(
             AETHERFILM_SMB_TEST_PORT=str(server.getServer().server_address[1]),
             AETHERFILM_SMB_STALL_PORT=str(stalled.getsockname()[1]),
-            AETHERFILM_SMB_BOOTSTRAP_URL=f"http://127.0.0.1:{bootstrap.server_port}/configuration",
+            AETHERFILM_SMB_BOOTSTRAP_URL=f"http://{listen_address}:{bootstrap.server_port}/configuration",
+            AETHERFILM_SMB_TEST_HOST=listen_address,
         )
         if not arguments.bootstrap_only:
             environment["AETHERFILM_SMB_TEST_PASSWORD"] = password
         if media_folder is not None:
             environment["AETHERFILM_SMB_MEDIA_PATH"] = "media"
-        print("Isolated SMB2 fixture ready on loopback; ephemeral credentials remain in memory.", flush=True)
+        print("Isolated SMB2 fixture ready on the exact owned IPv4 interface; ephemeral credentials remain in memory.", flush=True)
         try:
             return run_command(command, environment)
         except OSError:

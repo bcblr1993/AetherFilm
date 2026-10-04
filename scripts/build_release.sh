@@ -8,7 +8,7 @@ case "$TASK_PLATFORM" in
   macOS)
     xcodebuild build -project AetherFilm.xcodeproj -scheme AetherFilm-macOS \
       -destination 'generic/platform=macOS' -configuration Release \
-      -derivedDataPath build/release-macOS ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO \
+      -derivedDataPath build/release-macOS ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
       CODE_SIGNING_ALLOWED=NO
     echo 'Unsigned candidate: build/release-macOS/Build/Products/Release/AetherFilm.app'
     ;;

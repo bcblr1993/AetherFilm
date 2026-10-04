@@ -29,9 +29,11 @@ try:
 except subprocess.CalledProcessError:
     repo_root = None
 if repo_root == original:
-    relative_files = subprocess.check_output(['git', '-C', str(original), 'ls-files', '-z']).decode().split('\0')
+    relative_files = subprocess.check_output(
+        ['git', '-C', str(original), 'ls-files', '--cached', '--others', '--exclude-standard', '-z']
+    ).decode().split('\0')
     relative_files = [path for path in relative_files if path]
-    export = 'tracked working-copy files; SHA proves actual bytes, not an immutable commit export'
+    export = 'tracked and non-ignored new working-copy files; SHA proves actual bytes, not an immutable commit export'
 else:
     manifest = original.parent / 'MANIFEST.sha256'
     if not manifest.is_file() or original.name != 'ApplicationSource':
@@ -96,10 +98,14 @@ spec_file.write_text(subprocess.check_output(
 manifest_file = local_bridge / 'Package.swift'
 remote_manifest = manifest_file.read_text()
 replacement = '.package(name: "VLCKit", path: ' + json.dumps(str(mirror)) + ')'
-local_manifest, count = re.subn(r'\.package\(\s*url:\s*"https://github\.com/videolan/vlckit(?:\.git)?"\s*,\s*revision:\s*"8f5ce02f09a7da5d061a24ddac3cb432f2a9b332"\s*\)',
+fixed_dependency = (
+    r'\.package\(\s*url:\s*"https://github\.com/videolan/vlckit(?:\.git)?"\s*,\s*revision:\s*"8f5ce02f09a7da5d061a24ddac3cb432f2a9b332"\s*\)'
+    r'|\.package\(\s*name:\s*"VLCKit"\s*,\s*path:\s*"\.\./AetherVLCKit"\s*\)'
+)
+local_manifest, count = re.subn(fixed_dependency,
                               lambda _: replacement, remote_manifest)
 if count != 1:
-    raise RuntimeError('Expected exactly one fixed formal remote dependency')
+    raise RuntimeError('Expected exactly one fixed formal VLCKit dependency')
 manifest_file.write_text(local_manifest)
 implementation_proof = {}
 for path in (bridge_source / 'Sources').rglob('*'):

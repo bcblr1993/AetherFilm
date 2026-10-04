@@ -8,12 +8,15 @@ unmodified LGPL 2.1 license text; original copyright notices are retained in the
 corresponding source.
 
 The fixed upstream VLCKit wrapper revision is
-8f5ce02f09a7da5d061a24ddac3cb432f2a9b332. The fixed binary archive checksum is
+8f5ce02f09a7da5d061a24ddac3cb432f2a9b332. The historical stock binary archive checksum is
 f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb.
 AetherNative's modified generated wrapper files carry a 2026-10-03 notice.
 Changes include a separate player/delegate/notification namespace, typed
 stopping snapshots and clock/input callbacks, checked clock interpolation,
-and package-relative header imports. The fixed libVLC core is unchanged.
+and package-relative header imports. The derived bridge layer is separate from the modified Native6 libVLC core.
+Its seven local patches and eleven affected-source hashes are recorded in
+Packages/AetherVLCKit; the current modified binary checksum is in its
+Provenance/artifact.json.
 
 The package includes 23 hashed original inputs, the exact patch, two generators
 and provenance. Its 22 generated source files reproduce the compiled package
@@ -25,7 +28,7 @@ the final application and must not substitute for that complete same-source
 asset. See the repository release assets and the package README/provenance:
 https://github.com/bcblr1993/AetherFilm
 
-Five platform/architecture consumers have compiled and strongly linked the
+Historical five platform/architecture consumers compiled and strongly linked the
 typed wrapper callbacks with unchanged implementation bytes and an explicitly
 recorded local dependency-manifest override. These checks do not establish an
 independent full libVLC engine rebuild, modified-library App Store distribution,

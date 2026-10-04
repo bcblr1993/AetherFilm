@@ -1,0 +1,58 @@
+--- a/VLCKit.xcodeproj/project.pbxproj
++++ b/VLCKit.xcodeproj/project.pbxproj
+@@ -239,7 +239,7 @@
+ 		6C21837F28509122000C4AC9 /* VLCLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VLCLogging.h; sourceTree = "<group>"; };
+ 		6C21838028509122000C4AC9 /* VLCConsoleLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VLCConsoleLogger.h; sourceTree = "<group>"; };
+ 		6C6348712C91F4BA0017A581 /* VLCDrawable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VLCDrawable.h; sourceTree = "<group>"; };
+-		6C78BB472CA2FAA800602498 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.5.sdk/System/Library/Frameworks/AVKit.framework; sourceTree = DEVELOPER_DIR; };
++		6C78BB472CA2FAA800602498 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+ 		6C9531FA297EDBCC00F41EC8 /* VLCEventsHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VLCEventsHandler.m; sourceTree = "<group>"; };
+ 		6C953201297EDC7500F41EC8 /* VLCEventsHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VLCEventsHandler.h; sourceTree = "<group>"; };
+ 		7A5ECAC511DE8F7300F66AF3 /* VLCLibrary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VLCLibrary.m; sourceTree = "<group>"; };
+@@ -339,9 +339,9 @@
+ 		7DB683D31C996187000C70BE /* VLCHelperCode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VLCHelperCode.m; sourceTree = "<group>"; };
+ 		7DB683D91C9961BA000C70BE /* VLCHelperCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VLCHelperCode.h; sourceTree = "<group>"; };
+ 		7DB9CEE42BA8B5730086981B /* libvlc_video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libvlc_video.h; path = libvlc/vlc/include/vlc/libvlc_video.h; sourceTree = "<group>"; };
+-		7DE26F142BA72B70000CC89C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+-		7DE26F162BA72B93000CC89C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk/System/Library/Frameworks/OpenGL.framework; sourceTree = DEVELOPER_DIR; };
+-		7DE26F1D2BA72CBA000CC89C /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS17.2.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
++		7DE26F142BA72B70000CC89C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
++		7DE26F162BA72B93000CC89C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
++		7DE26F1D2BA72CBA000CC89C /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+ 		7DE26F252BA72D98000CC89C /* vlc-plugins-appletv-simulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "vlc-plugins-appletv-simulator.h"; sourceTree = "<group>"; };
+ 		7DE26F262BA72D98000CC89C /* vlc-plugins-macosx-device-x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "vlc-plugins-macosx-device-x86_64.h"; sourceTree = "<group>"; };
+ 		7DE26F272BA72D98000CC89C /* vlc-plugins-iphone-simulator-x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "vlc-plugins-iphone-simulator-x86_64.h"; sourceTree = "<group>"; };
+@@ -1021,7 +1021,6 @@
+ 				ED25609C21F3A9FE00396F9B /* MobileVLCKitTests-Bridging-Header.h in Headers */,
+ 				7DE26F3B2BA72E28000CC89C /* VLCStreamSession.h in Headers */,
+ 				7DDC020F1B501ECF0078FC84 /* VLCMediaPlayer.h in Headers */,
+-				7DE26F352BA72D98000CC89C /* vlc-plugins-appletv-device-arm64.h in Headers */,
+ 				7DF2DFB82BABF82E00835369 /* VLCVideoLayer.h in Headers */,
+ 				7DDC02101B501ECF0078FC84 /* VLCMediaListPlayer.h in Headers */,
+ 				3CB1FD002ABC1A3500997CFB /* VLCMediaPlayerTitleDescription.h in Headers */,
+@@ -1042,7 +1041,6 @@
+ 				6C21838728509122000C4AC9 /* VLCLogging.h in Headers */,
+ 				6C21838A28509122000C4AC9 /* VLCConsoleLogger.h in Headers */,
+ 				7DE26F102BA6DE0C000CC89C /* VLCKit.h in Headers */,
+-				7DE26F302BA72D98000CC89C /* vlc-plugins-macosx-device-x86_64.h in Headers */,
+ 				7DE26F342BA72D98000CC89C /* vlc-plugins-iphone-device-arm64.h in Headers */,
+ 				7DA7745E2A838BFB006E3273 /* VLCEventsConfiguration.h in Headers */,
+ 				7DE26F372BA72D98000CC89C /* vlc-plugins-macosx-device-arm64.h in Headers */,
+@@ -1509,7 +1507,7 @@
+ 				"OTHER_LIBTOOLFLAGS[sdk=appletvsimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-appletv-simulator/libvlc-simulator-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=iphoneos*]" = "$(PROJECT_DIR)/libvlc/vlc/install-iphone-device/libvlc-device-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=iphonesimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-iphone-simulator/libvlc-simulator-static.a";
+-				"OTHER_LIBTOOLFLAGS[sdk=macosx*]" = "$(PROJECT_DIR)/libvlc/vlc/install-macosx-device/libvlc-device-static.a";
++				"OTHER_LIBTOOLFLAGS[sdk=macosx*]" = "$(AETHERFILM_CORE_ARCHIVE)";
+ 				"OTHER_LIBTOOLFLAGS[sdk=watchos*]" = "$(PROJECT_DIR)/libvlc/vlc/install-watchos-device/libvlc-device-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=watchsimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-watch-simulator/libvlc-simulator-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=xros*]" = "$(PROJECT_DIR)/libvlc/vlc/install-xros-device/libvlc-device-static.a";
+@@ -1567,7 +1565,7 @@
+ 				"OTHER_LIBTOOLFLAGS[sdk=appletvsimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-appletv-simulator/libvlc-simulator-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=iphoneos*]" = "$(PROJECT_DIR)/libvlc/vlc/install-iphone-device/libvlc-device-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=iphonesimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-iphone-simulator/libvlc-simulator-static.a";
+-				"OTHER_LIBTOOLFLAGS[sdk=macosx*]" = "$(PROJECT_DIR)/libvlc/vlc/install-macosx-device/libvlc-device-static.a";
++				"OTHER_LIBTOOLFLAGS[sdk=macosx*]" = "$(AETHERFILM_CORE_ARCHIVE)";
+ 				"OTHER_LIBTOOLFLAGS[sdk=watchos*]" = "$(PROJECT_DIR)/libvlc/vlc/install-watchos-device/libvlc-device-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=watchsimulator*]" = "$(PROJECT_DIR)/libvlc/vlc/install-watch-simulator/libvlc-simulator-static.a";
+ 				"OTHER_LIBTOOLFLAGS[sdk=xros*]" = "$(PROJECT_DIR)/libvlc/vlc/install-xros-device/libvlc-device-static.a";

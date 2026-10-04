@@ -1,0 +1,436 @@
+{
+  "scope": "PINNED_SOURCE_MATERIALS_NOT_FINAL_SOURCE_EXTENSION_ASSET",
+  "wrapperCommit": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
+  "libVLCBaseCommit": "005e69e67a8730f128e44bde68437fbb048cf45f",
+  "officialPatchedTree": "9cb4e084a5e41ba0f7037c209884d8816ef929ad",
+  "official12PatchesAlreadyAppliedToPatchedSourceArchive": true,
+  "baseAsset": {
+    "name": "AetherFilm-v0.1.0-VLCKit-source-materials.tar.gz",
+    "sha256": "350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72",
+    "bytes": 665341487
+  },
+  "sourceArchives": [
+    {
+      "name": "vlckit-source.tar.gz",
+      "bytes": 1593036,
+      "sha256": "8e2291f2f31032414a058bc80585de2ff12864303887271020d5fb6f09e0e61b"
+    },
+    {
+      "name": "vlc-source.tar.gz",
+      "bytes": 38082333,
+      "sha256": "84d2d701a234edd8c9eac0214557e654d510fac048ddc3d32163d1511a6fd5c6"
+    },
+    {
+      "name": "vlc-patched-source.tar.gz",
+      "bytes": 38078280,
+      "sha256": "448c7842896f9881592ae1c0fd0f4893f4d2848764fc492ebe0b1d494f3589a0"
+    }
+  ],
+  "additionalSourceArchives": [
+    {
+      "name": "lua-5.4.4.tar.gz",
+      "bytes": 360876,
+      "sha256": "164c7849653b80ae67bec4b7473b884bf5cc8d2dca05653475ec2ed27b9ebf61",
+      "requiredInFinalExtensionAsset": true
+    }
+  ],
+  "contribInputs": [
+    {
+      "assetRelativePath": "contrib-tarballs/Vulkan-Headers-1.4.355.tar.gz",
+      "bytes": 3370389,
+      "sha256": "0820d86608b1f94bb84f8f7b39c6e190c4397d5cd967d60c10fb7df8351ba475"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/dav1d-1.5.4.tar.xz",
+      "bytes": 1038852,
+      "sha256": "686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/ffmpeg-9.0.tar.xz",
+      "bytes": 12032020,
+      "sha256": "7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/flac-1.5.0.tar.xz",
+      "bytes": 1078872,
+      "sha256": "f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/fluidlite-b0f187b404e393ee0a495b277154d55d7d03cbeb.tar.xz",
+      "bytes": 555720,
+      "sha256": "d503f4239a2c4038966ac99d2d40167ef1aa27c44866240116af363dd9d0ad90"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/freetype-2.14.3.tar.xz",
+      "bytes": 2670220,
+      "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/fribidi-1.0.16.tar.xz",
+      "bytes": 1098260,
+      "sha256": "1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/glad-2.0.8.tar.gz",
+      "bytes": 645593,
+      "sha256": "44f06f9195427c7017f5028d0894f57eb216b0a8f7c4eda7ce883732aeb2d0fc"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/glslang-12.3.1.tar.gz",
+      "bytes": 3718998,
+      "sha256": "a57836a583b3044087ac51bb0d5d2d803ff84591d55f89087fc29ace42a8b9a8"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/gsm-1.0-pl22.tar.gz",
+      "bytes": 66583,
+      "sha256": "f0072e91f6bb85a878b2f6dbf4a0b7c850c4deb8049d554c65340b3bf69df0ac"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/harfbuzz-14.2.1.tar.xz",
+      "bytes": 19559952,
+      "sha256": "a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/jinja-3.1.6.tar.gz",
+      "bytes": 276598,
+      "sha256": "2074b22a72caa65474902234b320d73463d6d4c223ee49f4b433495758356337"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/lame-3.100.tar.gz",
+      "bytes": 1524133,
+      "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libaom-3.15.0.tar.gz",
+      "bytes": 6622801,
+      "sha256": "ea08c38ecc078bc85bb1b691020e52b06250f1a81fe7ca5b624629225081af96"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libarchive-3.8.9.tar.xz",
+      "bytes": 6617696,
+      "sha256": "888c934f9d95648ecb9163dc8e23ab80a476ecb81a8f1154704a227b5b676dde"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libaribcaption-1.1.1.tar.gz",
+      "bytes": 239941,
+      "sha256": "278d03a0a662d00a46178afc64f32535ede2d78c603842b6fd1c55fa9cd44683"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libass-0.17.5.tar.xz",
+      "bytes": 460148,
+      "sha256": "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libdsm-0.4.3.tar.xz",
+      "bytes": 128284,
+      "sha256": "d31921bd6f6a23878266b945731f7d57505472ef85d66f944c43b9f8eacc2a8a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libdvbpsi-1.3.3.tar.bz2",
+      "bytes": 488020,
+      "sha256": "02b5998bcf289cdfbd8757bedd5987e681309b0a25b3ffe6cebae599f7a00112"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libebml-1.4.6.tar.xz",
+      "bytes": 52424,
+      "sha256": "d06cf1d5ad89390389eeb1eb7d50f70b55ac7538b19aeac8859eed3f2a9908dc"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libebur128-1.2.6.tar.gz",
+      "bytes": 25890,
+      "sha256": "baa7fc293a3d4651e244d8022ad03ab797ca3c2ad8442c43199afe8059faa613"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libgcrypt-1.12.2.tar.bz2",
+      "bytes": 4441855,
+      "sha256": "7ce33c2492221a0436f96a8500215e9f3e3dcb5fd26a757cd415e7a843babd5e"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libgpg-error-1.61.tar.bz2",
+      "bytes": 1124751,
+      "sha256": "7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libiconv-1.18.tar.gz",
+      "bytes": 5822590,
+      "sha256": "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libjpeg-turbo-3.1.4.1.tar.gz",
+      "bytes": 2528617,
+      "sha256": "ecae8008e2cc9ade2f2c1bb9d5e6d4fb73e7c433866a056bd82980741571a022"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libmatroska-1.7.2.tar.xz",
+      "bytes": 63016,
+      "sha256": "f3e4d406daf7f1399962c43940e4a87de089474d5bcfbf2e6ca516e98bb87cfc"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libmodplug-0.8.9.0.tar.gz",
+      "bytes": 576566,
+      "sha256": "457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libmysofa-1.2.1.tar.gz",
+      "bytes": 200011479,
+      "sha256": "94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba158ee9"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libnfs-6.0.2.tar.gz",
+      "bytes": 338988,
+      "sha256": "4e5459cc3e0242447879004e9ad28286d4d27daa42cbdcde423248fad911e747"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libnoidea-b20c2d0a6f606db2c4649f368b9735a2599d6a2c.tar.xz",
+      "bytes": 23200,
+      "sha256": "ce11031243eb754a855d196ba18f69990e65d80d16cb2e9f5a856632f983dcbb"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libogg-1.3.6.tar.xz",
+      "bytes": 439952,
+      "sha256": "5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libplacebo-v5.264.1.tar.gz",
+      "bytes": 725394,
+      "sha256": "9eb0c198f58d994f1c0d173dd37647d4d07d27972412c48ab758e984503c787b"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libpng-1.6.58.tar.xz",
+      "bytes": 1070096,
+      "sha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/librist-v0.2.20.tar.gz",
+      "bytes": 3507334,
+      "sha256": "9e40eeb87f014790531ad41326cc271b930a65962e4b15231b301fc59b29fe31"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libshout-2.4.6.tar.gz",
+      "bytes": 571153,
+      "sha256": "39cbd4f0efdfddc9755d88217e47f8f2d7108fa767f9d58a2ba26a16d8f7c910"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libsmb2-6.1.tar.gz",
+      "bytes": 257668,
+      "sha256": "cee0a62457a46b1a4d48b9b0094cf53f489e3ff5028d1344c188156aeb1c7239"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libssh2-1.11.1.tar.xz",
+      "bytes": 721700,
+      "sha256": "9954cb54c4f548198a7cbebad248bdc87dd64bd26185708a294b2b50771e3769"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libtasn1-4.21.0.tar.gz",
+      "bytes": 1816537,
+      "sha256": "1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libtheora-1.2.0.tar.xz",
+      "bytes": 1803124,
+      "sha256": "ebdf77a8f5c0a8f7a9e42323844fa09502b34eb1d1fece7b5f54da41fe2122ec"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libtheora-fb92ede9ba5162d0b8134cd1ff57751df6f3dbe6.tar.xz",
+      "bytes": 754228,
+      "sha256": "69bc9ff4b2312ce3591008c944c06b86f282e2bd3f5404aba38085428476cd3a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libvorbis-1.3.7.tar.xz",
+      "bytes": 1203792,
+      "sha256": "b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libvpx-1.17.0.tar.gz",
+      "bytes": 5670546,
+      "sha256": "1020f184046187baa2985dbde38e0691f49c44088bca7a1842b0236c6081dc0a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libxml2-2.15.3.tar.xz",
+      "bytes": 3152452,
+      "sha256": "78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/live.2016.10.21.tar.gz",
+      "bytes": 620822,
+      "sha256": "65b1aa7ec7c487466020e980d1fd68007390f7575b384c1d0fed49b94ba2c240"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/markupsafe-2.1.5.tar.gz",
+      "bytes": 24614,
+      "sha256": "307f63295d17f178b7d3af5968fb828e34086d5d66fec505b630a1e5f5b3328b"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/mpg123-1.33.6.tar.bz2",
+      "bytes": 1123797,
+      "sha256": "929a7c18ba662b8927aed4de229ad9ae8ab2b4806dd0f30b90113eb1b4e2195a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/openapv-0.3.0.0.tar.gz",
+      "bytes": 136855351,
+      "sha256": "dc5cd1618a07e8b340e12562cae37d612b3a1467ee80d986c477165ae602a37e"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/opencv-4.4.0.tar.gz",
+      "bytes": 88887103,
+      "sha256": "bb95acd849e458be7f7024d17968568d1ccd2f0681d47fd60d34ffb4b8c52563"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/openjpeg-2.5.4.tar.gz",
+      "bytes": 2157028,
+      "sha256": "a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/opus-1.6.1.tar.gz",
+      "bytes": 10472813,
+      "sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/protobuf-3.21.1.tar.gz",
+      "bytes": 4852585,
+      "sha256": "9ccabf07bd087bca3bb37067e04bf1d7377f0d60311cf3d2aa88e7af4c49a177"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/pupnp-release-1.14.31.tar.gz",
+      "bytes": 826590,
+      "sha256": "ce1dd3da7268ad61a56041af0ee80a3d067e7fbd197e2a387ae53942f70068bd"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/rav1e-0.7.1-vendor.tar.zst",
+      "bytes": 34644423,
+      "sha256": "7f2f657d4719dcd6fcef7a271bbef3709cb90adf7d61dba53003974f4e9e6cc7"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/rav1e-0.7.1.tar.gz",
+      "bytes": 1472522,
+      "sha256": "cd87ce80a7665b1cce111f8a16c1f3929f6547ce91ade6addf4ec86a8dda5ce9"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/rnnoise-0.1.1.tar.gz",
+      "bytes": 173190,
+      "sha256": "1641712c9ae31f3b364e8b2f2e0ec3ce24330e76055c151f695941b0ea5d3987"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/soxr-0.1.3-Source.tar.xz",
+      "bytes": 94384,
+      "sha256": "b111c15fdc8c029989330ff559184198c161100a59312f5dc19ddeb9b5a15889"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/spatialaudio-0.3.0.tar.bz2",
+      "bytes": 934033,
+      "sha256": "284c1dbd8efd46c03be84ac7070bc87cae81b7125352b143a70be3e2b96988e3"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/speex-1.2.1.tar.gz",
+      "bytes": 1043278,
+      "sha256": "4b44d4f2b38a370a2d98a78329fefc56a0cf93d1c1be70029217baae6628feea"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/speexdsp-1.2.1.tar.gz",
+      "bytes": 922584,
+      "sha256": "8c777343e4a6399569c72abc38a95b24db56882c83dbdb6c6424a5f4aeb54d3d"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/taglib-2.3.2.tar.gz",
+      "bytes": 1799985,
+      "sha256": "3ca2d8afaa7f1cf7f6ed10e511ebc368bfacd6dcaa3dbfa690b89e502e8963dc"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/twolame-0.4.0.tar.gz",
+      "bytes": 890908,
+      "sha256": "cc35424f6019a88c6f52570b63e1baf50f62963a3eac52a03a800bb070d7c87d"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/utfcpp-3.2.5.tar.gz",
+      "bytes": 28865,
+      "sha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/zlib-1.3.2.tar.xz",
+      "bytes": 1320064,
+      "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/zvbi-0.2.45.tar.gz",
+      "bytes": 943158,
+      "sha256": "e6c954fde2a5a635187f19e1ab870a88c1a982012c5f1b33b8f2513e0ab7a50e"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/fluidlite-b0f187b404e393ee0a495b277154d55d7d03cbeb.githash",
+      "bytes": 111,
+      "sha256": "9eb4f72937f201068564d17f6b2a9d858cd185d7735632d37f7092dccd47424a"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libnoidea-b20c2d0a6f606db2c4649f368b9735a2599d6a2c.githash",
+      "bytes": 111,
+      "sha256": "a717a4e8303923bc0240ca9275a9e6e2615ccbfd9ad51c9f69063d5c14c26076"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/libtheora-fb92ede9ba5162d0b8134cd1ff57751df6f3dbe6.githash",
+      "bytes": 111,
+      "sha256": "23a5feb15dd787a5961e37dfe5796cef6d2258d4cb7caf157b690b31e5839a29"
+    },
+    {
+      "assetRelativePath": "contrib-tarballs/rav1e-0.7.1-vendor.tar.zst.skip-hash",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "contribBoundary": "64 archives and 4 sidecars. Existing source audit; not a fresh 68-file audit in this preparation.",
+  "rust": {
+    "requiredVersion": "1.96.0",
+    "actualRustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "actualCargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+    "channelDate": "2026-05-28",
+    "requiredTargets": [
+      "aarch64-apple-darwin",
+      "aarch64-apple-ios",
+      "aarch64-apple-ios-sim"
+    ],
+    "officialInstallerArchivePins": [
+      {
+        "package": "rustc",
+        "target": "aarch64-apple-darwin",
+        "url": "https://static.rust-lang.org/dist/2026-05-28/rustc-1.96.0-aarch64-apple-darwin.tar.xz",
+        "sha256": "1bb7b0bad1d2a42fc4173ede6dd460de2774fc1858a8369329d3e081e4e3426c"
+      },
+      {
+        "package": "cargo",
+        "target": "aarch64-apple-darwin",
+        "url": "https://static.rust-lang.org/dist/2026-05-28/cargo-1.96.0-aarch64-apple-darwin.tar.xz",
+        "sha256": "c042858192b7b6d66fe59b3bbbbd0f6e3cac6e8a478dc4cc091cde9eddea3c8b"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-darwin",
+        "url": "https://static.rust-lang.org/dist/2026-05-28/rust-std-1.96.0-aarch64-apple-darwin.tar.xz",
+        "sha256": "439c4f71060b913e00db3a2e01340b2da0aa49978b843e36871f3250267c63f8"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-ios",
+        "url": "https://static.rust-lang.org/dist/2026-05-28/rust-std-1.96.0-aarch64-apple-ios.tar.xz",
+        "sha256": "fb529ae57924e91cf318307ceeb6bd233a7b8cc898fe699cfaabb9aca7b2794b"
+      },
+      {
+        "package": "rust-std",
+        "target": "aarch64-apple-ios-sim",
+        "url": "https://static.rust-lang.org/dist/2026-05-28/rust-std-1.96.0-aarch64-apple-ios-sim.tar.xz",
+        "sha256": "2040549a36befa5d8b1ed6e42f2174358957c44234bd7682308bd285d3715e7f"
+      }
+    ],
+    "upstreamNightlyDeclarationRetained": "The VLC rav1e rules retain their nightly declaration; actual iOS builds explicitly selected 1.96.0."
+  },
+  "rav1e": {
+    "version": "0.7.1",
+    "sourceLockSHA256": "e71efcea949f8cfa31fad962ae69a7e2c17f08fb7924def3d2863e5fb37799ae",
+    "lockRegistryPackages": 228,
+    "vendorPackagesMatched": 228,
+    "sourceFileChecksumsMatched": 15603,
+    "historicalVendorArchiveSHA256": "7f2f657d4719dcd6fcef7a271bbef3709cb90adf7d61dba53003974f4e9e6cc7",
+    "skipHashRule": "Original upstream skip-hash rule preserved; inner vendor source was verified against Cargo.lock. Reserialized containers need semantic payload/order/checksum verification, not pretending the old outer hash is unchanged."
+  },
+  "finalExtensionAssetAssembled": false,
+  "finalApplicationCommit": null,
+  "fullPortableRebuildExecuted": false
+}

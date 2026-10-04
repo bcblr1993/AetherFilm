@@ -1,6 +1,6 @@
 /* Modified by AetherNative on 2026-10-03.
  * Changes: player/notification namespace, typed callbacks with fixed stopping snapshots,
- * checked interpolation, and target-relative SwiftPM header imports.
+ * checked interpolation, seek-state callback snapshots, and target-relative SwiftPM header imports.
  * Original LGPL notices are retained.
  */
 #import "Private/AetherVLCPrefix.h"
@@ -126,6 +126,7 @@ static IOPMAssertionID displaySleepAssertion = 0;
 - (void)aetherRecordInputTime:(int64_t)time;
 - (void)aetherRecordError;
 - (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
+- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime;
 - (void)mediaPlayerSnapshot:(NSString *)fileName;
 @end
 
@@ -134,6 +135,8 @@ static IOPMAssertionID displaySleepAssertion = 0;
     NSLock *_aetherSnapshotLock;
     int64_t _aetherInputTime;
     BOOL _aetherHadError;
+    uint64_t _aetherSeekCallbackSequence;
+    int64_t _aetherSeekTargetTime;
     VLCLibrary *_privateLibrary;                ///< Internal
     libvlc_media_player_t * _playerInstance;    ///< Internal
     VLCMedia * _media;                          ///< Current media being played
@@ -205,6 +208,11 @@ static void HandleWatchTimeOnSeek(void *opaque,
     }
     @autoreleasepool {
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
+        int64_t targetTime = isSeeking ? newTimePoint.ts_us : -1;
+        // Capture only immutable callback identity under our existing lock.
+        // No libVLC call or delegate delivery occurs while the lock is held.
+        uint64_t sequence = [(AetherVLCMediaPlayer *)eventsHandler.object
+            aetherRecordSeeking:isSeeking targetTime:&targetTime];
         [eventsHandler handleEvent:^(id _Nonnull object) {
             AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
             if (isSeeking)
@@ -215,6 +223,8 @@ static void HandleWatchTimeOnSeek(void *opaque,
                 mediaPlayer.onSeekCompletion = nil;
             }
             mediaPlayer.seeking = isSeeking;
+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSeekingChanged:targetTime:sequence:)])
+                [mediaPlayer.delegate mediaPlayerSeekingChanged:isSeeking targetTime:targetTime sequence:sequence];
         }];
     }
 }
@@ -745,6 +755,27 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
     [_aetherSnapshotLock unlock];
 }
 
+- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime
+{
+    [_aetherSnapshotLock lock];
+    if (seeking) {
+        _aetherSeekCallbackSequence += 1;
+        _aetherSeekTargetTime = *targetTime;
+    }
+    *targetTime = _aetherSeekTargetTime;
+    uint64_t sequence = _aetherSeekCallbackSequence;
+    [_aetherSnapshotLock unlock];
+    return sequence;
+}
+
+- (uint64_t)seekCallbackSequence
+{
+    [_aetherSnapshotLock lock];
+    uint64_t sequence = _aetherSeekCallbackSequence;
+    [_aetherSnapshotLock unlock];
+    return sequence;
+}
+
 - (void)aetherRecordError
 {
     [_aetherSnapshotLock lock];
@@ -770,6 +801,7 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
 {
     if (self = [super init]) {
         _aetherSnapshotLock = [[NSLock alloc] init];
+        _aetherSeekTargetTime = -1;
         _aetherInputTime = -1;
         _aetherHadError = NO;
         _adjustFilter = [VLCAdjustFilter createWithVLCMediaPlayer:(id)self];
@@ -1167,6 +1199,11 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
     }
 
     return [VLCTime timeWithNumber:@(lastInterpolatedTime / 1000)];
+}
+
+- (int64_t)diagnosticCoreTimeMicroseconds
+{
+    return libvlc_media_player_get_time(_playerInstance);
 }
 
 - (VLCTime *)remainingTime

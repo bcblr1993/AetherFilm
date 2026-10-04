@@ -1,0 +1,369 @@
+--- a/modules/video_output/apple/VLCSampleBufferDisplay.m
++++ b/modules/video_output/apple/VLCSampleBufferDisplay.m
+@@ -31,6 +31,7 @@
+ #include <vlc_plugin.h>
+ #include <vlc_vout_display.h>
+ #include <vlc_modules.h>
++#include <math.h>
+ 
+ #import "VLCDrawable.h"
+ 
+@@ -209,6 +210,7 @@
+ {
+     VLCRotatedPixelBufferProvider *_bufferProvider;
+     VTPixelRotationSessionRef _rotationSession;
++    BOOL _configurationValid;
+ }
+ 
+ @synthesize rotation = _rotation, flip = _flip;
+@@ -221,6 +223,7 @@
+             OSStatus status = VTPixelRotationSessionCreate(NULL, &_rotationSession);
+             if (status != noErr)
+                 return nil;
++            _configurationValid = YES;
+         } else {
+             return nil;
+         }
+@@ -234,17 +237,21 @@
+     _rotation = rotation;
+     switch (rotation) {
+         case kVLCSampleBufferPixelRotation_90CW:
+-            VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_CW90);
++            if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_CW90) != noErr)
++                _configurationValid = NO;
+             break;
+         case kVLCSampleBufferPixelRotation_180:
+-            VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_180);
++            if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_180) != noErr)
++                _configurationValid = NO;
+             break;
+         case kVLCSampleBufferPixelRotation_90CCW:
+-            VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_CCW90);
++            if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_CCW90) != noErr)
++                _configurationValid = NO;
+             break;
+         case kVLCSampleBufferPixelRotation_0:
+         default:
+-            VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_0);
++            if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_Rotation, kVTRotation_0) != noErr)
++                _configurationValid = NO;
+             break;
+     }
+ }
+@@ -253,11 +260,15 @@
+     if (_flip == flip)
+         return;
+     _flip = flip;
+-    VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_FlipHorizontalOrientation, flip & kVLCSampleBufferPixelFlip_H ? kCFBooleanTrue : kCFBooleanFalse);
+-    VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_FlipVerticalOrientation, flip & kVLCSampleBufferPixelFlip_V ? kCFBooleanTrue : kCFBooleanFalse);
++    if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_FlipHorizontalOrientation, flip & kVLCSampleBufferPixelFlip_H ? kCFBooleanTrue : kCFBooleanFalse) != noErr)
++        _configurationValid = NO;
++    if (VTSessionSetProperty(_rotationSession, kVTPixelRotationPropertyKey_FlipVerticalOrientation, flip & kVLCSampleBufferPixelFlip_V ? kCFBooleanTrue : kCFBooleanFalse) != noErr)
++        _configurationValid = NO;
+ }
+ 
+ - (CVPixelBufferRef)rotate:(CVPixelBufferRef)pixelBuffer {
++    if (!_configurationValid)
++        return NULL;
+     if (!_bufferProvider)
+         _bufferProvider = [VLCRotatedPixelBufferProvider new];
+ 
+@@ -852,6 +863,7 @@
+     @property (nonatomic, readonly) vout_display_t *vd;
+     @property (nonatomic) VLCSampleBufferDisplayView *displayView;
+     @property (nonatomic) AVSampleBufferDisplayLayer *displayLayer;
++    @property (nonatomic) BOOL nativeApertureDiagnosticLogged;
+     @property (nonatomic) VLCSampleBufferSubpictureView *spuView;
+     @property (nonatomic) VLCSampleBufferSubpicture *subpicture;
+     @property (nonatomic) id<VLCPixelBufferRotationContext> rotationContext;
+@@ -1050,6 +1062,201 @@
+     DeleteCVPXConverter(sys->converter);
+ 
+     [sys close];
++}
++
++/* Native aperture metadata helpers: no pixel access or copying. */
++typedef struct {
++    double clean[4]; /* width, height, horizontal/vertical center offset */
++    double sar[2];
++} NativeApertureMetadata;
++
++typedef enum {
++    NativeApertureReady,
++    NativeApertureInvalidGeometry,
++    NativeApertureConflictingMetadata,
++    NativeApertureAllocationFailure,
++} NativeApertureStatus;
++
++static bool NativeApertureGeometry(uint64_t W, uint64_t H,
++                                  uint64_t x, uint64_t y,
++                                  uint64_t w, uint64_t h,
++                                  unsigned sar_num, unsigned sar_den,
++                                  unsigned rotation, unsigned post_flip,
++                                  uint64_t output_W, uint64_t output_H,
++                                  NativeApertureMetadata *metadata)
++{
++    if (!metadata || W == 0 || H == 0 || W > UINT32_MAX || H > UINT32_MAX ||
++        x > W || y > H || w == 0 || h == 0 || w > W - x || h > H - y ||
++        sar_num == 0 || sar_den == 0 ||
++        (post_flip & ~(kVLCSampleBufferPixelFlip_H | kVLCSampleBufferPixelFlip_V)))
++        return false;
++
++    uint64_t final_W = W, final_H = H;
++    switch (rotation) {
++    case kVLCSampleBufferPixelRotation_0:
++        break;
++    case kVLCSampleBufferPixelRotation_90CW: {
++        const uint64_t original_x = x, original_w = w;
++        x = H - y - h;
++        y = original_x;
++        w = h;
++        h = original_w;
++        final_W = H;
++        final_H = W;
++        break;
++    }
++    case kVLCSampleBufferPixelRotation_180:
++        x = W - x - w;
++        y = H - y - h;
++        break;
++    case kVLCSampleBufferPixelRotation_90CCW: {
++        const uint64_t original_x = x, original_w = w;
++        x = y;
++        y = W - original_x - original_w;
++        w = h;
++        h = original_w;
++        final_W = H;
++        final_H = W;
++        break;
++    }
++    default:
++        return false;
++    }
++    /* Public VTPixelRotationProperties.h: flips are applied after rotation. */
++    if (post_flip & kVLCSampleBufferPixelFlip_H)
++        x = final_W - x - w;
++    if (post_flip & kVLCSampleBufferPixelFlip_V)
++        y = final_H - y - h;
++    if (final_W != output_W || final_H != output_H)
++        return false;
++
++    metadata->clean[0] = (double)w;
++    metadata->clean[1] = (double)h;
++    metadata->clean[2] = (double)x + (double)w / 2 - (double)final_W / 2;
++    metadata->clean[3] = (double)y + (double)h / 2 - (double)final_H / 2;
++    const bool swapped = rotation == kVLCSampleBufferPixelRotation_90CW ||
++                         rotation == kVLCSampleBufferPixelRotation_90CCW;
++    metadata->sar[0] = swapped ? sar_den : sar_num;
++    metadata->sar[1] = swapped ? sar_num : sar_den;
++    return true;
++}
++
++static bool NativeReadCleanAperture(CFTypeRef attachment, uint64_t W, uint64_t H,
++                                  double values[4])
++{
++    if (!attachment || CFGetTypeID(attachment) != CFDictionaryGetTypeID())
++        return false;
++    const CFStringRef keys[] = {
++        kCVImageBufferCleanApertureWidthKey, kCVImageBufferCleanApertureHeightKey,
++        kCVImageBufferCleanApertureHorizontalOffsetKey,
++        kCVImageBufferCleanApertureVerticalOffsetKey,
++    };
++    for (unsigned i = 0; i < 4; ++i) {
++        CFTypeRef value = CFDictionaryGetValue((CFDictionaryRef)attachment, keys[i]);
++        if (!value || CFGetTypeID(value) != CFNumberGetTypeID() ||
++            !CFNumberGetValue((CFNumberRef)value, kCFNumberDoubleType, &values[i]) ||
++            !isfinite(values[i]))
++            return false;
++    }
++    const double x = (double)W / 2 + values[2] - values[0] / 2;
++    const double y = (double)H / 2 + values[3] - values[1] / 2;
++    return values[0] > 0 && values[1] > 0 && x >= 0 && y >= 0 &&
++           x <= (double)W && y <= (double)H &&
++           values[0] <= (double)W - x && values[1] <= (double)H - y;
++}
++
++static CFDictionaryRef NativeCreateNumericDictionary(const CFStringRef *keys,
++                                                     const double *values,
++                                                     unsigned count)
++{
++    CFNumberRef numbers[4] = {NULL, NULL, NULL, NULL};
++    CFDictionaryRef dictionary = NULL;
++    if (count == 0 || count > 4)
++        return NULL;
++    for (unsigned i = 0; i < count; ++i) {
++        numbers[i] = CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &values[i]);
++        if (!numbers[i])
++            goto cleanup;
++    }
++    dictionary = CFDictionaryCreate(kCFAllocatorDefault, (const void **)keys,
++                                    (const void **)numbers, count,
++                                    &kCFTypeDictionaryKeyCallBacks,
++                                    &kCFTypeDictionaryValueCallBacks);
++cleanup:
++    for (unsigned i = 0; i < count; ++i)
++        if (numbers[i])
++            CFRelease(numbers[i]);
++    return dictionary;
++}
++
++static NativeApertureStatus NativeApplyApertureMetadata(CVPixelBufferRef buffer,
++                                                       const NativeApertureMetadata *metadata)
++{
++    if (!buffer || !metadata)
++        return NativeApertureInvalidGeometry;
++    CFTypeRef existing;
++    if (@available(iOS 15.0, tvOS 15.0, macOS 12.0, *)) {
++        existing = CVBufferCopyAttachment(buffer, kCVImageBufferCleanApertureKey, NULL);
++    } else {
++        /* Keep the upstream engine deployment target's older API contract. */
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wdeprecated-declarations"
++        existing = CVBufferGetAttachment(buffer, kCVImageBufferCleanApertureKey, NULL);
++#pragma clang diagnostic pop
++        if (existing)
++            CFRetain(existing);
++    }
++    double existing_values[4];
++    const bool existing_valid = NativeReadCleanAperture(existing,
++        CVPixelBufferGetWidth(buffer), CVPixelBufferGetHeight(buffer), existing_values);
++    bool matching = existing_valid;
++    if (existing_valid)
++        for (unsigned i = 0; i < 4; ++i)
++            matching &= fabs(existing_values[i] - metadata->clean[i]) <= 0.000001;
++    if (existing)
++        CFRelease(existing);
++    if (existing_valid && !matching)
++        return NativeApertureConflictingMetadata;
++
++    const CFStringRef clean_keys[] = {
++        kCVImageBufferCleanApertureWidthKey, kCVImageBufferCleanApertureHeightKey,
++        kCVImageBufferCleanApertureHorizontalOffsetKey,
++        kCVImageBufferCleanApertureVerticalOffsetKey,
++    };
++    const CFStringRef sar_keys[] = {
++        kCVImageBufferPixelAspectRatioHorizontalSpacingKey,
++        kCVImageBufferPixelAspectRatioVerticalSpacingKey,
++    };
++    CFDictionaryRef clean = matching ? NULL : NativeCreateNumericDictionary(clean_keys, metadata->clean, 4);
++    if (!matching && !clean)
++        return NativeApertureAllocationFailure;
++    CFDictionaryRef sar = NativeCreateNumericDictionary(sar_keys, metadata->sar, 2);
++    if (!sar) {
++        if (clean)
++            CFRelease(clean);
++        return NativeApertureAllocationFailure;
++    }
++    /* Both dictionaries exist before either native attachment is changed. */
++    if (clean)
++        CVBufferSetAttachment(buffer, kCVImageBufferCleanApertureKey, clean, kCVAttachmentMode_ShouldPropagate);
++    CVBufferSetAttachment(buffer, kCVImageBufferPixelAspectRatioKey, sar, kCVAttachmentMode_ShouldPropagate);
++    if (clean)
++        CFRelease(clean);
++    CFRelease(sar);
++    return NativeApertureReady;
++}
++/* End native aperture metadata helpers. */
++
++static void NativeApertureReportFailure(vout_display_t *vd,
++                                       VLCSampleBufferDisplay *sys,
++                                       const char *message)
++{
++    @synchronized(sys) {
++        if (!sys.nativeApertureDiagnosticLogged) {
++            sys.nativeApertureDiagnosticLogged = YES;
++            msg_Err(vd, "%s", message);
++        }
++    }
+ }
+ 
+ static void RenderPicture(vout_display_t *vd, picture_t *pic, vlc_tick_t date) {
+@@ -1084,6 +1291,7 @@
+     case ORIENT_ANTI_TRANSPOSED:
+         sys.rotationContext.flip = kVLCSampleBufferPixelFlip_H;
+         sys.rotationContext.rotation = kVLCSampleBufferPixelRotation_90CW;
++        break;
+     case ORIENT_NORMAL:
+     default:
+         sys.rotationContext = nil;
+@@ -1104,8 +1312,13 @@
+         dst = sys->converter->ops->filter_video(sys->converter, pic);
+     }
+ 
++    if (!dst) {
++        NativeApertureReportFailure(vd, sys, "Video converter returned no picture");
++        return;
++    }
+     CVPixelBufferRef pixelBuffer = cvpxpic_get_ref(dst);
+-    CVPixelBufferRetain(pixelBuffer);
++    if (pixelBuffer)
++        CVPixelBufferRetain(pixelBuffer);
+     picture_Release(dst);
+ 
+     if (pixelBuffer == NULL) {
+@@ -1113,27 +1326,47 @@
+         return;
+     }
+ 
++    const size_t input_width = CVPixelBufferGetWidth(pixelBuffer);
++    const size_t input_height = CVPixelBufferGetHeight(pixelBuffer);
++    if (vd->source->i_width != input_width || vd->source->i_height != input_height ||
++        vd->fmt->i_width != input_width || vd->fmt->i_height != input_height ||
++        vd->source->orientation != vd->fmt->orientation) {
++        NativeApertureReportFailure(vd, sys, "Video source geometry does not match the native buffer");
++        CVPixelBufferRelease(pixelBuffer);
++        return;
++    }
++
++    unsigned rotation = kVLCSampleBufferPixelRotation_0;
++    unsigned post_flip = kVLCSampleBufferPixelFlip_None;
+     if (vd->fmt->orientation != ORIENT_NORMAL) {
+-        CVPixelBufferRef rotated = [sys.rotationContext rotate:pixelBuffer];
+-        if (rotated) {
++        id<VLCPixelBufferRotationContext> context = sys.rotationContext;
++        if (!context) {
+             CVPixelBufferRelease(pixelBuffer);
+-            pixelBuffer = rotated;
++            return;
+         }
+-    }
+-
+-    id aspectRatio = @{
+-        (__bridge NSString*)kCVImageBufferPixelAspectRatioHorizontalSpacingKey:
+-            @(vd->source->i_sar_num),
+-        (__bridge NSString*)kCVImageBufferPixelAspectRatioVerticalSpacingKey:
+-            @(vd->source->i_sar_den)
+-    };
+-
+-    CVBufferSetAttachment(
+-        pixelBuffer,
+-        kCVImageBufferPixelAspectRatioKey,
+-        (__bridge CFDictionaryRef)aspectRatio,
+-        kCVAttachmentMode_ShouldPropagate
+-    );
++        CVPixelBufferRef rotated = [context rotate:pixelBuffer];
++        if (!rotated) {
++            NativeApertureReportFailure(vd, sys, "Native video rotation did not complete");
++            CVPixelBufferRelease(pixelBuffer);
++            return;
++        }
++        rotation = context.rotation;
++        post_flip = context.flip;
++        CVPixelBufferRelease(pixelBuffer);
++        pixelBuffer = rotated;
++    }
++
++    NativeApertureMetadata metadata;
++    if (!NativeApertureGeometry(input_width, input_height,
++            vd->source->i_x_offset, vd->source->i_y_offset,
++            vd->source->i_visible_width, vd->source->i_visible_height,
++            vd->source->i_sar_num, vd->source->i_sar_den, rotation, post_flip,
++            CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer), &metadata) ||
++        NativeApplyApertureMetadata(pixelBuffer, &metadata) != NativeApertureReady) {
++        NativeApertureReportFailure(vd, sys, "Native visible-video metadata could not be represented safely");
++        CVPixelBufferRelease(pixelBuffer);
++        return;
++    }
+ 
+     CMSampleBufferRef sampleBuffer = NULL;
+     CMVideoFormatDescriptionRef formatDesc = NULL;

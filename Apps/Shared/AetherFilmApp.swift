@@ -42,14 +42,20 @@ private struct UITestAppearance: ViewModifier {
     private let args = ProcessInfo.processInfo.arguments
     func body(content: Content) -> some View {
         if args.contains("--ui-testing") {
-            content
+            let testContent = content
                 .defaultAppStorage(testPreferences)
-                .preferredColorScheme(args.contains("--ui-appearance=dark") ? .dark : args.contains("--ui-appearance=light") ? .light : nil)
                 .transformEnvironment(\.dynamicTypeSize) { size in
                     if args.contains("--ui-content-size=accessibility3") || args.contains("--ui-content-size=accessibility-extra-extra-extra-large") {
                         size = .accessibility3
                     }
                 }
+            if args.contains("--ui-appearance=dark") {
+                testContent.preferredColorScheme(.dark)
+            } else if args.contains("--ui-appearance=light") {
+                testContent.preferredColorScheme(.light)
+            } else {
+                testContent
+            }
         } else { content }
     }
 

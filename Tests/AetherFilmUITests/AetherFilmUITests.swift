@@ -37,8 +37,16 @@ final class AetherFilmUITests: XCTestCase {
         XCTAssertTrue(element("library.empty.action").isHittable)
         activate(element("library.empty.action"))
 
+        #if os(macOS)
+        let panel = app.sheets.matching(identifier: "open-panel").firstMatch
+        let cancel = panel.buttons.matching(identifier: "CancelButton").firstMatch
+        #else
         let cancel = app.buttons.matching(NSPredicate(format: "label IN %@", ["取消", "Cancel"])).firstMatch
+        #endif
         XCTAssertTrue(cancel.waitForExistence(timeout: 10), "The system file picker should open.")
+        #if os(macOS)
+        XCTAssertTrue(panel.exists)
+        #endif
         activate(cancel)
         XCTAssertTrue(empty.waitForExistence(timeout: 5))
         capture("Local empty state")
@@ -65,7 +73,15 @@ final class AetherFilmUITests: XCTestCase {
         replaceText(in: "smb.share", with: "Videos")
         XCTAssertTrue(connect.isEnabled)
 
+        #if os(macOS)
+        let advanced = app.disclosureTriangles.matching(identifier: "smb.advanced").firstMatch
+        XCTAssertTrue(advanced.exists && advanced.isHittable)
+        // Let XCTest use the native hittable point; the AX frame includes padding beside the triangle.
+        advanced.click()
+        XCTAssertTrue(waitForValueContaining("1", in: advanced, timeout: 5))
+        #else
         activate(element("smb.advanced"))
+        #endif
         XCTAssertTrue(element("smb.port").waitForExistence(timeout: 5))
         replaceText(in: "smb.port", with: "0")
         XCTAssertFalse(connect.isEnabled)
@@ -74,10 +90,12 @@ final class AetherFilmUITests: XCTestCase {
         replaceText(in: "smb.port", with: "445")
         XCTAssertTrue(connect.isEnabled)
         let encryption = element("smb.encryption")
-        XCTAssertTrue(encryption.exists)
-        XCTAssertEqual(encryption.value as? String, "0")
         #if os(iOS)
         revealAboveKeyboard(encryption)
+        #endif
+        XCTAssertTrue(encryption.exists)
+        XCTAssertEqual(nativeValueString(encryption.value), "0")
+        #if os(iOS)
         let nativeSwitch = encryption.switches.firstMatch
         XCTAssertTrue(nativeSwitch.exists)
         activate(nativeSwitch)
@@ -121,8 +139,17 @@ final class AetherFilmUITests: XCTestCase {
         showPlayerControls()
         let elapsed = element("player.time")
         XCTAssertTrue(elapsed.waitForExistence(timeout: 15))
+        #if os(macOS)
+        let initialTime = playbackTimeText(elapsed)
+        let advanced = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            guard elapsed.exists else { return false }
+            let text = self.playbackTimeText(elapsed)
+            return !text.isEmpty && self.seconds(in: text) > self.seconds(in: initialTime)
+        }, object: nil)
+        #else
         let initialTime = elapsed.label
         let advanced = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND label != %@ AND label != ''", initialTime), object: elapsed)
+        #endif
         XCTAssertEqual(XCTWaiter.wait(for: [advanced], timeout: 12), .completed,
                        "The decoded video must advance instead of only showing controls.")
         showPlayerControls()
@@ -151,16 +178,23 @@ final class AetherFilmUITests: XCTestCase {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND enabled == true"), object: seek)
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed)
         showPlayerControls()
-        let beforeSkip = seconds(in: element("player.time").label)
-        element("player.surface").coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).doubleTap()
+        let beforeSkip = seconds(in: playbackTimeText(element("player.time")))
+        let skipPoint = element("player.surface").coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5))
+        #if os(macOS)
+        skipPoint.doubleClick()
+        #else
+        skipPoint.doubleTap()
+        #endif
         let skipped = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-            self.seconds(in: self.element("player.time").label) >= beforeSkip + 8
+            let elapsed = self.element("player.time")
+            guard elapsed.exists else { return false }
+            return self.seconds(in: self.playbackTimeText(elapsed)) >= beforeSkip + 8
         }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [skipped], timeout: 5), .completed,
                        "Double tapping the actual video area should skip forward ten seconds.")
         showPlayerControls()
-        let duration = seconds(in: element("player.duration").label)
-        let position = seconds(in: element("player.time").label)
+        let duration = seconds(in: playbackTimeText(element("player.duration")))
+        let position = seconds(in: playbackTimeText(element("player.time")))
         XCTAssertGreaterThan(duration, 0)
         // SwiftUI's Slider thumb is not always exposed as an accessibility child.
         // Locate it using the actual timeline and track geometry instead of empty track space.
@@ -170,9 +204,15 @@ final class AetherFilmUITests: XCTestCase {
         let thumbInset = 8.0 / seek.frame.width
         #endif
         let thumbOffset = thumbInset + min(1, position / max(1, duration)) * (1 - thumbInset * 2)
+        #if os(macOS)
+        seek.coordinate(withNormalizedOffset: CGVector(dx: thumbOffset, dy: 0.5))
+            .click(forDuration: 0.05, thenDragTo: seek.coordinate(withNormalizedOffset: CGVector(dx: 0.45, dy: 0.5)),
+                   withVelocity: .slow, thenHoldForDuration: 5)
+        #else
         seek.coordinate(withNormalizedOffset: CGVector(dx: thumbOffset, dy: 0.5))
             .press(forDuration: 0.05, thenDragTo: seek.coordinate(withNormalizedOffset: CGVector(dx: 0.45, dy: 0.5)),
                    withVelocity: .slow, thenHoldForDuration: 5)
+        #endif
         XCTAssertTrue(controls.exists && controls.isHittable,
                       "Holding the scrubber beyond the idle timeout must not hide the active controls.")
         capture("Controls after five second scrub hold")
@@ -423,7 +463,17 @@ final class AetherFilmUITests: XCTestCase {
     func testAccessibilityDescriptions() throws {
         launch("--ui-fixtures")
         XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))
+        #if os(macOS)
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription]) { issue in
+            let details = XCTAttachment(string: "\(issue.compactDescription)\n\(issue.detailedDescription)\n\(issue.element?.debugDescription ?? "No associated element")")
+            details.name = "Accessibility audit issue element"
+            details.lifetime = .keepAlways
+            self.add(details)
+            return false // Record every audit issue; diagnostic output never filters failures.
+        }
+        #else
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])
+        #endif
     }
 
     private func launch(_ arguments: String...) {
@@ -447,6 +497,26 @@ final class AetherFilmUITests: XCTestCase {
     private func activate(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(element.exists || element.waitForExistence(timeout: 5), file: file, line: line)
         #if os(macOS)
+        let identifier = element.identifier
+        if identifier.hasPrefix("player.") {
+            let hittable = element.isHittable
+            XCTAssertTrue(hittable, "The playback control must be visible at the click.", file: file, line: line)
+            let frame = element.frame
+            XCTAssertFalse(frame.isEmpty || frame.isInfinite || frame.isNull,
+                           "The playback control must have a real visible frame.", file: file, line: line)
+            let evidence = XCTAttachment(string: "\(identifier) frame=\(frame) hittable=\(hittable)")
+            evidence.name = "Playback control before click"
+            evidence.lifetime = .keepAlways
+            add(evidence)
+            if identifier == "player.close" {
+                let window = app.windows.firstMatch
+                let windowFrame = window.frame
+                window.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
+                    .withOffset(CGVector(dx: frame.midX - windowFrame.minX,
+                                         dy: frame.midY - windowFrame.minY)).click()
+                return
+            }
+        }
         element.click()
         #else
         element.tap()
@@ -513,17 +583,69 @@ final class AetherFilmUITests: XCTestCase {
                        "Tapping the video surface should reveal the native playback controls.")
     }
 
+    private func playbackTimeText(_ element: XCUIElement) -> String {
+        #if os(macOS)
+        // SwiftUI Text exposes its visible text as AXValue in AppKit, rather than AXLabel.
+        if let value = element.value as? String, !value.isEmpty { return value }
+        #endif
+        return element.label
+    }
+
     #if os(iOS)
-    private func revealAboveKeyboard(_ control: XCUIElement) {
-        for _ in 0..<4 {
-            let keyboard = app.keyboards.firstMatch
-            let visibleBottom = keyboard.exists ? keyboard.frame.minY : app.windows.firstMatch.frame.maxY
-            if control.exists && control.frame.maxY < visibleBottom && control.isHittable { return }
-            // Form.swipeUp starts near its bottom, which is occupied by the keyboard.
+    private func revealAboveKeyboard(_ control: XCUIElement, navigation title: String = "连接 SMB") {
+        for attempt in 0..<4 {
             let window = app.windows.firstMatch
-            let startY = min(visibleBottom - 40, window.frame.midY)
-            window.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: startY / window.frame.height))
-                .press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.22)))
+            let windowFrame = window.frame
+            let forms = app.collectionViews.allElementsBoundByIndex.filter {
+                $0.exists && $0.label != "Sidebar" && $0.identifier != "browser.list" && $0.frame.height > 100
+            }
+            XCTAssertEqual(forms.count, 1, "The empty-source fixture must select its unique actual modal Form.")
+            guard forms.count == 1, let form = forms.first else { return }
+            let formFrame = form.frame
+            let keyboard = app.keyboards.firstMatch
+            let keyboardTop = keyboard.exists ? keyboard.frame.minY : windowFrame.maxY
+            let intersection = formFrame.intersection(windowFrame)
+            guard !intersection.isNull, !intersection.isEmpty,
+                  intersection.width.isFinite, intersection.height.isFinite,
+                  intersection.width > 0, intersection.height > 0 else {
+                XCTFail("The native modal Form must have a valid visible intersection with the window.")
+                return
+            }
+            let inputViews = app.otherElements.matching(NSPredicate(
+                format: "identifier == %@ OR identifier == %@", "inputView", "SystemInputAssistantView"))
+                .allElementsBoundByIndex
+            var inputOcclusionTop = keyboardTop
+            for inputView in inputViews where inputView.exists {
+                let frame = inputView.frame
+                guard frame.minX.isFinite, frame.minY.isFinite,
+                      frame.width.isFinite, frame.height.isFinite,
+                      frame.width > 0, frame.height > 0,
+                      frame.maxX > intersection.minX, frame.minX < intersection.maxX,
+                      frame.maxY > intersection.minY, frame.minY < intersection.maxY else { continue }
+                inputOcclusionTop = min(inputOcclusionTop, frame.minY)
+            }
+            let visibleBottom = min(keyboardTop, inputOcclusionTop, intersection.maxY)
+            if control.exists && control.frame.maxY < visibleBottom && control.isHittable { return }
+            let navigation = app.navigationBars[title].firstMatch
+            let visibleTop = max(intersection.minY, navigation.exists ? navigation.frame.maxY : intersection.minY)
+            let startY = visibleBottom - 64
+            let endY = visibleTop + 30
+            guard startY.isFinite, endY.isFinite, startY > endY else {
+                XCTFail("The native modal Form must have enough visible height above the keyboard to scroll.")
+                return
+            }
+            let x = intersection.minX + intersection.width * 0.75
+            guard x > intersection.minX else {
+                XCTFail("The native modal Form must have enough visible width to scroll inside its bounds.")
+                return
+            }
+            let attachment = XCTAttachment(string: "attempt=\(attempt) form=\(formFrame) visible=\(intersection) keyboardTop=\(keyboardTop) start=(\(x),\(startY)) end=(\(x),\(endY)) existsBefore=\(control.exists)")
+            attachment.name = "Actual native modal Form scroll geometry"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            let origin = window.coordinate(withNormalizedOffset: .zero)
+            origin.withOffset(CGVector(dx: x - windowFrame.minX, dy: startY - windowFrame.minY))
+                .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: x - windowFrame.minX, dy: endY - windowFrame.minY)))
         }
         XCTFail("The native form control should be reachable above the keyboard.")
     }
@@ -584,9 +706,22 @@ final class AetherFilmUITests: XCTestCase {
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
+    private func nativeValueString(_ value: Any?) -> String? {
+        if let string = value as? String { return string }
+        return (value as? NSNumber)?.stringValue
+    }
+
     private func waitForValueContaining(_ text: String, in element: XCUIElement, timeout: TimeInterval) -> Bool {
         if element.exists && (element.value as? String)?.contains(text) == true { return true }
-        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND value CONTAINS %@", text), object: element)
+        let predicate: NSPredicate
+        if let expected = Int(text) {
+            let number = NSNumber(value: expected)
+            if element.exists && (element.value as? NSNumber) == number { return true }
+            predicate = NSPredicate(format: "exists == true AND (value == %@ OR value CONTAINS %@)", number, text)
+        } else {
+            predicate = NSPredicate(format: "exists == true AND value CONTAINS %@", text)
+        }
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
@@ -604,7 +739,14 @@ final class AetherFilmUITests: XCTestCase {
 
     private func capture(_ name: String) {
         #if os(macOS)
-        let screenshot = app.screenshot()
+        let sheet = app.sheets.firstMatch
+        let subject = sheet.exists ? sheet : app.windows.firstMatch
+        let frame = subject.frame
+        let screenshot = subject.screenshot()
+        let geometry = XCTAttachment(string: "Native own-element screenshot type=\(subject.elementType.rawValue) frame=\(frame)")
+        geometry.name = "Native screenshot window geometry"
+        geometry.lifetime = .keepAlways
+        add(geometry)
         #else
         let screenshot = XCUIScreen.main.screenshot()
         #endif

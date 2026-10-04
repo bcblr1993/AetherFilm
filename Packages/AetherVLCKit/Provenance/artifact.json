@@ -1,0 +1,99 @@
+{
+  "status": "LOCAL_ARTIFACT_ASSEMBLED_REMOTE_ASSET_NOT_PUBLISHED",
+  "nativeGeneration": 6,
+  "wrapperCommit": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
+  "libVLCBaseCommit": "005e69e67a8730f128e44bde68437fbb048cf45f",
+  "binaryAsset": {
+    "plannedTag": "vlckit-8f5ce02-aether-20261004",
+    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004/VLCKit-AetherFilm-native6-arm64.xcframework.zip",
+    "filename": "VLCKit-AetherFilm-native6-arm64.xcframework.zip",
+    "bytes": 68725880,
+    "sha256": "ced058ad2baa7cb74b4b1a842abbc0573a6f3bf6ddcd11f83c04d997c8414005"
+  },
+  "slices": [
+    {
+      "identifier": "macos-arm64",
+      "platform": 1,
+      "architecture": "arm64",
+      "minimum": "26.0",
+      "SDK": "27.0",
+      "binaryBytes": 62488552,
+      "binarySHA256": "68587bfd70efcfaae70e181278165ca434bdf62371b38e2596e04a6c39a295d7",
+      "UUID": "2fa866e3-1085-3542-8ef5-2577609079ab",
+      "textSHA256": "5b76bba4b1d81afcb09d19c0fe30fca51af72409399671ae24f5289fc1ebb962",
+      "wrapperTargetsExitCodes": [
+        0,
+        0
+      ],
+      "modulesDefined": 302,
+      "publicHeaderVersion": {
+        "MAJOR": 4,
+        "MINOR": 0,
+        "REVISION": 0,
+        "EXTRA": 0
+      },
+      "frameworkBundleVersion": "1",
+      "frameworkShortVersion": "1.0",
+      "publicHeadersExactToNative4": true,
+      "publicHeaderCount": 48,
+      "publicLibvlcAPI": true
+    },
+    {
+      "identifier": "ios-arm64-simulator",
+      "platform": 7,
+      "architecture": "arm64",
+      "minimum": "26.0",
+      "SDK": "27.0",
+      "binaryBytes": 54321976,
+      "binarySHA256": "92da04feee439f4bf90135f77bf720868650c2edc462e3f4428d4d0acb2bca92",
+      "UUID": "90e61c79-9508-3b98-9a12-e89ed893b50c",
+      "textSHA256": "afa5e2083a210b0beec7021fca7d121a526a4ed37ae1ee053de0bdeccfadc52f",
+      "wrapperTargetsExitCodes": [
+        0,
+        0
+      ],
+      "modulesDefined": 302,
+      "publicHeaderVersion": {
+        "MAJOR": 4,
+        "MINOR": 0,
+        "REVISION": 0,
+        "EXTRA": 0
+      },
+      "frameworkBundleVersion": "1",
+      "frameworkShortVersion": "1.0",
+      "publicHeadersExactToNative4": true,
+      "publicHeaderCount": 43,
+      "publicLibvlcAPI": true
+    },
+    {
+      "identifier": "ios-arm64",
+      "platform": 2,
+      "architecture": "arm64",
+      "minimum": "26.0",
+      "SDK": "27.0",
+      "binaryBytes": 52958304,
+      "binarySHA256": "b79470e4a98c10988b49da052d682b836bb0af3bf6d018dd22c45f495447fcf8",
+      "UUID": "14fcd066-4110-345b-a7bd-3d5389cbc8e1",
+      "textSHA256": "d59670a130c3874e2801b303d3596774c7a5b251226ef0f46860bbb67029b4fb",
+      "wrapperTargetsExitCodes": [
+        0,
+        0
+      ],
+      "modulesDefined": 302,
+      "publicHeaderVersion": {
+        "MAJOR": 4,
+        "MINOR": 0,
+        "REVISION": 0,
+        "EXTRA": 0
+      },
+      "frameworkBundleVersion": "1",
+      "frameworkShortVersion": "1.0",
+      "publicHeadersExactToNative4": true,
+      "publicHeaderCount": 43,
+      "publicLibvlcAPI": true
+    }
+  ],
+  "AppAndRuntimeReleaseAccepted": false,
+  "audioOutputDomainPatchSHA256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7",
+  "outputClockCadencePatchSHA256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f"
+}

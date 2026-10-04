@@ -1,0 +1,11 @@
+--- a/modules/audio_output/apple/avsamplebuffer.m
++++ b/modules/audio_output/apple/avsamplebuffer.m
+@@ -262,7 +262,7 @@
+     CMTime time = CMTimeMake(0, _sampleRate);
+     [_sync setRate:1.0f time:time];
+ 
+-    const CMTime interval = CMTimeMake(CLOCK_FREQ, CLOCK_FREQ);
++    const CMTime interval = CMTimeMake(CLOCK_FREQ / 10, CLOCK_FREQ);
+     __weak typeof(self) weakSelf = self;
+     _observer = [_sync addPeriodicTimeObserverForInterval:interval
+                                                     queue:_timeQueue

@@ -42,6 +42,9 @@ enum AppSection: Hashable, Identifiable {
     @ObservationIgnored private var loadingTask: Task<Void, Never>?
     @ObservationIgnored private var playbackGeneration = UUID()
     @ObservationIgnored private var playbackItemID: String?
+    @ObservationIgnored private var automaticWatchedInCurrentPlayback = false
+    @ObservationIgnored private var playbackProgressFailed = false
+    @ObservationIgnored private var persistenceTask: Task<Void, Error>?
     @ObservationIgnored private var subtitleCacheURLs: [URL] = []
     #if DEBUG
     @ObservationIgnored private var fixtureMarker: URL?
@@ -204,10 +207,7 @@ enum AppSection: Hashable, Identifiable {
     }
 
     func preparePlayback(_ item: MediaItem) async throws -> PreparedPlayback {
-        let generation = UUID()
-        playbackGeneration = generation
-        playbackItemID = item.id
-        playbackErrorMessage = nil
+        let generation = beginPlaybackSession(for: item)
         await releasePlaybackResources()
         try Task.checkCancellation()
         guard playbackGeneration == generation else { throw CancellationError() }
@@ -221,7 +221,10 @@ enum AppSection: Hashable, Identifiable {
                 onReadFailure: { [weak self] failure in
                     Task { @MainActor [weak self] in
                         guard let self, self.isCurrentPlayback(item, sessionID: generation) else { return }
+                        self.rejectAutomaticWatched(item, sessionID: generation)
                         self.playbackErrorMessage = failure.localizedDescription
+                        await self.flushProgress()
+                        guard self.isCurrentPlayback(item, sessionID: generation) else { return }
                         await self.stream?.stop()
                     }
                 })
@@ -281,11 +284,35 @@ enum AppSection: Hashable, Identifiable {
         return URL(fileURLWithPath: subtitle.path)
     }
 
-    func recordProgress(_ item: MediaItem, position: Double, duration: Double, allowsAutomaticWatched: Bool = true) {
+    func beginPlaybackSession(for item: MediaItem) -> UUID {
+        playbackGeneration = UUID()
+        playbackItemID = item.id
+        playbackErrorMessage = nil
+        automaticWatchedInCurrentPlayback = false
+        playbackProgressFailed = false
+        return playbackGeneration
+    }
+
+    func beginPlaybackProgress(_ item: MediaItem, sessionID: UUID) {
+        guard isCurrentPlayback(item, sessionID: sessionID) else { return }
+        // A replay is a new native input. Existing watched state is its history.
+        automaticWatchedInCurrentPlayback = false
+        playbackProgressFailed = playbackErrorMessage != nil
+    }
+
+    func recordProgress(_ item: MediaItem, position: Double, duration: Double,
+                        allowsAutomaticWatched: Bool = true, sessionID: UUID? = nil) {
+        if let sessionID, !isCurrentPlayback(item, sessionID: sessionID) { return }
         guard position.isFinite, duration.isFinite, duration > 0 else { return }
         if let sourceID = item.sourceID, !connections.contains(where: { $0.id == sourceID }) { return }
-        snapshot.progress[item.id] = PlaybackProgress(itemID: item.id, position: position, duration: duration,
-            isWatched: snapshot.progress[item.id]?.isWatched ?? false, allowsAutomaticWatched: allowsAutomaticWatched)
+        let wasWatched = snapshot.progress[item.id]?.isWatched ?? false
+        let next = PlaybackProgress(itemID: item.id, position: position, duration: duration,
+            isWatched: wasWatched,
+            allowsAutomaticWatched: allowsAutomaticWatched && (sessionID == nil || !playbackProgressFailed))
+        if sessionID != nil, !wasWatched, next.isWatched {
+            automaticWatchedInCurrentPlayback = true
+        }
+        snapshot.progress[item.id] = next
         snapshot.recentItems.removeAll { $0.id == item.id }
         snapshot.recentItems.insert(item, at: 0)
         if snapshot.recentItems.count > 500 { snapshot.recentItems.removeLast(snapshot.recentItems.count - 500) }
@@ -293,6 +320,18 @@ enum AppSection: Hashable, Identifiable {
             lastSavedAt = Date()
             Task { await flushProgress() }
         }
+    }
+
+    func rejectAutomaticWatched(_ item: MediaItem, sessionID: UUID) {
+        guard isCurrentPlayback(item, sessionID: sessionID) else { return }
+        playbackProgressFailed = true
+        guard automaticWatchedInCurrentPlayback else { return }
+        automaticWatchedInCurrentPlayback = false
+        guard var progress = snapshot.progress[item.id] else { return }
+        // Keep the real resume point. Do not rerun the automatic 95% initializer.
+        progress.isWatched = false
+        snapshot.progress[item.id] = progress
+        Task { await flushProgress() }
     }
 
     func flushProgress() async {
@@ -314,7 +353,9 @@ enum AppSection: Hashable, Identifiable {
         let failure = await currentStream?.readFailure()
         guard isCurrentPlayback(item, sessionID: sessionID) else { return false }
         if let failure {
+            rejectAutomaticWatched(item, sessionID: sessionID)
             playbackErrorMessage = failure.localizedDescription
+            await flushProgress()
             return false
         }
         return playbackErrorMessage == nil
@@ -323,7 +364,13 @@ enum AppSection: Hashable, Identifiable {
     func completePlayback(after item: MediaItem, sessionID: UUID) async {
         guard await canCompletePlayback(after: item, sessionID: sessionID),
               isCurrentPlayback(item, sessionID: sessionID) else { return }
-        await markWatched(item)
+        let old = progress(for: item)
+        snapshot.progress[item.id] = PlaybackProgress(itemID: item.id, position: old?.position ?? 0,
+            duration: old?.duration ?? 0, isWatched: true)
+        if old?.isWatched != true { automaticWatchedInCurrentPlayback = true }
+        if !snapshot.recentItems.contains(where: { $0.id == item.id }) { snapshot.recentItems.append(item) }
+        // Backend completion remains automatic, not an explicit user override.
+        await flushProgress()
         guard await canCompletePlayback(after: item, sessionID: sessionID),
               isCurrentPlayback(item, sessionID: sessionID) else { return }
         if let next = nextItem(after: item) { playingItem = next }
@@ -342,6 +389,7 @@ enum AppSection: Hashable, Identifiable {
     }
 
     func markWatched(_ item: MediaItem) async {
+        if playbackItemID == item.id { automaticWatchedInCurrentPlayback = false }
         let old = progress(for: item)
         snapshot.progress[item.id] = PlaybackProgress(itemID: item.id, position: old?.position ?? 0,
             duration: old?.duration ?? 0, isWatched: true)
@@ -350,6 +398,7 @@ enum AppSection: Hashable, Identifiable {
     }
 
     func clearProgress(_ item: MediaItem) async {
+        if playbackItemID == item.id { automaticWatchedInCurrentPlayback = false }
         snapshot.progress.removeValue(forKey: item.id)
         snapshot.recentItems.removeAll { $0.id == item.id }
         await flushProgress()
@@ -382,6 +431,8 @@ enum AppSection: Hashable, Identifiable {
         playbackGeneration = UUID()
         playbackItemID = nil
         playbackErrorMessage = nil
+        automaticWatchedInCurrentPlayback = false
+        playbackProgressFailed = false
         await releasePlaybackResources()
     }
 
@@ -396,7 +447,18 @@ enum AppSection: Hashable, Identifiable {
         await oldStream?.stop()
     }
 
-    private func persist() async throws { try await library.save(snapshot) }
+    private func persist() async throws {
+        let previous = persistenceTask
+        let value = snapshot
+        let next = Task { [library] in
+            if let previous { _ = await previous.result }
+            try await library.save(value)
+        }
+        persistenceTask = next
+        // Preserve MainActor submission order across the library actor hop.
+        // A periodic older save cannot overwrite a subsequently queued rollback.
+        try await next.value
+    }
 
     private func credentials(for connection: SMBConnection) throws -> SMBCredentials {
         if let credentialsReader { return try credentialsReader(connection) }

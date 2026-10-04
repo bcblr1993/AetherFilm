@@ -1,0 +1,41 @@
+{
+  "scope": "NATIVE6_SMALL_SOURCE_PATCH_AND_COMPONENT_MATERIAL_CHECKS_NOT_PORTABLE_REBUILD_OR_FINAL_APP",
+  "priorNative5Preparation": {
+    "path": "Provenance/native5-material-verification.json",
+    "bytes": 1797,
+    "sha256": "fef4c614217cbaa25ce0a4217b421836d8279797c26d7a13ef03f507f8e9df9d"
+  },
+  "seventhPatchActuallyAppliedWithoutFuzzOrOffset": true,
+  "officialPatchedArchive": {
+    "path": "${REPOSITORY}/.build/Probe/vlc-patched-source.tar.gz",
+    "bytes": 38078280,
+    "sha256": "448c7842896f9881592ae1c0fd0f4893f4d2848764fc492ebe0b1d494f3589a0"
+  },
+  "officialOriginalAVSourceSHA256": "bce45adc3f68e13c5c81b14b3e0efb0cd7e22a0b89db3919759378b28285f68e",
+  "actualPatchedAVSourceSHA256": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+  "threeCompilerInputSourceSHA256": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+  "allPreviousSixPatchesAndTenSourcePinsUnchanged": true,
+  "patchCount": 7,
+  "releaseSourcePinCount": 11,
+  "smallLocalInputFileCount": 10,
+  "actualAVPatchApplication": {
+    "path": "${REPOSITORY}/.build/Native6SourcePackageCandidate20261004-r2/PatchProof-r1/patch.json",
+    "bytes": 682,
+    "sha256": "c728576df085a9c797c6ab7902778b6fdb7d96044751fa1e9d90c274c43c8faf"
+  },
+  "toolsASTValid": true,
+  "NoticesEqual": true,
+  "licensesExactUnmodified": true,
+  "originalNative4AndNative5BuildRecordsUnchanged": true,
+  "actualAssembly": {
+    "path": "${REPOSITORY}/.build/Native6Assembly20261004-r1/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2299,
+    "sha256": "b9bb8760fd8b8a396cbed618efefca52457ae9840471b15f40d1a03ee89413f0"
+  },
+  "base665MBAssetAndLuaRetainedByPriorVerificationNotCopiedOrReextracted": true,
+  "onlyOfficialAVSourceFileExtractedFromRetained38MBArchive": true,
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssetAssembled": false,
+  "publicDistributionVerified": false,
+  "finalAppAcceptanceClaimed": false
+}

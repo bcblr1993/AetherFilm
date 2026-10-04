@@ -56,6 +56,91 @@ import FilmSources
                        "An unconfirmed seek must preserve a previously confirmed watched state.")
     }
 
+    func testHealthyAutomaticWatchedSessionPersistsBeforeCompletion() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let session = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: session)
+        await store.flushProgress()
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertTrue(try XCTUnwrap(saved.progress[item.id]).isWatched)
+        XCTAssertEqual(saved.progress[item.id]?.position, 11.5)
+    }
+
+    func testFailedSessionRetractsAutomaticWatchedButRetainsResume() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let session = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: session)
+        await store.flushProgress()
+        let before = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertTrue(try XCTUnwrap(before.progress[item.id]).isWatched)
+        let olderSave = Task { await store.flushProgress() }
+        store.rejectAutomaticWatched(item, sessionID: session)
+        store.recordProgress(item, position: 11.6, duration: 12, sessionID: session)
+        await store.flushProgress(); await olderSave.value
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertFalse(try XCTUnwrap(saved.progress[item.id]).isWatched)
+        XCTAssertEqual(saved.progress[item.id]?.resumePosition, 11.6)
+    }
+
+    func testPriorWatchedHistorySurvivesNewSessionFailure() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let initial = makeStore(); await initial.load(); await initial.markWatched(item)
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let session = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: session)
+        store.rejectAutomaticWatched(item, sessionID: session)
+        await store.flushProgress()
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertTrue(try XCTUnwrap(saved.progress[item.id]).isWatched)
+    }
+
+    func testManualMarkAfterAutomaticWatchedSurvivesSessionFailure() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let session = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: session)
+        await store.markWatched(item)
+        store.rejectAutomaticWatched(item, sessionID: session)
+        store.recordProgress(item, position: 11.6, duration: 12, sessionID: session)
+        await store.flushProgress()
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertTrue(try XCTUnwrap(saved.progress[item.id]).isWatched)
+    }
+
+    func testStoppedSessionFailureCannotRetractNewSessionWatched() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let oldSession = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 5, duration: 12, sessionID: oldSession)
+        await store.stopStreaming(for: item.id, sessionID: oldSession)
+        let newSession = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: newSession)
+        store.rejectAutomaticWatched(item, sessionID: oldSession)
+        store.recordProgress(item, position: 1, duration: 12, sessionID: oldSession)
+        await store.flushProgress()
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertTrue(try XCTUnwrap(saved.progress[item.id]).isWatched)
+        XCTAssertEqual(saved.progress[item.id]?.position, 11.5)
+        store.rejectAutomaticWatched(item, sessionID: newSession)
+        XCTAssertFalse(try XCTUnwrap(store.progress(for: item)).isWatched)
+    }
+
+    func testClearedProgressDoesNotRestoreSessionAutomaticWatchedAfterFailure() async throws {
+        let item = MediaItem(name: "short.mp4", path: "fixture-only")
+        let store = makeStore(); await store.load(); store.playingItem = item
+        let session = store.beginPlaybackSession(for: item)
+        store.recordProgress(item, position: 11.5, duration: 12, sessionID: session)
+        await store.clearProgress(item)
+        store.rejectAutomaticWatched(item, sessionID: session)
+        store.recordProgress(item, position: 11.6, duration: 12, sessionID: session)
+        await store.flushProgress()
+        let saved = try await LibraryStore(url: directory.appendingPathComponent("library.json")).load()
+        XCTAssertFalse(try XCTUnwrap(saved.progress[item.id]).isWatched)
+        XCTAssertEqual(saved.progress[item.id]?.position, 11.6)
+    }
+
     func testRemovingNASRemovesOrphanedResumeEntries() async throws {
         let store = makeStore(); await store.load()
         let source = SMBConnection(name: "Fixture", host: "fixture.invalid", share: "Videos")

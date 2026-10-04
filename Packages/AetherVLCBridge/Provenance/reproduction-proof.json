@@ -2,7 +2,7 @@
   "frozenApproved": true,
   "sameGeneratedSources": 22,
   "generatedSourceSHA256": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "c7182f2d75cc53cc6630d403cee26d9da1a7eb6c42223e1635df18eb78b73b9a",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "49ebef69171c62d69d1e4a927a7d5238acfc61664d907583ee2e696e8b853bac",
     "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "63bc5cfa1b4635f674d2e9bf951ff8731dc2dcb0b76ee3a314669b4c169cdce6",
     "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "e1b2c6c6b638da39d02a2dc1e5e5325f9d0543871caa663ebf504b0e2a634b42",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
@@ -23,12 +23,18 @@
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_version.h": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
     "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
-    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "28b8670df7806adb5bc2da139849cf1ad1d7f356f56dd1f95cd552c6a9fbbf54"
+    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "2bb90786e500e27eeedf1cc9c17920b7aa75781afcb27f176db0ede3adf33ba8"
   },
   "exactCapturedPrototypeVerifiedBeforeImportsAndBanner": true,
   "reproductionCommand": "python3 Tools/generate_package_sources.py --require-frozen --output NEW_DIRECTORY",
   "finalTypedStoppingSnapshotPresent": true,
+  "finalTypedSeekStateSnapshotsPresent": true,
   "prototypeGetterAbsent": true,
+  "diagnosticGetterDoesNotClearSeekStatus": true,
   "formalPackageReproducesSources": true,
-  "sourceInventorySHA256": "9b6d624eafdfc40575fee77180f5681a0e193825d30addcd23fb225e1c1cecee"
+  "sourceInventorySHA256": "1b070bd590335229b301eb84be0e42ba2f71f1e3af48ebaedda2200e9dec568e",
+  "releaseAcceptancePassed": false,
+  "historicalProof": "Provenance/History/reproduction-stock-callbacks-20261003.json",
+  "prototypePatchSHA256": "efceaa696151e8584ee9d2c44b9fc1425a44cde6f1dafc256372221879d885eb",
+  "zeroContextPatchPreservesExactTestedSources": true
 }

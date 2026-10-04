@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Test Mac runner failure handling without UI
+        run: python3 -B -m unittest discover -s scripts/tests -p test_macos_playback.py
       - run: xcodebuild -version && swift --version
       - name: Prepare isolated SMB fixture
         run: |
@@ -59,6 +61,50 @@ jobs:
         with:
           name: playback-results
           path: build/Playback.xcresult
+          if-no-files-found: ignore
+  macos26-playback:
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record the minimum-system environment
+        run: |
+          sw_vers
+          uname -m
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          stat -f '%u %Su' /dev/console
+      - name: Prepare build tools and synthetic media
+        run: |
+          brew install xcodegen ffmpeg
+          python3 scripts/generate_ui_fixtures.py
+          python3 PlaybackTests/generate_fixtures.py
+          python3 PlaybackTests/generate_smb_fixture.py
+          python3 PlaybackTests/generate_4k_fixture.py
+          python3 -m venv .build/test-venv
+          .build/test-venv/bin/python -m pip install -r scripts/test-requirements.txt
+          xcodegen generate
+      - name: Build and sign the Mac test products with the installed toolchain
+        run: >-
+          xcodebuild build-for-testing -project AetherFilm.xcodeproj
+          -scheme AetherFilm-macOS -destination 'platform=macOS,arch=arm64'
+          -derivedDataPath build/Mac26 -clonedSourcePackagesDirPath build/SourcePackages
+          ARCHS=arm64 CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual
+          DEVELOPMENT_TEAM='' PROVISIONING_PROFILE_SPECIFIER=''
+      - name: Real Mac26 playback, persistence and SMB in Aqua
+        run: >-
+          .build/test-venv/bin/python scripts/test_smb_integration.py
+          --bootstrap-only --media-folder .build/PlaybackFixtures --
+          .build/test-venv/bin/python scripts/test_macos_playback.py
+          --products build/Mac26/Build/Products --result build/Mac26Playback/Results.xcresult
+          --require-os-major 26
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos26-playback-results
+          path: |
+            build/Mac26Playback
+            build/Mac26/Logs
           if-no-files-found: ignore
 
 # Platform builds do not certify real playback or release readiness.

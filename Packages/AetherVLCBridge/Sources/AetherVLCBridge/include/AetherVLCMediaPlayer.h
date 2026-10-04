@@ -1,6 +1,6 @@
 /* Modified by AetherNative on 2026-10-03.
  * Changes: player/notification namespace, typed callbacks with fixed stopping snapshots,
- * checked interpolation, and target-relative SwiftPM header imports.
+ * checked interpolation, seek-state callback snapshots, and target-relative SwiftPM header imports.
  * Original LGPL notices are retained.
  */
 /*****************************************************************************
@@ -105,6 +105,14 @@ typedef NS_ENUM(NSInteger, AetherVLCMediaStoppingReason) {
 - (void)mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason inputTime:(int64_t)inputTime hadError:(BOOL)hadError NS_SWIFT_NAME(mediaPlayerStopping(reason:inputTime:hadError:));
 - (void)mediaPlayerClockTime:(int64_t)time position:(double)position systemDate:(int64_t)systemDate NS_SWIFT_NAME(mediaPlayerClockPoint(time:position:systemDate:));
 - (void)mediaPlayerInputTime:(int64_t)time position:(double)position NS_SWIFT_NAME(mediaPlayerInputPositionChanged(time:position:));
+/**
+ * Forwards the existing time watcher's seek request state, not playback success.
+ * targetTime is the request time in microseconds (or -1 if unavailable).
+ * sequence identifies the actual on_seek start; its end uses the same sequence.
+ * The values are captured before asynchronous delegate delivery. Ending a seek
+ * can also result from source removal and does not prove new output or recovery.
+ */
+- (void)mediaPlayerSeekingChanged:(BOOL)seeking targetTime:(int64_t)targetTime sequence:(uint64_t)sequence NS_SWIFT_NAME(mediaPlayerSeekingChanged(_:targetTime:sequence:));
 /**
  * Called when the media player signal that it changed to another playback state.
  * \param newState the current new state
@@ -897,6 +905,26 @@ OBJC_VISIBLE
  * \return BOOL value
  */
 @property (NS_NONATOMIC_IOSONLY, getter=isSeekable, readonly) BOOL seekable;
+
+/**
+ * State forwarded by the existing time watcher's on_seek callback.
+ * FALSE means that request ended; it is not playback success or an output count.
+ */
+@property (NS_NONATOMIC_IOSONLY, getter=isSeeking, readonly) BOOL seeking;
+
+/**
+ * Monotonic sequence of actual on_seek starts, captured at the C callback entry.
+ * Snapshot it before submitting a seek to reject already queued older events.
+ * This is callback identity only, not an engine generation or playback evidence.
+ */
+@property (nonatomic, readonly) uint64_t seekCallbackSequence;
+
+/**
+ * Readonly diagnostic snapshot from public libvlc_media_player_get_time.
+ * Exact signed raw microseconds; no invalid-value or cached-time normalization.
+ * This is a queried core timer/input value, not proof of a presented frame.
+ */
+@property (nonatomic, readonly) int64_t diagnosticCoreTimeMicroseconds;
 
 /**
  * property whether the currently playing media can be paused (or not)

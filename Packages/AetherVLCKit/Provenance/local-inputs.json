@@ -1,0 +1,119 @@
+{
+  "scope": "SOURCE_INPUTS_FOR_NATIVE6_NOT_RELEASE_ACCEPTANCE",
+  "officialPatchedTree": "9cb4e084a5e41ba0f7037c209884d8816ef929ad",
+  "official12AlreadyApplied": true,
+  "patchOrder": [
+    "Patches/native-aperture.patch",
+    "Patches/gsm-deployment.patch",
+    "Patches/paused-preview-core.patch",
+    "Patches/decoder-flush-preview.patch",
+    "Patches/held-io-recovery.patch",
+    "Patches/audio-output-domain.patch",
+    "Patches/output-clock-cadence.patch"
+  ],
+  "files": [
+    {
+      "path": "Patches/native-aperture.patch",
+      "bytes": 15360,
+      "sha256": "cb180e2281271f55d625b654a38e29696237c7fee322cccdd51e5bd511136d0f"
+    },
+    {
+      "path": "Patches/gsm-deployment.patch",
+      "bytes": 355,
+      "sha256": "e1da8783adb775e36f7595cfa05bc501466291bcb8b9185497d9c947b024df5c"
+    },
+    {
+      "path": "Patches/paused-preview-core.patch",
+      "bytes": 4001,
+      "sha256": "38565703cd41ec5718480d5717f7231185e0170112dd150693a6b4a986414aa8"
+    },
+    {
+      "path": "Patches/decoder-flush-preview.patch",
+      "bytes": 3150,
+      "sha256": "d81e1cc7cd9530c65ebb23bf41f948318303d6da6c1103eb43df37c872912754"
+    },
+    {
+      "path": "Patches/held-io-recovery.patch",
+      "bytes": 2855,
+      "sha256": "2cd23d50c90440d8ecdda03bf872d03ddcb5cfd0e16166a7660a0fd990b77b6e"
+    },
+    {
+      "path": "Configuration/build26.conf",
+      "bytes": 6263,
+      "sha256": "96317cc08ff6031e4f51d63c3079fce3befc2f1ddc50587f032c4efaf6a0b6e3"
+    },
+    {
+      "path": "Provenance/COPYING.LIB",
+      "bytes": 26530,
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
+    },
+    {
+      "path": "Provenance/COPYING",
+      "bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "path": "Patches/audio-output-domain.patch",
+      "bytes": 2832,
+      "sha256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7"
+    },
+    {
+      "path": "Patches/output-clock-cadence.patch",
+      "bytes": 521,
+      "sha256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f"
+    }
+  ],
+  "officialTouchedSourceSHA256": {
+    "contrib/src/gsm/rules.mak": "35617301967d90bf515e2884c9d163f4613e5fd2b57477320b0748afbe28ba69",
+    "modules/access/http/access.c": "59ce22e4cbe08987aeb41bc18fa8b7e3c93063b8781c46e02997c4a62395995f",
+    "modules/access/http/file.c": "e0631077f445120cddf38ce4dfd95bddcb6d2309ae3f50fc55b0306490702dd9",
+    "modules/stream_filter/prefetch.c": "e59a35e186b23a11ba09acf78a4d9f39c81e2515a470edaabc1044f6fbd4bf79",
+    "modules/video_output/apple/VLCSampleBufferDisplay.m": "c52a149ae0f1340213b3915d51d9c18508092576a974990f4425a33796907dd5",
+    "src/input/decoder.c": "a8309244291db90c348b69418d1bbf6acf3398ff52b2e485629d77d0c15ab545",
+    "src/input/input.c": "5462aec919d8b96e5129b87f85575b2b9f93cebfc85cab8579ee158723b4e4b8",
+    "src/network/stream.c": "dbd070832d0601a10d7cf270fb267fe31be1b3d90f0a294750931541a5199077",
+    "src/video_output/video_output.c": "c995848c2c772252c1f0375c14d86884d901f1c883557f397041a23a51e052f2",
+    "src/audio_output/dec.c": "e30e86904188d6937aad0aadbaa5a1d9ac9d2081f9980ec395d598a4f341ac73",
+    "modules/audio_output/apple/avsamplebuffer.m": "bce45adc3f68e13c5c81b14b3e0efb0cd7e22a0b89db3919759378b28285f68e"
+  },
+  "native4TouchedSourceSHA256": {
+    "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+    "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+    "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+    "src/input/input.c": "1de47b34f81825db83ef761c77cf5b0f510b1a9e11433a331beae44cf68d6ce5",
+    "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+    "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+    "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+    "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+    "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6"
+  },
+  "patchApplicationActualPass": true,
+  "fullPortableRebuildExecuted": false,
+  "native5TouchedSourceSHA256": {
+    "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+    "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+    "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+    "src/input/input.c": "1de47b34f81825db83ef761c77cf5b0f510b1a9e11433a331beae44cf68d6ce5",
+    "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+    "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+    "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+    "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+    "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+    "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de"
+  },
+  "audioOutputDomainPatchApplicationActualPass": true,
+  "native6TouchedSourceSHA256": {
+    "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+    "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+    "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+    "src/input/input.c": "1de47b34f81825db83ef761c77cf5b0f510b1a9e11433a331beae44cf68d6ce5",
+    "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+    "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+    "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+    "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+    "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+    "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+    "modules/audio_output/apple/avsamplebuffer.m": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f"
+  },
+  "outputClockCadencePatchApplicationActualPass": true
+}

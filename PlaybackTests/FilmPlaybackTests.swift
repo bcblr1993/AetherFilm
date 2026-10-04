@@ -36,7 +36,15 @@ final class FilmPlaybackTests: XCTestCase {
         surface = VLCVideoView(frame: NSRect(x: 0, y: 0, width: 640, height: 360))
         surface.backColor = .black
         window.contentView = surface
-        window.orderFront(nil)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        // Isolated host diagnostic: prepare the real AppKit window before load.
+        try await Task.sleep(for: .milliseconds(250))
+        XCTAssertTrue(window.isVisible, "The owned playback window must be visible before media load.")
+        print("MAC_WINDOW_PREP policy=\(NSApp.activationPolicy().rawValue) running=\(NSApp.isRunning ? 1 : 0) active=\(NSApp.isActive ? 1 : 0) key=\(window.isKeyWindow ? 1 : 0) visible=\(window.isVisible ? 1 : 0) occlusion=\(window.occlusionState.contains(.visible) ? 1 : 0) attached=\(surface.window === window ? 1 : 0) width=\(surface.bounds.width) height=\(surface.bounds.height)")
+        XCTAssertTrue(surface.window === window, "The drawable must be attached to the owned window before media load.")
+        XCTAssertGreaterThan(surface.bounds.width, 0)
+        XCTAssertGreaterThan(surface.bounds.height, 0)
         #elseif os(iOS)
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         let scene = try XCTUnwrap(scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first,
@@ -324,7 +332,7 @@ final class FilmPlaybackTests: XCTestCase {
         player.debugEnableLifecycleTrace(origin: diagnosticOrigin)
         #endif
         let configuration = try await SMBPlaybackFixture.configuration()
-        let connection = SMBConnection(name: "Playback fixture", host: "127.0.0.1", port: configuration.port,
+        let connection = SMBConnection(name: "Playback fixture", host: configuration.host ?? "127.0.0.1", port: configuration.port,
                                        share: configuration.share, rootPath: configuration.mediaPath)
         let credentials = SMBCredentials(username: configuration.username, password: configuration.password)
         let provider = CountingSMBProvider(diagnosticOrigin: diagnosticOrigin)
@@ -475,6 +483,7 @@ private func diagnosticElapsed(since origin: ContinuousClock.Instant) -> Double 
 }
 
 private struct SMBPlaybackFixture: Decodable {
+    let host: String?
     let port: Int
     let username: String
     let password: String
@@ -483,17 +492,20 @@ private struct SMBPlaybackFixture: Decodable {
 
     static func configuration() async throws -> Self {
         let environment = ProcessInfo.processInfo.environment
+        let expectedHost = environment["AETHERFILM_SMB_TEST_HOST"] ?? "127.0.0.1"
         if let address = environment["AETHERFILM_SMB_BOOTSTRAP_URL"],
-           let url = URL(string: address), url.scheme == "http", url.host == "127.0.0.1" {
+           let url = URL(string: address), url.scheme == "http", url.host == expectedHost {
             let (data, response) = try await URLSession.shared.data(from: url)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw PlaybackTestError.timeout }
-            return try JSONDecoder().decode(Self.self, from: data)
+            let fixture = try JSONDecoder().decode(Self.self, from: data)
+            guard (fixture.host ?? "127.0.0.1") == expectedHost else { throw PlaybackTestError.timeout }
+            return fixture
         }
         guard let value = environment["AETHERFILM_SMB_TEST_PORT"], let port = Int(value),
               let password = environment["AETHERFILM_SMB_TEST_PASSWORD"] else {
             throw XCTSkip("Run the SMB fixture launcher and pass AETHERFILM_SMB_BOOTSTRAP_URL to the test runner.")
         }
-        return Self(port: port, username: "aetherfilm-fixture", password: password, share: "FILMS",
+        return Self(host: nil, port: port, username: "aetherfilm-fixture", password: password, share: "FILMS",
                     mediaPath: environment["AETHERFILM_SMB_MEDIA_PATH"] ?? "media")
     }
 }

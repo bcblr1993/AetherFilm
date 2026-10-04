@@ -41,7 +41,8 @@ if not (mirror / 'VLCKit.xcframework/Info.plist').is_file():
 public = (snapshot / 'Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h').read_text()
 for spelling in ['mediaPlayerStopping(reason:inputTime:hadError:)',
                  'mediaPlayerClockPoint(time:position:systemDate:)',
-                 'mediaPlayerInputPositionChanged(time:position:)']:
+                 'mediaPlayerInputPositionChanged(time:position:)',
+                 'mediaPlayerSeekingChanged(_:targetTime:sequence:)']:
     if 'NS_SWIFT_NAME(' + spelling + ')' not in public:
         raise RuntimeError('Final public callback name differs: ' + spelling)
 if 'measuredCoreTime' in public:
@@ -52,11 +53,15 @@ bridge = output / 'DiagnosticBridge'
 shutil.copytree(snapshot, bridge, ignore=shutil.ignore_patterns('__pycache__'))
 manifest = bridge / 'Package.swift'
 formal = manifest.read_text()
+fixed_dependency = (
+    r'\.package\(\s*url:\s*"https://github\.com/videolan/vlckit(?:\.git)?"\s*,\s*revision:\s*"8f5ce02f09a7da5d061a24ddac3cb432f2a9b332"\s*\)'
+    r'|\.package\(\s*name:\s*"VLCKit"\s*,\s*path:\s*"\.\./AetherVLCKit"\s*\)'
+)
 local, count = re.subn(
-    r'\.package\(\s*url:\s*"https://github\.com/videolan/vlckit(?:\.git)?"\s*,\s*revision:\s*"8f5ce02f09a7da5d061a24ddac3cb432f2a9b332"\s*\)',
+    fixed_dependency,
     lambda _: '.package(name: "VLCKit", path: ' + json.dumps(str(mirror)) + ')', formal)
 if count != 1:
-    raise RuntimeError('Expected exactly one official fixed production dependency')
+    raise RuntimeError('Expected exactly one fixed production VLCKit dependency')
 manifest.write_text(local)
 (output / 'bridge-manifest-local.diff').write_text(''.join(difflib.unified_diff(
     formal.splitlines(keepends=True), local.splitlines(keepends=True),
@@ -89,10 +94,8 @@ if graph.returncode:
 
 matrix = [
     ('macos-arm64', 'arm64-apple-macos26.0', 'macosx'),
-    ('macos-x86_64', 'x86_64-apple-macos26.0', 'macosx'),
     ('ios-arm64', 'arm64-apple-ios26.0', 'iphoneos'),
     ('sim-arm64', 'arm64-apple-ios26.0-simulator', 'iphonesimulator'),
-    ('sim-x86_64', 'x86_64-apple-ios26.0-simulator', 'iphonesimulator'),
 ]
 results = []
 for name, triple, sdk_name in matrix:

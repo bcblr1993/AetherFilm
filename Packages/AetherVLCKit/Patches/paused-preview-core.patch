@@ -1,0 +1,91 @@
+--- a/src/video_output/video_output.c
++++ b/src/video_output/video_output.c
+@@ -1660,16 +1660,23 @@
+ 
+     UpdateDeinterlaceFilter(sys);
+ 
++    const uintptr_t previous_picture = (uintptr_t)sys->displayed.current;
++    const vlc_tick_t previous_pts = sys->displayed.current != NULL
++                                ? sys->displayed.current->date : VLC_TICK_INVALID;
+     bool current_changed = UpdateCurrentPicture(sys);
+     if (current_changed)
+     {
+         // next frame will still need some waiting before display, we don't need
+         // to render now
+         // display forced picture immediately
+-        bool render_now = sys->displayed.current->b_force;
+-
+-        RenderPicture(vout, render_now ? RENDER_PICTURE_FORCED
+-                                       : RENDER_PICTURE_NORMAL);
++        bool paused_preview = sys->pause.is_on
++            && ((uintptr_t)sys->displayed.current != previous_picture
++                || sys->displayed.current->date != previous_pts);
++        bool render_now = sys->displayed.current->b_force || paused_preview;
++
++        RenderPicture(vout, paused_preview ? RENDER_PICTURE_NEXT
++                              : render_now ? RENDER_PICTURE_FORCED
++                                           : RENDER_PICTURE_NORMAL);
+         if (!render_now)
+             /* Prepare the next picture immediately without waiting */
+             return VLC_TICK_INVALID;
+--- a/src/input/input.c
++++ b/src/input/input.c
+@@ -657,6 +657,7 @@
+         ControlPause(p_input, vlc_tick_now(), true);
+ 
+     bool eof_signaled = false;
++    bool buffering_report_pending = false;
+ 
+     demux_t *p_demux = input_priv(p_input)->master->p_demux;
+     const bool b_can_demux = p_demux->ops != NULL ?
+@@ -666,14 +667,16 @@
+     while( !input_Stopped( p_input ) && input_priv(p_input)->i_state != ERROR_S )
+     {
+         vlc_tick_t i_wakeup = -1;
++        const bool was_buffering = es_out_GetBuffering(input_priv(p_input)->p_es_out);
++        if (was_buffering)
++            buffering_report_pending = true;
+         bool b_paused = input_priv(p_input)->i_state == PAUSE_S;
+         /* FIXME if input_priv(p_input)->i_state == PAUSE_S the access/access_demux
+          * is paused -> this may cause problem with some of them
+          * The same problem can be seen when seeking while paused */
+         if( b_paused )
+         {
+-            b_paused = !es_out_GetBuffering( input_priv(p_input)->p_es_out )
+-                    || input_priv(p_input)->master->b_eof;
++            b_paused = !was_buffering || input_priv(p_input)->master->b_eof;
+             if( b_paused && input_priv(p_input)->next_frame_need_data )
+                 b_paused = false;
+         }
+@@ -718,12 +721,27 @@
+                     break;
+             }
+ 
+-            /* Update interface and statistics */
++        }
++
++        /* Keep the observed buffering state across loop iterations: completion
++         * can occur after the previous demux body or before this iteration. */
++        const bool buffering_now = es_out_GetBuffering(input_priv(p_input)->p_es_out);
++        if (buffering_now)
++            buffering_report_pending = true;
++        const bool report_paused_buffering = buffering_report_pending
++            && !buffering_now && input_priv(p_input)->i_state == PAUSE_S;
++
++        /* Keep normal reporting cadence. A paused buffering completion gets
++         * one real demux query through the same statistics/event path. */
++        if (!b_paused || report_paused_buffering)
++        {
+             vlc_tick_t now = vlc_tick_now();
+-            if( now >= i_intf_update )
+-            {
+-                MainLoopStatistics( p_input );
++            if (report_paused_buffering || now >= i_intf_update)
++            {
++                MainLoopStatistics(p_input);
+                 i_intf_update = now + i_inf_update_delay;
++                if (!es_out_GetBuffering(input_priv(p_input)->p_es_out))
++                    buffering_report_pending = false;
+             }
+         }
+ 

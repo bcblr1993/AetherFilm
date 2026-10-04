@@ -1,0 +1,9 @@
+--- a/contrib/src/gsm/rules.mak
++++ b/contrib/src/gsm/rules.mak
+@@ -32,5 +32,5 @@
+ 
+ .gsm: gsm
+ 	install -d "$(PREFIX)/lib" "$(PREFIX)/include/gsm" "$(PREFIX)/share/man/man3"
+-	$(HOSTVARS_PIC) $(GSM_ENV) $(MAKE) -C $< gsminstall
++	$(HOSTVARS_PIC) CPPFLAGS="$(CPPFLAGS) $(PIC) $(VLC_DEPLOYMENT_TARGET_CFLAG)" $(GSM_ENV) $(MAKE) -C $< gsminstall
+ 	touch $@

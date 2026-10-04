@@ -1,0 +1,33 @@
+{
+  "scope": "SMALL_SOURCE_AND_TOOL_CHECKS_ONLY",
+  "toolChecks": [
+    {
+      "path": "Tools/assemble_source_extension.py",
+      "ASTValid": true,
+      "helpExitCode": 0,
+      "sha256": "c6a4ed2c4e9ad239c85233d62ffc0f44ff59f68cc60e41d86f11ed416ff96d2b"
+    },
+    {
+      "path": "Tools/rebuild_core.py",
+      "ASTValid": true,
+      "helpExitCode": 0,
+      "sha256": "f58cca5869e5f31ea53fab455354cff6c1f55ff07787e1cfc353b7058cd557ea"
+    },
+    {
+      "path": "Tools/verify_source_materials.py",
+      "ASTValid": true,
+      "helpExitCode": 0,
+      "sha256": "1f879fe4e2822c854600be7af98d99fe89cffd88b2a5b1160f25bb982ed487a7"
+    }
+  ],
+  "buildConfigBashSyntaxExit": 0,
+  "scopedDiffCheckExit": 0,
+  "appNoticesEqual": true,
+  "fiveCorePatchesActuallyAppliedWithoutFuzz": true,
+  "productionSourceMatches": 8,
+  "portableWrapperPBXActuallyAppliedAndPlutilPassed": 3,
+  "compilerInvokedByThisCheck": false,
+  "fullPortableRebuildExecuted": false,
+  "sourceExtensionAssetAssembled": false,
+  "AppRuntimeOrPublicDistributionAccepted": false
+}

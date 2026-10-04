@@ -10,4 +10,4 @@ Generation prompt:
 
 The source is retained; packaging only resizes it for platform assets. Inspect Dock and Home Screen appearance on real platform builds before release.
 
-The square source follows Apple's [app icon guidance](https://developer.apple.com/design/human-interface-guidelines/app-icons/): the system supplies the platform mask. iOS Simulator Home Screen appearance has been inspected; the macOS Dock check still requires graphical acceptance in the `macos27` VM.
+The square source follows Apple's [app icon guidance](https://developer.apple.com/design/human-interface-guidelines/app-icons/): the system supplies the platform mask. iOS Simulator Home Screen appearance and the real iPadOS Simulator Dock during native window resizing have been inspected; the macOS Dock check still requires graphical acceptance in the `macos27` VM.

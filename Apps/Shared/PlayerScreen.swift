@@ -52,16 +52,20 @@ struct PlayerScreen: View {
                         revealControls()
                         player.seek(player.position + (value.location.x < geometry.size.width / 2 ? -10 : 10))
                     }.exclusively(before: TapGesture().onEnded {
-                        withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
-                        controlsInteraction += 1
+                        if player.seekStatus != nil {
+                            revealControls()
+                        } else {
+                            withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
+                            controlsInteraction += 1
+                        }
                     }))
                     .accessibilityAction(named: "显示播放控制") { revealControls() }
                     .simultaneousGesture(scrubbingGesture(width: geometry.size.width))
                 VStack {
-                    header
-                        .opacity(controlsVisible ? 1 : 0)
-                        .allowsHitTesting(controlsVisible)
-                        .accessibilityHidden(!controlsVisible)
+                    if showsControls {
+                        header
+                            .transition(.opacity)
+                    }
                     Spacer()
                     if let error = openingError ?? store.playbackErrorMessage ?? player.errorMessage {
                         VStack(spacing: 14) {
@@ -73,6 +77,12 @@ struct PlayerScreen: View {
                         .glassEffect(in: .rect(cornerRadius: 24))
                         .accessibilityIdentifier("player.error")
                         Spacer()
+                    } else if let status = player.seekStatus {
+                        ProgressView(status == .seeking ? "正在跳转…" : "正在等待片源…")
+                            .padding(20)
+                            .glassEffect()
+                            .accessibilityIdentifier("player.seekStatus")
+                        Spacer()
                     } else if player.isLoading {
                         ProgressView("正在打开视频…")
                             .padding(20)
@@ -80,10 +90,10 @@ struct PlayerScreen: View {
                             .accessibilityIdentifier("player.loading")
                         Spacer()
                     }
-                    controls
-                        .opacity(controlsVisible ? 1 : 0)
-                        .allowsHitTesting(controlsVisible)
-                        .accessibilityHidden(!controlsVisible)
+                    if showsControls {
+                        controls
+                            .transition(.opacity)
+                    }
                 }
                 .padding(16)
             }
@@ -91,20 +101,21 @@ struct PlayerScreen: View {
         .preferredColorScheme(.dark)
         .tint(.mint)
         #if os(iOS)
-        .statusBarHidden(!controlsVisible)
-        .persistentSystemOverlays(controlsVisible ? .automatic : .hidden)
+        .statusBarHidden(!showsControls)
+        .persistentSystemOverlays(showsControls ? .automatic : .hidden)
         #endif
         #if os(macOS)
         .frame(minWidth: 620, minHeight: 400, idealHeight: 620)
         #endif
         .task(id: item.id) { await open() }
-        .task(id: "\(controlsInteraction)-\(player.isPlaying)-\(showingOptions)-\(isScrubbing)-\(voiceOverEnabled)") {
-            guard player.isPlaying, !showingOptions, !isScrubbing, !voiceOverEnabled else { return }
+        .task(id: "\(controlsInteraction)-\(player.isPlaying)-\(showingOptions)-\(isScrubbing)-\(voiceOverEnabled)-\(player.seekStatus != nil)") {
+            guard player.isPlaying, player.seekStatus == nil, !showingOptions, !isScrubbing, !voiceOverEnabled else { return }
             do { try await Task.sleep(for: .seconds(4)) } catch { return }
-            guard !Task.isCancelled, player.isPlaying, openingError == nil, store.playbackErrorMessage == nil, player.errorMessage == nil else { return }
+            guard !Task.isCancelled, player.isPlaying, player.seekStatus == nil, openingError == nil, store.playbackErrorMessage == nil, player.errorMessage == nil else { return }
             withAnimation(.easeInOut(duration: 0.2)) { controlsVisible = false }
         }
         .onChange(of: player.isPlaying) { _, playing in if !playing { revealControls() } }
+        .onChange(of: player.seekStatus) { _, status in if status != nil { revealControls() } }
         .onChange(of: player.errorMessage) { _, message in if message != nil { revealControls() } }
         .onChange(of: store.playbackErrorMessage) { _, message in
             if message != nil { player.stop(); revealControls() }
@@ -137,6 +148,8 @@ struct PlayerScreen: View {
             Button("好", role: .cancel) { subtitleError = nil }
         } message: { Text(subtitleError ?? "") }
     }
+
+    private var showsControls: Bool { controlsVisible || player.seekStatus != nil }
 
     private var header: some View {
         HStack(spacing: 12) {
@@ -215,7 +228,7 @@ struct PlayerScreen: View {
                         .accessibilityLabel("下一个视频").accessibilityIdentifier("player.next")
                 }
                 #if os(macOS)
-                Button { NSApp.keyWindow?.toggleFullScreen(nil) } label: {
+                Button { revealControls(); NSApp.keyWindow?.toggleFullScreen(nil) } label: {
                     Image(systemName: "arrow.up.left.and.arrow.down.right").frame(width: 44, height: 44).contentShape(Rectangle())
                 }
                 .accessibilityLabel("切换全屏")
@@ -307,9 +320,9 @@ struct PlayerScreen: View {
         player.setRate(Float(preferredPlaybackRate))
         player.setPreferredLanguages(audio: preferredAudioLanguage.isEmpty ? nil : preferredAudioLanguage,
             subtitles: preferredSubtitleLanguage.isEmpty ? nil : preferredSubtitleLanguage)
-        player.onProgress = { position, duration, confirmed in
-            store.recordProgress(item, position: position, duration: duration, allowsAutomaticWatched: confirmed)
-        }
+        player.onProgress = nil
+        player.onPlaybackSessionStarted = nil
+        player.onPlaybackFailure = nil
         player.onEnded = nil
         player.completionValidator = nil
         var preparedSessionID: UUID?
@@ -320,6 +333,12 @@ struct PlayerScreen: View {
             try Task.checkCancellation()
             guard store.playbackSession(for: item) == sessionID, store.playingItem?.id == item.id else { throw CancellationError() }
             playbackSessionID = sessionID
+            player.onPlaybackSessionStarted = { store.beginPlaybackProgress(item, sessionID: sessionID) }
+            player.onProgress = { position, duration, confirmed in
+                store.recordProgress(item, position: position, duration: duration,
+                    allowsAutomaticWatched: confirmed, sessionID: sessionID)
+            }
+            player.onPlaybackFailure = { store.rejectAutomaticWatched(item, sessionID: sessionID) }
             player.completionValidator = { await store.canCompletePlayback(after: item, sessionID: sessionID) }
             player.onEnded = { Task { await store.completePlayback(after: item, sessionID: sessionID) } }
             player.load(url: source.url, startAt: store.progress(for: item)?.resumePosition ?? 0)

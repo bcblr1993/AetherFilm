@@ -1,18 +1,19 @@
 # AetherVLCBridge
 
-Static, namespaced Objective-C player wrapper for AetherFilm. Minimum macOS and iOS versions are **26.0**. The package depends on the official VLCKit binary product at revision `8f5ce02f09a7da5d061a24ddac3cb432f2a9b332`; its archive checksum is `f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb`.
+Static, namespaced Objective-C player wrapper for AetherFilm. Minimum macOS and iOS versions are **26.0**. Both the application and this bridge use the canonical `../AetherVLCKit` package. It contains the artifact checksum and corresponding source for the locally rebuilt three-platform ARM64 backend, derived from official wrapper revision `8f5ce02f09a7da5d061a24ddac3cb432f2a9b332`.
 
-The owned `AetherVLCMediaPlayer` class uses the original wrapper implementation in a distinct namespace. It does not access the private player handle of a stock `VLCMediaPlayer` instance or swizzle that class. The fixed libVLC core is unchanged. The public header imports stock enum and media types through `<VLCKit/...>`. Necessary original internal declarations stay target-private; the 15 public C headers delivered with the fixed binary live under `Vendor/vlc` for reproducible nested `<vlc/...>` imports.
+The owned `AetherVLCMediaPlayer` class uses the original wrapper implementation in a distinct namespace. It does not access the private player handle of a stock `VLCMediaPlayer` instance or swizzle that class. The native core includes the explicit changes recorded in `../AetherVLCKit/Patches`. The public header imports enum and media types through `<VLCKit/...>`. Necessary original internal declarations stay target-private; the 15 pinned public C headers live under `Vendor/vlc` for reproducible nested `<vlc/...>` imports.
 
-The delegate adds three explicit Swift contracts:
+The delegate adds four explicit Swift contracts:
 
 ```swift
 mediaPlayerStopping(reason:inputTime:hadError:)
 mediaPlayerClockPoint(time:position:systemDate:)
 mediaPlayerInputPositionChanged(time:position:)
+mediaPlayerSeekingChanged(_:targetTime:sequence:)
 ```
 
-Stopping reasons have a compile-time assertion against the fixed public C ABI. Input time and error values are copied under an owned `NSLock` in the original C stopping callback, before the delegate event is queued. The lock guards primitive values only; no delegate or libVLC operation runs while it is held. Clock interpolation updates the cache only when the original C function reports success. The prototype `measuredCoreTime` diagnostic getter is absent from the public API.
+Stopping reasons have a compile-time assertion against the fixed public C ABI. Input time, error and seek callback snapshots are copied under an owned `NSLock` before asynchronous delegate delivery. The lock guards primitive values only; no delegate or libVLC operation runs while it is held. Clock interpolation updates the cache only when the original C function reports success. The prototype `measuredCoreTime` getter is absent. The readonly `diagnosticCoreTimeMicroseconds` getter is diagnostic evidence; it never clears the application's pending seek status. Seek completion and callback sequence likewise do not establish new presented output.
 
 These values provide playback events, not proof that an SMB transfer completed. Source completeness and application lifecycle decisions belong to the application and source services.
 
@@ -20,7 +21,7 @@ These values provide playback events, not proof that an SMB transfer completed. 
 
 The modified wrapper and vendored headers retain their original copyrights and LGPL notices. See `COPYING.LGPL-2.1` and the notices in each file. The application repository's MIT license does not relicense this derived wrapper. Generated files changed by AetherNative carry a `2026-10-03` change banner. Unchanged helper and C headers retain their original bytes.
 
-`PinnedInputs` contains the exact original wrapper inputs and public C headers used here. `Provenance/inputs.json` records their 23 SHA-256 values, the official revision, fixed archive checksum, approved namespaced source/header hashes and exact patch hash. The C headers are byte-identical in the macOS, iOS and iOS Simulator slices; their 4.0.0 version macros describe the headers, not a released LibVLC version.
+`PinnedInputs` contains the exact original wrapper inputs and public C headers used here. `Provenance/inputs.json` records their 23 SHA-256 values, the historical official archive, frozen namespaced source/header hashes and exact patch hash. The pinned headers remain that original baseline. The current native wrapper's `libvlc_version.h` additionally defines ABI version macros; the other 14 public headers match. The 4.0.0 version macros describe the headers, not a released LibVLC version.
 
 This package is one component of the corresponding source. Distribution also requires the original VLCKit / libVLC corresponding source, patches and build instructions recorded by the main repository, plus the complete application source and its reproducible project specification. The package's compile evidence does not certify those release assets, Mac GUI behavior, physical-device playback or audible output.
 
@@ -42,7 +43,7 @@ The tool refuses to replace an existing `Sources/AetherVLCBridge` tree. It write
 
 ## Build and test with a local binary mirror
 
-The production `Package.swift` must retain the official remote revision. A verified local mirror can accelerate an explicitly identified diagnostic build without changing implementation bytes. Both the copied top-level project and the copied bridge manifest must point to the **same canonical package path**; changing only the project's direct dependency leaves a separate remote dependency in the bridge.
+The production `Package.swift` retains the canonical `../AetherVLCKit` dependency. A verified local mirror can support a build before publishing its immutable remote asset, without changing implementation bytes. Both the copied top-level project and copied bridge manifest must point to the **same canonical package path**. The formal artifact metadata records whether its remote asset has actually been published.
 
 Use a mirror with this manifest and the extracted, checksum-verified fixed `VLCKit.xcframework`:
 
@@ -64,9 +65,9 @@ python3 Packages/AetherVLCBridge/Tools/prepare_local_mirror.py \
   --output /absolute/path/to/new-diagnostic-project
 ```
 
-The helper uses system Ruby's YAML parser. It copies tracked repository bytes, or verifies a frozen source asset's manifest hashes, and records the exact project/package manifest diffs and unchanged bridge source hashes. Repository working-copy exports must not be described as immutable commit exports. The helper does not generate the Xcode project, change the original source, launch an App or operate a Simulator. Generate and build only the copied project when needed.
+The helper uses system Ruby's YAML parser. It copies tracked and non-ignored new repository files, or verifies a frozen source asset's manifest hashes, and records the exact project/package manifest diffs and unchanged bridge source hashes. Repository working-copy exports must not be described as immutable commit exports. The helper does not generate the Xcode project, change the original source, launch an App or operate a Simulator. Generate and build only the copied project when needed.
 
-Run the independent five-platform callback consumer matrix:
+Run the current three-platform ARM64 callback consumer matrix:
 
 ```sh
 python3 Packages/AetherVLCBridge/Tools/verify_package_consumers.py \
@@ -75,4 +76,4 @@ python3 Packages/AetherVLCBridge/Tools/verify_package_consumers.py \
   --output /absolute/path/to/new-consumer-evidence
 ```
 
-This requires an owner-approved frozen snapshot, verifies its generated inventory, and keeps the manifest override in its own diagnostic copy. It compiles actual optional Swift protocol calls and Objective-C selectors, with `nonisolated` delegate methods passing primitives to `MainActor`. macOS arm64 / x86_64, iOS arm64, and Simulator arm64 / x86_64 have passed compile and strong-link verification at minimum version 26.0, using one binary artifact and compiler-enabled ARC. No `unsafeFlags` are required. These builds do not launch the consumer or any device. Actual hashes, UUIDs and limitations are in `Provenance/consumer-build-review.json`.
+This requires an owner-approved frozen snapshot, verifies its generated inventory, and keeps the manifest override in its own copy. It compiles actual optional Swift protocol calls and Objective-C selectors, with `nonisolated` delegate methods passing primitives to `MainActor`. The three current ARM64 consumers compiled and linked successfully with the Native4 artifact at minimum26; see `Provenance/consumer-build-review.json`. The earlier five-platform evidence remains in `Provenance/History`. No `unsafeFlags` are required. These builds do not launch the consumer or any device, and do not certify App or distribution acceptance.

@@ -14,11 +14,16 @@ struct UITestWindowSizing: NSViewRepresentable {
             super.viewDidMoveToWindow()
             guard !hasAppliedSize, let window,
                   ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return }
-            hasAppliedSize = true
-            let width = requestedDimension("--ui-width=", fallback: 980, minimum: 620)
-            let height = requestedDimension("--ui-height=", fallback: 680, minimum: 440)
-            window.setContentSize(NSSize(width: width, height: height))
-            window.center()
+            // SwiftUI restores scene geometry as the window becomes visible.
+            DispatchQueue.main.async { [weak self, weak window] in
+                guard let self, let window, self.window === window,
+                      !self.hasAppliedSize, window.isVisible else { return }
+                let width = self.requestedDimension("--ui-width=", fallback: 980, minimum: 620)
+                let height = self.requestedDimension("--ui-height=", fallback: 680, minimum: 440)
+                window.setContentSize(NSSize(width: width, height: height))
+                window.center()
+                self.hasAppliedSize = true
+            }
         }
 
         private func requestedDimension(_ prefix: String, fallback: Double, minimum: Double) -> Double {

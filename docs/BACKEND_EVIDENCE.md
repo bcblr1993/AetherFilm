@@ -1,11 +1,136 @@
 # Playback backend evidence
 
-Inspected on 2026-10-03 (Asia/Shanghai). This records upstream and artifact
+Updated on 2026-10-04 (Asia/Shanghai). This records upstream and artifact
 evidence and scoped diagnostic results. These results are not an assertion
 that the final combined AetherFilm candidate or device acceptance has passed;
 the release acceptance matrix remains in `TEST_MATRIX.md`.
 
-## Fixed official dependency
+## Current Native6 source and execution boundary
+
+The current pinned dependency is the Native6 ARM64 component. It retains the
+Native5 audio output-domain fix and adds
+`Patches/output-clock-cadence.patch` (SHA256
+`d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f`).
+The production sample-buffer output clock reports every 100 ms instead of one
+second; application progress still uses actual output timestamps.
+
+All three actual wrapper builds passed both targets. Their macOS, iOS Device
+and iOS Simulator slices are ARM64, minimum OS 26.0, SDK 27.0, with native
+platform values 1/2/7 and all 302 generated modules defined. The seven local
+patches and eleven affected source files are pinned in the checked-in native
+source materials. This records incremental builds, not a fresh complete
+portable source rebuild.
+
+The assembled `VLCKit-AetherFilm-native6-arm64.xcframework.zip` is 68,725,880
+bytes, with measured SwiftPM checksum
+`ced058ad2baa7cb74b4b1a842abbc0573a6f3bf6ddcd11f83c04d997c8414005`.
+`Package.swift` and `Provenance/artifact.json` pin this component. Its binary
+and corresponding source are prepared for a separate technical prerelease.
+
+The final combined candidate passed the unfiltered 61-case playback suites on
+iOS 27 and iOS 26.5 Simulators (61 passed, zero failed or skipped on each).
+The added tail-read failure regression proves an automatic 95-percent watched
+checkpoint was persisted before a real source read failed, then persisted as
+unwatched afterwards. These results do not certify physical-device, macOS,
+UI or distribution acceptance; `TEST_MATRIX.md` records those gates.
+
+## Historical Native5 source and execution boundary
+
+The current candidate modifies libVLC; the official stock artifact below is
+historical provenance. The fixed wrapper revision remains
+`8f5ce02f09a7da5d061a24ddac3cb432f2a9b332`, with VLC base
+`005e69e67a8730f128e44bde68437fbb048cf45f`. Checked-in source materials live in
+`Packages/AetherVLCKit/{Patches,Configuration,Tools,Provenance}`. They identify
+the clean-aperture, GSM deployment, paused-preview/decoder, held-IO and audio
+output-domain patches, the minimum26 configuration, source assets and actual
+build argv. The earlier Native4 inputs and execution records remain preserved.
+
+The sixth local patch, `Patches/audio-output-domain.patch`, has SHA256
+`ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7`.
+It preserves the original output audio timestamp before playback-rate
+conversion and uses that output domain for fallback drain delay. The patch was
+applied without fuzz to the unchanged original `src/audio_output/dec.c`; its
+result matches the source actually compiled for all three platforms. The
+current source materials pin ten affected files and retain the original five
+patches and their earlier verification.
+
+Each Native5 platform compiled one production `dec.o` and replaced only
+`libvlccore_la-dec.o` in its Native4 core and full static archives. Every other
+native member's payload and order stayed exact:
+
+| Platform | Core members / other exact | Full members / other exact |
+| --- | ---: | ---: |
+| macOS ARM64 | 180 / 179 | 6562 / 6561 |
+| iOS Simulator ARM64 | 178 / 177 | 6266 / 6265 |
+| iOS Device ARM64 | 178 / 177 | 6269 / 6268 |
+
+All six wrapper target executions exited 0. Each actual slice is thin ARM64,
+minimum OS 26.0, SDK 27.0, with the correct native platform 1/7/2 and all 302 generated
+modules defined. Public headers remain byte-identical to Native4, with public
+libVLC version-header components 4.0.0; these are header and component checks,
+not a new runtime version query. Root independently inspected the three
+Mach-O hashes and versions and matched the generated module lists against
+actual `nm -U` definitions. Evidence:
+`Packages/AetherVLCKit/Provenance/native5-build-record.json` and
+`.build/Native5ComponentRootReview20261004-r1/REVIEW.json`.
+
+The three-slice component was actually assembled at
+`.build/Native5Assembly20261004-r1/Assembly-r1/LocalVLCKit`.
+`VLCKit-AetherFilm-native5-arm64.xcframework.zip` is 68726145 bytes, with measured
+SwiftPM checksum
+`aceb831c88c8eaec4c2248ae2c20663a8ae499e5f52e759ea903ea6cab8c3a98`.
+The Native5 manifest and artifact record pinned that historical component;
+its remote release asset was not published. Assembly preserved the original
+framework payloads and did not compile or sign an App.
+
+The independent iOS 27 Simulator half-speed functional regression passed
+1/1, zero failed or skipped. Its 12-second sample played naturally at 0.5x and
+reported actual EOS at 24.572203292 seconds, with completion 22.056339375 seconds
+after early real output readiness: above the 21.202476-second lower bound and
+within the new independent 30-second window. Final normal/input times were
+12.071934/12.067595, displayed video 349, played audio 562, one completion and no
+error. Evidence:
+`.build/NativeHalfSpeedEOSRegression20261004-r1/ACTUAL_FUNCTIONAL_REVIEW.json`.
+The separate original 60-second diagnostic recorded 48.419006625 seconds before
+the C correction and 24.583846917 afterwards; that diagnostic is retained and
+excluded from the functional suite. These single-case results do not certify
+the final unified Native5 App's full 54-case iOS or 46-case Mac playback suites,
+UI, physical-device or distribution acceptance.
+
+### Historical Native4 incremental run and source preparation
+
+The Native4 held-IO patch SHA256 is
+`2cd23d50c90440d8ecdda03bf872d03ddcb5cfd0e16166a7660a0fd990b77b6e`.
+Actual Mac, iOS Simulator and iOS Device incremental runs each passed all
+16 subprocess stages. Four production C objects replace seven full-archive
+members and one core-archive member, retaining every other native member's
+payload and order and all protected original inputs. Mac preserves6555 other
+full members; Simulator6259; Device6262. This is incremental build evidence,
+not a fresh complete source rebuild, original App held-tail recovery proof,
+new wrapper/App runtime acceptance or distribution evidence.
+
+The complete five-patch chain was also applied with zero fuzz to nine exact
+files from the official patched-source archive; all five patch commands
+passed, and eight final files match the actual production candidate sources.
+That source-only check does not compile or run the portable rebuilding tools.
+
+The older source-input asset remains unchanged and reusable. Its patched VLC
+tar already includes the twelve official patches, so they must not be applied
+again. The final source extension still needs the final application commit,
+complete App/Bridge/specification/locks, later local patches and instructions,
+and Lua5.4.4 (360876 bytes, SHA256
+`164c7849653b80ae67bec4b7473b884bf5cc8d2dca05653475ec2ed27b9ebf61`).
+Rust/Cargo1.96.0 and the Darwin/iOS/iOS Simulator targets are recorded alongside
+the rav1e Cargo.lock SHA256
+`e71efcea949f8cfa31fad962ae69a7e2c17f08fb7924def3d2863e5fb37799ae` and
+the earlier228 crate /15603 source-file vendor audit. This preparation does
+not assert a fresh complete contrib audit or an assembled/published extension.
+The final extension tool still requires the final clean application HEAD and
+has not been executed for this release. The historical Native5 checksum is
+measured above; signed App, UI, physical-device and release gates remain
+separate. `TEST_MATRIX.md` is the authoritative acceptance record.
+
+## Historical fixed official dependency
 
 - Provider: VideoLAN's official [VLCKit mirror](https://github.com/videolan/vlckit).
 - Version: **4.0.0-a25**, a **pre-release** of the libVLC 4 engine.
@@ -165,7 +290,8 @@ player from the exact official wrapper inputs and adds stopping reason,
 input time/error, clock and input-position callbacks. Primitive stopping
 values are copied under an owned lock before the delegate event is queued;
 the stopping enum has a compile-time check against the fixed public C ABI.
-The fixed libVLC binary is unchanged. This route neither adopts the private
+Those historical bridge-only checks used the unchanged stock libVLC binary.
+This route neither adopts the private
 handle of a stock player nor swizzles its class, and retains the original
 LGPL notices and generated-source provenance.
 
@@ -245,7 +371,7 @@ distribution retain their separate evidence requirements.
 
 ## Planned first-release support
 
-The playback adapter uses the fixed VLCKit backend for MP4/MOV/MKV/AVI,
+The playback adapter uses the VLCKit-derived backend for MP4/MOV/MKV/AVI,
 embedded and external SRT/ASS/WebVTT subtitles, audio track selection, chapters,
 pause, seek and rate control. Generated fixtures and XCTest sources live in
 `PlaybackTests/`. Successful upstream playback is not AetherFilm acceptance.
@@ -263,10 +389,10 @@ pause, seek and rate control. Generated fixtures and XCTest sources live in
 ## Local diagnostics
 
 The ignored `.build/Probe` directory holds the verified zip and extracted
-framework for local checks. Normal project specifications retain the official
-fixed remote revision. A temporary local binary target can reuse this exact
-framework for diagnosis, but final reproducibility/CI must still verify the
-checked-in specification and fixed official artifact.
+framework for historical stock checks. A temporary local binary target can
+reuse an exact identified framework for diagnosis. Final reproducibility/CI
+must verify the checked-in specification and the actual modified artifact's
+checksum and corresponding source; the stock checksum cannot identify Native5.
 
 The current standalone macOS diagnostic app is `.build/Probe/Smoke.app`.
 Launch it through `open` inside a logged-in Tart `macos27` GUI session,
