@@ -3,70 +3,64 @@
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. No App release has been published.
 
-The current ordered-save correction passed the unchanged AppStore14 on the
-iOS27 Simulator,14/0/0. The split PlayerScreen expressions and save correction
-also pass the standard SDK27 Mac Release build; SDK26 validation remains open.
-Physical numeric traces identify AVSampleBuffer and a rapid tail-buffer flush
-without entering the audio Drain function. The original two physical cases
-still fail, so no native completion fix or App release is certified.
+The unified Native8 candidate now contains four additional tail regressions;
+the original61 iOS /53 Mac assertions and deadlines remain unchanged. Its pure
+three-platform native build, six wrapper targets and three-slice assembly passed.
+The private final C4 candidate passed physical original3/0/0 and new4/0/0;
+eight actual drain-to-stop windows contained no later valid native clock point.
+Final unfiltered iOS65 /Mac57, complete UI, signed installation, App publication
+and website deployment still require their own evidence.
 
-CI37200022745 for `38e187d` completed with failure: shared tests and all three
-ARM64 platform builds passed. Mac26 compilation still timed out in the subtitle
-import callback before playback; the typed callback correction passes the local
-SDK27 Release build and awaits remote SDK26 validation. The iOS full61 raw log
-contains58 passes and3 failures in watched-state and real-SMB scenarios. The
-original assertions, failures and artifacts remain; App publication is blocked.
+Preceding source `6100c1c` passed CI37202599510: all three ARM64 platform builds,
+Mac26 playback53/0/0 and iOS27 Simulator playback61/0/0. Independent xcresult,
+raw-log and expected-case identities agree. Shared tests actually executed
+45 passes with8 opt-in SMB3 skips; the five runner unit tests passed. The
+separate real encrypted SMB3 gate remains8/0/0. Earlier CI failures are retained.
+The split native SwiftUI expressions resolve the SDK26 typechecking failure;
+progress saves now join the existing ordered persistence queue before flush.
 
-Native7 source `987ce91` (2026-10-04): the unfiltered Mac53 passed 53/0/0 on the
-macos27 VM with original assertions, deadlines, full checker configuration,
-strict seals and source/product guards. The real CoreAudio clock-cadence fix
-and all three incremental C builds / six wrapper targets passed. The eight
-patches and twelve affected source files are pinned in the source materials;
-the assembled ARM64 component checksum is `f629ad7f…`. A complete fresh
-portable source rebuild has not executed. Native7 mobile runtime and physical
-device acceptance, Mac26 CI, final signed/notarized package, installed VM
-acceptance and public-download verification remain separate gates.
+Public Native7 still has two physical iPhone tail-seek failures (full61:59/2/0).
+A private native correction converts only media preroll to system ticks and
+preserves caching compensation. It passed the original three physical regression
+cases,3/0/0, including half-speed, without changing their assertions or deadlines.
+The two new short-GOP tail controls actually returned1/1/0: at2× the last
+normal clock11.771539 was below the unchanged new11.8 threshold. The same
+short-GOP controls passed2/0/0 on known Native7, so they do not reject the
+original long-GOP defect. Independent long-GOP coverage and actual audio drain
+are being checked; the short-GOP failure is retained.
+The additional AV async-drain candidate passed original3/0/0. Four new
+controls returned2/2/0, then3/1/0 after the first upper-bound revision;
+the2× long-GOP normal clock12.286767 still exceeded12.26. The real renderer
+consumed every queued sample. Independent raw callbacks show that the public
+normal clock uses a planned system-time/rate anchor and can lead the physical
+sample position; observer period plus filter stride does not establish a
+nominal-duration upper bound. A still-unmerged control revision will bound
+clock progress by the independently measured monotonic elapsed seek time,
+preserving all original61 assertions, fresh callback/output gates, tail lower
+bounds, six-second deadline and exactly-once completion. Known Native7 was
+correctly rejected by both same-source long-GOP controls,0/2/0. All original
+failure records remain. This private numeric diagnostic build is not a
+production component; no native completion fix or App release is certified yet.
 
-Final Native6 UI results are closed and retained: Phone and Pad each 18/0/1,
-Mac 17/1/1; actual system Reduce Transparency separately passed 1/0/0 on all
+Native7 fullUI binds preceding source `987ce91`: Phone and Pad18/0/1 each,
+Mac17/1/1; actual system Reduce Transparency separately passed1/0/0 on all
 three targets with original settings restored. The sole Mac failure is the
-unfiltered system Disabled empty TouchBar description audit. No exception has
-been granted. These results bind the preceding Native6 component, while the
-SwiftUI and UI test source remain unchanged in Native7. Shared tests passed
-45 with eight opt-in SMB3 skips; the dedicated encrypted SMB3 suite passed
-8/0/0 and the runner unit tests passed 5/5. User-NAS, audible and VoiceOver
-acceptance remain open. `TEST_MATRIX.md` records exact artifacts and scope.
+unfiltered system Disabled empty TouchBar description audit; no exception is
+granted. Final unified-source UI acceptance remains open. User-NAS, audible and
+spoken VoiceOver acceptance remain open; exact scope is in `TEST_MATRIX.md`.
 
-The Native7 dependency and corresponding source are public in a separate
-technical prerelease. This permits reproducible SwiftPM resolution and
-current-commit CI; it does not publish or certify the App.
+The Native7 binary and corresponding source are public in a separate technical
+prerelease, with complete anonymous downloads matching length and SHA256.
+A full fresh portable source rebuild has not executed. The signed/notarized
+Mac candidate and development iOS archive bind `987ce91`, not current source;
+new final builds, installed VM / physical-device Release playback, public App
+download and website deployment remain open. Host Gatekeeper has a pre-existing
+security override and cannot replace Gatekeeper-enabled VM acceptance.
 
-Latest execution for source `987ce91` (2026-10-04): Native7 iOS27 and26.5
-Simulators passed the full61, zero failures or skips on each. The physical
-iPhone12Pro / iOS27.0.1 full61 was59/2/0; an unchanged two-case diagnostic
-reproduced0/2/0, with native EOS179/195ms after tail seeks and stale input.
-These core failures still block App publication. All original deadlines and
-completion conditions remain intact while native drain timing is investigated.
-
-Native7 current fullUI is Phone/Pad18/0/1 each and Mac17/1/1, plus actual
-Reduce Transparency1/0/0 on each with settings restored. The sole Mac audit
-failure remains the system Disabled empty TouchBar; no exception is granted.
-The earlier Native6 results below remain historical.
-
-The Native7 technical prerelease is now public and all three binary/source
-assets were anonymously downloaded in full with matching length and SHA256.
-Its first source push was `987ce91`. CI37198775841 failed: shared passed; Mac26
-typechecking failed in the PlayerScreen exit task; the platform Mac build
-passed but generic Simulator also attempted x86_64. Narrow source/helper and
-explicit ARM64 Simulator configuration corrections await current-commit CI.
-
-The same source produced a signed iOS development archive with34 inspection
-checks passed and an ARM64 Developer ID Mac candidate with both notarizations
-Accepted, valid stapled tickets and actual mounted-volume/content checks.
-These candidates remain unpublished. Host assessment has a pre-existing
-security override and does not replace installed VM acceptance. A source
-change requires a newly built distribution candidate. Exact paths and
-limitations are at the top of `TEST_MATRIX.md`.
+Evidence: `.build/Native7CICommit6100c1cReview20261004-r1/`,
+`.build/NativeBufferingPrerollRateActualReadonly20261004-r1/REPORT.json`,
+`.build/NativeCoreAudioClockCadenceMobileAcceptance20261004-r1/`, and the
+UI / distribution evidence paths in `TEST_MATRIX.md`.
 
 ## Historical candidate evidence
 

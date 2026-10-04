@@ -1,0 +1,66 @@
+{
+  "scope": "NATIVE8_SMALL_PATCH_AND_SOURCE_PIN_CHECKS_NOT_PORTABLE_REBUILD_OR_FINAL_APP",
+  "nativeGeneration": 8,
+  "priorNative7Preparation": {
+    "path": "${REPOSITORY}/Packages/AetherVLCKit/Provenance/native7-material-verification.json",
+    "bytes": 2066,
+    "sha256": "5d784420398c5435cc2405baeafdd7806cc271d0c42d08ecd9a95ec1e06774f5"
+  },
+  "allTenPatchesActuallyAppliedWithoutFuzzOrOffset": true,
+  "allThirteenSourcePinsActualMatch": true,
+  "allPreviousEightPatchBytesUnchanged": true,
+  "allNative4to7SourceMapsRetainedExact": true,
+  "patchCount": 10,
+  "releaseSourcePinCount": 13,
+  "smallLocalInputFileCount": 13,
+  "newSourceChanges": [
+    {
+      "path": "src/input/es_out.c",
+      "modifiedBy": "AetherNative",
+      "modificationDate": "2026-10-04",
+      "beforeSHA256": "46d1cb9055b70b988a27a54e99e3ee1adb84e0f48cf2bcb36c38fc2b8c668fcd",
+      "afterSHA256": "f582ed0ac889584d8171ce43731cab6faf78af829cc1d15b3ea9c36d3196b183"
+    },
+    {
+      "path": "modules/audio_output/apple/avsamplebuffer.m",
+      "modifiedBy": "AetherNative",
+      "modificationDate": "2026-10-04",
+      "beforeSHA256": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+      "afterSHA256": "a7603472effc9c35356d6e18e7f6a84cf32f67306ada5634f8f8a8066eaf1354"
+    }
+  ],
+  "actualPatchApplication": {
+    "path": "${REPOSITORY}/.build/Native8PublicMaterialPrep20261004-r1/PatchProof-r1/outcome.json",
+    "bytes": 11507,
+    "sha256": "2be23b91c6ea6b9c4c373f898bb5fd9bea0a8d209fc59c1c33681548d71167df"
+  },
+  "originalSourceIdentityMethod": "Only thirteen maintained original files read/copied after matching officialTouchedSourceSHA256; no new full archive/tree verification claimed",
+  "base665MBAndLuaRetainedNotCopiedOrReextracted": true,
+  "toolsASTValid": true,
+  "NoticesEqual": true,
+  "stableNoticesReady": {
+    "path": "${REPOSITORY}/.build/Native8PublicMaterialPrep20261004-r1/STABLE_NOTICES_READY.json",
+    "bytes": 1058,
+    "sha256": "fcd64f5693af597045a04316f1beff16b604c33ea038c15377233f851773faf1"
+  },
+  "licensesExactUnmodified": true,
+  "native4to7BuildAndMaterialRecordsUnchanged": true,
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssetAssembled": false,
+  "publicDistributionVerified": false,
+  "finalAppAcceptanceClaimed": false,
+  "actualAssembly": {
+    "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/AssemblyPrep/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2350,
+    "sha256": "dea23b287f41b3b6caec2ac2b10a6a488d94f8a2b1dc9f392fa5c4316d57e4be"
+  },
+  "actualNativeBuildRecord": {
+    "path": "${REPOSITORY}/.build/Native8PublicMaterialPrep20261004-r1/Project/Packages/AetherVLCKit/Provenance/native8-build-record.json",
+    "bytes": 88418,
+    "sha256": "98b848717203d4eff44dd7ec9549a7453d587a65358ef5a10766a6bae7eda527"
+  },
+  "allSixWrapperTargetsActuallyExitZero": true,
+  "allThreeComponentsARM64Min26SDK27": true,
+  "modules302PublicAPIExact": true,
+  "publicHeadersExactToNative7": true
+}

@@ -1830,6 +1830,238 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
 
+    func testActiveOneAndHalfSpeedForwardTailSeekConsumesRealOutputOnce() async throws {
+        try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 1.5)
+    }
+
+    func testActiveDoubleSpeedForwardTailSeekConsumesRealOutputOnce() async throws {
+        try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 2)
+    }
+
+    func testActiveOneAndHalfSpeedLongGOPForwardTailSeekConsumesRealOutputOnce() async throws {
+        try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 1.5,
+            fixtureName: "clip-h264.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
+    }
+
+    func testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce() async throws {
+        try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 2,
+            fixtureName: "clip-h264.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
+    }
+
+    private func assertActiveForwardTailSeekConsumesRealOutputOnce(rate: Float,
+        fixtureName: String = "clip-short-gop.mp4",
+        fixtureSHA256: String = "33e46b39e57f4e6cd56713f013dc573df8cd3b0d9debda10c4bf2a445c16bd75") async throws {
+        let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL?.appendingPathComponent("PlaybackFixtures"))
+        let url = directory.appendingPathComponent(fixtureName)
+        XCTAssertEqual(SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined(),
+                       fixtureSHA256)
+        player.debugEnableLifecycleTrace(origin: origin)
+        var observations = [[String: Any]]()
+        let target = 11.0
+        // Both pinned fixtures end in real audio/video samples at 12.0 seconds.
+        // ShortGOP has a keyframe at11; longGOP has only keyframe0 and
+        // requires11 seconds of actual preroll before the same target.
+        let actualPacketTailSeconds = 1.0
+        let minimumSeekToEOSSeconds = actualPacketTailSeconds / Double(rate) - 0.15
+        // AVSampleBuffer's real observer runs every 100 ms. The last actual
+        // normal point may precede the last sample by one observer interval.
+        let minimumFinalNormal = 12.0 - max(1.0 / 15.0, Double(rate) * 0.1)
+        // The independent upper uses only Swift ContinuousClock elapsed
+        // seconds since this seek request and the unchanged requested rate.
+        // VLC systemDate is used for real callback pairing, never subtracted
+        // from a Swift clock or wall Date. The actual observer samples at100ms.
+        let actualClockObserverIntervalSeconds = 0.1
+        var seekOrigin: ContinuousClock.Instant?
+        func observe(_ phase: String) {
+            var sample: [String: Any] = ["phase": phase, "rate": player.rate,
+                "displayedVideoFrames": player.displayedVideoFrames,
+                "playedAudioBuffers": player.playedAudioBuffers,
+                "isPlaying": player.isPlaying, "backendState": player.backendState,
+                "clockRunning": player.backendClockIsRunning, "ended": ended,
+                "hasError": player.errorMessage != nil]
+            if let seekOrigin {
+                let elapsed = seekOrigin.duration(to: .now).components
+                sample["afterSeekSeconds"] = Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1e18
+            }
+            if let value = player.backendClockTime { sample["actualNormalTime"] = value }
+            if let value = player.backendInputTime { sample["actualInputTime"] = value }
+            if let value = player.backendStoppingReason { sample["actualStoppingReason"] = value }
+            observations.append(sample)
+        }
+        defer {
+            observe("final-before-teardown")
+            if let data = player.debugLifecycleTraceData() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Active forward tail actual native lifecycle including failure"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: observations, options: [.sortedKeys]) {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Active forward tail actual output and wall observations including failure"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+        player.setRate(rate)
+        player.load(url: url, startAt: 0)
+        let identity = ObjectIdentifier(try XCTUnwrap(player.backendEngineForTesting))
+        try await outputReady("active forward tail early actual output")
+        XCTAssertTrue(player.isPlaying)
+        XCTAssertEqual(player.backendState, "playing")
+        XCTAssertEqual(player.backendIsPlaying, true)
+        XCTAssertEqual(player.rate, rate)
+        XCTAssertEqual(ended, 0)
+        XCTAssertNil(player.errorMessage)
+        let previousNormal = try XCTUnwrap(player.backendClockTime)
+        XCTAssertLessThan(previousNormal, 3, "Warmup must precede the pinned target and tail.")
+        let displayed = player.displayedVideoFrames
+        let played = player.playedAudioBuffers
+        observe("before-active-seek")
+        seekOrigin = .now
+        player.seek(target)
+        XCTAssertNil(player.backendClockTime, "The seek must clear the previous native normal point synchronously.")
+        XCTAssertFalse(player.backendClockIsRunning)
+        XCTAssertNil(player.backendInputTime)
+        try await wait("active forward tail fresh target actual native output", timeout: 6, failIf: {
+            observe("awaiting-fresh-target-output")
+        }) {
+            guard let normal = self.player.backendClockTime,
+                  let input = self.player.backendInputTime,
+                  let data = self.player.debugLifecycleTraceData(),
+                  let trace = try? JSONDecoder().decode(TailPhaseTrace.self, from: data),
+                  trace.evictedEvents == 0, let marker = trace.latestSeekMarker(),
+                  marker.targetSeconds == target,
+                  input >= target - 0.05, input < 12.2 else { return false }
+            let hasPairedNormal = trace.records.contains { record in
+                guard record.eventCode == 31, record.generation == marker.generation,
+                      let callback = trace.pairedCallback(for: record, callbackCode: 30),
+                      callback.sequence > marker.sequence, let time = record.timeMicroseconds,
+                      let date = record.systemDateMicroseconds, date > 0, date != Int64.max else { return false }
+                return abs(normal - Double(time) / 1_000_000) < 0.000002
+                    && Double(time) / 1_000_000 > target + 0.05 && Double(time) / 1_000_000 < 11.95
+                    && (record.displayedVideoFrames ?? 0) > displayed + 5
+                    && (record.playedAudioBuffers ?? 0) > played + 5
+            }
+            let hasPairedInput = trace.records.contains { record in
+                guard record.eventCode == 41, record.generation == marker.generation,
+                      let callback = trace.pairedCallback(for: record, callbackCode: 40),
+                      callback.sequence > marker.sequence, let time = record.timeMicroseconds else { return false }
+                return abs(input - Double(time) / 1_000_000) < 0.000002
+                    && Double(time) / 1_000_000 >= target - 0.05 && Double(time) / 1_000_000 < 12.2
+            }
+            return hasPairedNormal && hasPairedInput && self.player.backendClockIsRunning && normal > target + 0.05 && normal < 11.95
+                && self.player.isPlaying && self.player.backendState == "playing"
+                && self.player.backendIsPlaying == true && self.ended == 0
+                && self.player.displayedVideoFrames > displayed + 5
+                && self.player.playedAudioBuffers > played + 5
+        }
+        observe("fresh-target-output")
+        let nativeTrace = try JSONDecoder().decode(TailPhaseTrace.self,
+            from: XCTUnwrap(player.debugLifecycleTraceData()))
+        let marker = try XCTUnwrap(nativeTrace.latestSeekMarker())
+        XCTAssertEqual(marker.targetSeconds, target)
+        XCTAssertEqual(nativeTrace.evictedEvents, 0)
+        let currentNormal = try XCTUnwrap(player.backendClockTime)
+        let currentInput = try XCTUnwrap(player.backendInputTime)
+        let pairedNormal = try XCTUnwrap(nativeTrace.records.last { record in
+            guard record.eventCode == 31, record.generation == marker.generation,
+                  let callback = nativeTrace.pairedCallback(for: record, callbackCode: 30),
+                  callback.sequence > marker.sequence, let time = record.timeMicroseconds,
+                  let date = record.systemDateMicroseconds, date > 0, date != Int64.max else { return false }
+            return abs(currentNormal - Double(time) / 1_000_000) < 0.000002
+                && Double(time) / 1_000_000 > target + 0.05 && Double(time) / 1_000_000 < 11.95
+                && (record.displayedVideoFrames ?? 0) > displayed + 5
+                && (record.playedAudioBuffers ?? 0) > played + 5
+        })
+        let normalCallback = try XCTUnwrap(nativeTrace.pairedCallback(for: pairedNormal, callbackCode: 30))
+        let pairedInput = try XCTUnwrap(nativeTrace.records.last { record in
+            guard record.eventCode == 41, record.generation == marker.generation,
+                  let callback = nativeTrace.pairedCallback(for: record, callbackCode: 40),
+                  callback.sequence > marker.sequence, let time = record.timeMicroseconds else { return false }
+            return abs(currentInput - Double(time) / 1_000_000) < 0.000002
+                && Double(time) / 1_000_000 >= target - 0.05 && Double(time) / 1_000_000 < 12.2
+        })
+        let inputCallback = try XCTUnwrap(nativeTrace.pairedCallback(for: pairedInput, callbackCode: 40))
+        struct ActualPostSeekPairs: Encodable {
+            let fixtureName: String
+            let fixtureSHA256: String
+            let marker: TailPhaseTrace.Record
+            let normalDelivery: TailPhaseTrace.Record
+            let normalCallback: TailPhaseTrace.Record
+            let inputDelivery: TailPhaseTrace.Record
+            let inputCallback: TailPhaseTrace.Record
+        }
+        let pairs = ActualPostSeekPairs(fixtureName: fixtureName, fixtureSHA256: fixtureSHA256,
+            marker: marker, normalDelivery: pairedNormal, normalCallback: normalCallback,
+            inputDelivery: pairedInput, inputCallback: inputCallback)
+        let actualPairs = XCTAttachment(data: try JSONEncoder().encode(pairs), uniformTypeIdentifier: "public.json")
+        actualPairs.name = "Actual post-seek native31-to30 and41-to40 pairs"
+        actualPairs.lifetime = .keepAlways
+        add(actualPairs)
+        XCTAssertEqual(ended, 0, "Real fresh output must be observed before EOS.")
+        XCTAssertEqual(player.backendEngineForTesting.map(ObjectIdentifier.init), identity)
+        try await wait("active forward tail actual single EOS", timeout: 6, failIf: {
+            observe("awaiting-real-eos")
+        }) { self.ended > 0 }
+        let elapsed = try XCTUnwrap(seekOrigin).duration(to: .now).components
+        let seekToEOS = Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1e18
+        let maximumFinalNormal = target + Double(rate)
+            * (seekToEOS + actualClockObserverIntervalSeconds)
+        let finalNormal = try XCTUnwrap(player.backendClockTime)
+        let finalTrace = try JSONDecoder().decode(TailPhaseTrace.self,
+            from: XCTUnwrap(player.debugLifecycleTraceData()))
+        let finalMarker = try XCTUnwrap(finalTrace.latestSeekMarker())
+        XCTAssertEqual(finalMarker, marker)
+        XCTAssertEqual(finalTrace.evictedEvents, 0)
+        let finalNormalDelivery = try XCTUnwrap(finalTrace.records.last { record in
+            guard record.eventCode == 31, record.generation == finalMarker.generation,
+                  let callback = finalTrace.pairedCallback(for: record, callbackCode: 30),
+                  callback.sequence > finalMarker.sequence, let time = record.timeMicroseconds,
+                  let date = record.systemDateMicroseconds, date > 0, date != Int64.max else { return false }
+            return abs(finalNormal - Double(time) / 1_000_000) < 0.000002
+        })
+        let finalNormalCallback = try XCTUnwrap(finalTrace.pairedCallback(for: finalNormalDelivery, callbackCode: 30))
+        struct ActualFinalNormalPair: Encodable {
+            let marker: TailPhaseTrace.Record
+            let delivery: TailPhaseTrace.Record
+            let callback: TailPhaseTrace.Record
+            let actualSeekToObservedEOSSeconds: Double
+            let actualClockObserverIntervalSeconds: Double
+            let wallClockMaximumFinalNormal: Double
+        }
+        let finalPair = ActualFinalNormalPair(marker: finalMarker, delivery: finalNormalDelivery,
+            callback: finalNormalCallback, actualSeekToObservedEOSSeconds: seekToEOS,
+            actualClockObserverIntervalSeconds: actualClockObserverIntervalSeconds,
+            wallClockMaximumFinalNormal: maximumFinalNormal)
+        let finalPairAttachment = XCTAttachment(data: try JSONEncoder().encode(finalPair), uniformTypeIdentifier: "public.json")
+        finalPairAttachment.name = "Actual final live native31-to30 pair and independent ContinuousClock upper"
+        finalPairAttachment.lifetime = .keepAlways
+        add(finalPairAttachment)
+        observations.append(["phase": "actual-tail-completion-timing", "rate": rate,
+            "seekToEOSSeconds": seekToEOS, "minimumSeekToEOSSeconds": minimumSeekToEOSSeconds,
+            "actualPacketTailSeconds": actualPacketTailSeconds, "minimumFinalNormal": minimumFinalNormal,
+            "maximumFinalNormal": maximumFinalNormal,
+            "actualClockObserverIntervalSeconds": actualClockObserverIntervalSeconds,
+            "clockUpperDomain": "Swift ContinuousClock elapsed seconds since seek; no VLC date mixing"])
+        XCTAssertGreaterThanOrEqual(seekToEOS, minimumSeekToEOSSeconds,
+                                    "EOS must consume the pinned actual tail; the old 70–220 ms stop is insufficient.")
+        XCTAssertLessThanOrEqual(seekToEOS, 6)
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(player.backendClockTime), minimumFinalNormal)
+        XCTAssertLessThanOrEqual(try XCTUnwrap(player.backendClockTime), maximumFinalNormal)
+        XCTAssertGreaterThan(player.displayedVideoFrames, displayed + 5)
+        XCTAssertGreaterThan(player.playedAudioBuffers, played + 5)
+        XCTAssertEqual(player.backendStoppingReason, Int(AetherVLCMediaStoppingReason.endOfStream.rawValue))
+        XCTAssertEqual(player.backendEngineForTesting.map(ObjectIdentifier.init), identity)
+        XCTAssertEqual(ended, 1)
+        XCTAssertFalse(player.isPlaying)
+        XCTAssertNil(player.errorMessage)
+        try await Task.sleep(for: .milliseconds(300))
+        observe("completion-remains-single")
+        XCTAssertEqual(ended, 1)
+        XCTAssertEqual(player.backendEngineForTesting.map(ObjectIdentifier.init), identity)
+    }
+
     private func outputReady(_ label: String) async throws {
         try await wait(label) {
             self.player.duration > 11 && (self.player.backendClockTime ?? 0) > 0.8

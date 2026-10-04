@@ -1,0 +1,1948 @@
+{
+  "scope": "ACTUAL_PURE_PRODUCTION_NATIVE8_INCREMENTAL_ES_AND_AV_DRAIN_LIFECYCLE_THREE_PLATFORMS_NOT_FULL_APP_OR_PORTABLE_REBUILD",
+  "nativeGeneration": 8,
+  "productionPatches": [
+    {
+      "path": "${REPOSITORY}/.build/NativeBufferingPrerollRateCandidate20261004-r1/production.patch",
+      "bytes": 745,
+      "sha256": "dbe103e3d13a0337bd91e9206ad72bf102b5c4398412600841d989d8bf6d7f4f"
+    },
+    {
+      "path": "${REPOSITORY}/.build/NativeAVSampleDrainLifecycleCandidate20261004-r1/production.patch",
+      "bytes": 6054,
+      "sha256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78"
+    }
+  ],
+  "modifiedFiles": {
+    "src/input/es_out.c": {
+      "native7SHA256": "46d1cb9055b70b988a27a54e99e3ee1adb84e0f48cf2bcb36c38fc2b8c668fcd",
+      "actualNative8Production": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Sources/src/input/es_out.c",
+        "bytes": 161825,
+        "sha256": "f582ed0ac889584d8171ce43731cab6faf78af829cc1d15b3ea9c36d3196b183"
+      }
+    },
+    "modules/audio_output/apple/avsamplebuffer.m": {
+      "native7SHA256": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+      "actualNative8Production": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Sources/modules/audio_output/apple/avsamplebuffer.m",
+        "bytes": 24556,
+        "sha256": "a7603472effc9c35356d6e18e7f6a84cf32f67306ada5634f8f8a8066eaf1354"
+      }
+    }
+  },
+  "native7BuildRecordRetained": {
+    "path": "${REPOSITORY}/Packages/AetherVLCKit/Provenance/native7-build-record.json",
+    "bytes": 40121,
+    "sha256": "f81460bef2ef840319c1a7b9d5536ac223692b39237fd47f8f45ab3d220294e4"
+  },
+  "nativeCompilePlan": {
+    "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/BUILD_PLAN.json",
+    "bytes": 1119227,
+    "sha256": "30b6d5a096daff7a521c06829a5b6319920352e93524d0c37a17a95d05924513"
+  },
+  "records": {
+    "mac": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-mac-r1/outcome.json",
+        "bytes": 2573,
+        "sha256": "0e5aca29b960f725e324765dba1bf5c5d39560234b54ad87ae9942c45e888e09"
+      },
+      "native": {
+        "scope": "ACTUAL_PURE_PRODUCTION_NATIVE8_TWO_OBJECTS_NOT_APP_OR_PUBLIC_RELEASE",
+        "passed": true,
+        "platform": "mac",
+        "actualNative": {
+          "es_out": {
+            "platform": 1,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          },
+          "avsamplebuffer": {
+            "platform": 1,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          }
+        },
+        "archiveProofs": {
+          "libvlccore.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-mac-r1/libvlccore.a",
+              "bytes": 6897600,
+              "sha256": "57aa4a3393a83fd5f46f1516f0ec81ab25f51878d80090564d6a95dbd9db078f"
+            },
+            "memberCount": 180,
+            "replacementIndices": [
+              54
+            ],
+            "unrelatedPayloadsAndOrderExact": 179,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          },
+          "libvlc-full-static.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-mac-r1/libvlc-full-static.a",
+              "bytes": 941600656,
+              "sha256": "c592a4fe2b4f404b8a6b240d6cb78b1eb988db455701125b136eb0d16760cbc5"
+            },
+            "memberCount": 6562,
+            "replacementIndices": [
+              880,
+              30
+            ],
+            "unrelatedPayloadsAndOrderExact": 6560,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              },
+              "avsamplebuffer": {
+                "added": [
+                  "_OBJC_IVAR_$_VLCAVSample._drainObserver",
+                  "_OBJC_IVAR_$_VLCAVSample._drainRequested",
+                  "_OBJC_IVAR_$_VLCAVSample._paused"
+                ],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          }
+        },
+        "objects": {
+          "es_out": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-mac-r1/Objects/es_out.o",
+            "bytes": 277944,
+            "sha256": "c0945b71483377be6046e17f96c08fe7a165dcad051a6dc5b69f6961b7a8c14f"
+          },
+          "avsamplebuffer": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-mac-r1/Objects/avsamplebuffer.o",
+            "bytes": 79048,
+            "sha256": "476565e2024066b0fbbdc5333ca012ccbf08d6b9b955bb56fc126063120b0e79"
+          }
+        },
+        "noPrivateNumericProbe": true,
+        "originalInputsPreserved": true
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/outcome.json",
+        "bytes": 18371,
+        "sha256": "8f5fa00a027ba346df935ef8eda194fac71efe57eb3721da27991c33aeadf8ef"
+      },
+      "wrapper": {
+        "scope": "ACTUAL_PURE_NATIVE8_WRAPPER_NOT_APP_ACCEPTANCE_OR_PUBLIC_RELEASE",
+        "platform": "mac",
+        "passed": true,
+        "failure": null,
+        "phases": [
+          {
+            "command": [
+              "/usr/bin/xcodebuild",
+              "-project",
+              "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/Wrapper/VLCKit.xcodeproj",
+              "-target",
+              "Static libVLC",
+              "-configuration",
+              "Release",
+              "-sdk",
+              "macosx27.0",
+              "-jobs",
+              "4",
+              "ARCHS=arm64",
+              "ONLY_ACTIVE_ARCH=NO",
+              "MACOSX_DEPLOYMENT_TARGET=26.0",
+              "CODE_SIGNING_ALLOWED=NO",
+              "CODE_SIGNING_REQUIRED=NO",
+              "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts",
+              "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildIntermediates",
+              "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts/Release",
+              "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildCaches/clang-modules",
+              "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildCaches/precompiled",
+              "DEBUG_INFORMATION_FORMAT=dwarf",
+              "build"
+            ],
+            "exitCode": 0,
+            "ownSessionPID": 99577,
+            "stopReason": null,
+            "raw": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/target-1.log",
+              "bytes": 53174,
+              "sha256": "28f44ffb84183dee55ed26f78d5d008bc1016d7ef42361a59a954718492d1496"
+            }
+          },
+          {
+            "command": [
+              "/usr/bin/xcodebuild",
+              "-project",
+              "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/Wrapper/VLCKit.xcodeproj",
+              "-target",
+              "VLCKit",
+              "-configuration",
+              "Release",
+              "-sdk",
+              "macosx27.0",
+              "-jobs",
+              "4",
+              "ARCHS=arm64",
+              "ONLY_ACTIVE_ARCH=NO",
+              "MACOSX_DEPLOYMENT_TARGET=26.0",
+              "CODE_SIGNING_ALLOWED=NO",
+              "CODE_SIGNING_REQUIRED=NO",
+              "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts",
+              "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildIntermediates",
+              "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts/Release",
+              "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildCaches/clang-modules",
+              "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildCaches/precompiled",
+              "OTHER_LDFLAGS=-ObjC -framework IOKit -framework SystemConfiguration",
+              "DEBUG_INFORMATION_FORMAT=dwarf",
+              "build"
+            ],
+            "exitCode": 0,
+            "ownSessionPID": 99637,
+            "stopReason": null,
+            "raw": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/target-2.log",
+              "bytes": 379007,
+              "sha256": "68c90f36b01565b1475ca2fb76cf4dd86832a33e696eb428f2304b5d72123973"
+            }
+          }
+        ],
+        "compiledMachO": {
+          "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts/Release/VLCKit.framework/Versions/A/VLCKit",
+          "bytes": 62456952,
+          "sha256": "5cd6ac5f3bfe7477b6cc37e858b3880b7c68feea95447b584a58511eff952ad6",
+          "architecture": "arm64",
+          "cpuSubtype": 0,
+          "UUID": "e5019bad-dfb1-3ddc-b996-8e287be0cfde",
+          "TEXT": {
+            "offset": 5920,
+            "bytes": 36364592,
+            "sha256": "67d9dc1581c2bc00fa29170895871ca697db01802d48ec8886b71d6322fdb2a9"
+          },
+          "buildVersion": {
+            "platform": 1,
+            "minimumRaw": 1703936,
+            "sdkRaw": 1769472,
+            "minos": "26.0.0"
+          }
+        },
+        "symbols": {
+          "actualUniqueModulesDefined": 302,
+          "publicLibvlcAPI": true
+        },
+        "originalInputsAndSourcesBeforeAfterExact": true,
+        "ownRegenerableRemoved": [
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildIntermediates",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildCaches",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts/Release/libstatic-libvlc.a"
+        ],
+        "productInventory": [
+          {
+            "path": "Release/VLCKit.framework/Headers",
+            "kind": "symlink",
+            "target": "Versions/Current/Headers"
+          },
+          {
+            "path": "Release/VLCKit.framework/Modules",
+            "kind": "symlink",
+            "target": "Versions/Current/Modules"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders",
+            "kind": "symlink",
+            "target": "Versions/Current/PrivateHeaders"
+          },
+          {
+            "path": "Release/VLCKit.framework/Resources",
+            "kind": "symlink",
+            "target": "Versions/Current/Resources"
+          },
+          {
+            "path": "Release/VLCKit.framework/VLCKit",
+            "kind": "symlink",
+            "target": "Versions/Current/VLCKit"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCAdjustFilter.h",
+            "kind": "file",
+            "bytes": 2592,
+            "sha256": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCAudio.h",
+            "kind": "file",
+            "bytes": 2295,
+            "sha256": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCAudioEqualizer.h",
+            "kind": "file",
+            "bytes": 2617,
+            "sha256": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCConsoleLogger.h",
+            "kind": "file",
+            "bytes": 1713,
+            "sha256": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCDialogProvider.h",
+            "kind": "file",
+            "bytes": 6521,
+            "sha256": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCDrawable.h",
+            "kind": "file",
+            "bytes": 4256,
+            "sha256": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCEventsConfiguration.h",
+            "kind": "file",
+            "bytes": 1527,
+            "sha256": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCFileLogger.h",
+            "kind": "file",
+            "bytes": 2487,
+            "sha256": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCFilter.h",
+            "kind": "file",
+            "bytes": 2757,
+            "sha256": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCKit.h",
+            "kind": "file",
+            "bytes": 3437,
+            "sha256": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCLibrary.h",
+            "kind": "file",
+            "bytes": 4328,
+            "sha256": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCLogMessageFormatter.h",
+            "kind": "file",
+            "bytes": 1592,
+            "sha256": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCLogging.h",
+            "kind": "file",
+            "bytes": 5436,
+            "sha256": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMedia.h",
+            "kind": "file",
+            "bytes": 19104,
+            "sha256": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaDiscoverer.h",
+            "kind": "file",
+            "bytes": 4497,
+            "sha256": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaDownloader.h",
+            "kind": "file",
+            "bytes": 4521,
+            "sha256": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaList.h",
+            "kind": "file",
+            "bytes": 4769,
+            "sha256": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaListPlayer.h",
+            "kind": "file",
+            "bytes": 4402,
+            "sha256": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaMetaData.h",
+            "kind": "file",
+            "bytes": 4279,
+            "sha256": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaParser.h",
+            "kind": "file",
+            "bytes": 4052,
+            "sha256": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaPlayer.h",
+            "kind": "file",
+            "bytes": 35747,
+            "sha256": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaPlayerTitleDescription.h",
+            "kind": "file",
+            "bytes": 4510,
+            "sha256": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaSlave.h",
+            "kind": "file",
+            "bytes": 1944,
+            "sha256": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCMediaThumbnailer.h",
+            "kind": "file",
+            "bytes": 5219,
+            "sha256": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCRendererDiscoverer.h",
+            "kind": "file",
+            "bytes": 3656,
+            "sha256": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCRendererItem.h",
+            "kind": "file",
+            "bytes": 2010,
+            "sha256": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCStreamOutput.h",
+            "kind": "file",
+            "bytes": 2923,
+            "sha256": "708f680f2cc8ad358ef6c2ae95027db6618bf67a9583741e4ef77b3ca15254e8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCStreamSession.h",
+            "kind": "file",
+            "bytes": 2174,
+            "sha256": "d0fb08bb1fef836acb212268e657293b1a77ad3a34e24636a92e2b4e1ac9a962"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCTime.h",
+            "kind": "file",
+            "bytes": 4188,
+            "sha256": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCTranscoder.h",
+            "kind": "file",
+            "bytes": 2572,
+            "sha256": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCVideoCommon.h",
+            "kind": "file",
+            "bytes": 1516,
+            "sha256": "72a869343b32e311ae76ebc0ac021099740b39f7f1bf14432bbff028b5e93f54"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCVideoLayer.h",
+            "kind": "file",
+            "bytes": 1685,
+            "sha256": "a7154b535c92a831e8b497e4f2d938041d9ebf41fc25d7b1d432ad83fe5e653b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/VLCVideoView.h",
+            "kind": "file",
+            "bytes": 1848,
+            "sha256": "0fbd4c3404a2bd7f05870d5e4f88d9a85eca923390877f52779743553a31f862"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc.h",
+            "kind": "file",
+            "bytes": 16425,
+            "sha256": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_dialog.h",
+            "kind": "file",
+            "bytes": 8797,
+            "sha256": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_downloader.h",
+            "kind": "file",
+            "bytes": 14729,
+            "sha256": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media.h",
+            "kind": "file",
+            "bytes": 24371,
+            "sha256": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media_discoverer.h",
+            "kind": "file",
+            "bytes": 7106,
+            "sha256": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media_list.h",
+            "kind": "file",
+            "bytes": 6030,
+            "sha256": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media_list_player.h",
+            "kind": "file",
+            "bytes": 7711,
+            "sha256": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media_player.h",
+            "kind": "file",
+            "bytes": 141917,
+            "sha256": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_media_track.h",
+            "kind": "file",
+            "bytes": 6056,
+            "sha256": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_parser.h",
+            "kind": "file",
+            "bytes": 16954,
+            "sha256": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_picture.h",
+            "kind": "file",
+            "bytes": 4767,
+            "sha256": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_renderer_discoverer.h",
+            "kind": "file",
+            "bytes": 7973,
+            "sha256": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_version.h",
+            "kind": "file",
+            "bytes": 3185,
+            "sha256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/libvlc_video.h",
+            "kind": "file",
+            "bytes": 2936,
+            "sha256": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Headers/vlc/vlc.h",
+            "kind": "file",
+            "bytes": 1865,
+            "sha256": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Modules/module.modulemap",
+            "kind": "file",
+            "bytes": 841,
+            "sha256": "36cdffa80dac25741f23ef1319a7edc807ef1ce342255174e53d30e32b5c3729"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCCustomDialogProvider.h",
+            "kind": "file",
+            "bytes": 1704,
+            "sha256": "e065cf5f46c266c0cc98e7501140db1fd8d71368ff2bfb9cd19c14061a00d118"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCEmbeddedDialogProvider.h",
+            "kind": "file",
+            "bytes": 1594,
+            "sha256": "3a583126ffae78158304d9aaa8f7b2c97ddbce9e65cc856397ad17909d96f762"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCEventsHandler.h",
+            "kind": "file",
+            "bytes": 1784,
+            "sha256": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCFilter+Internal.h",
+            "kind": "file",
+            "bytes": 2577,
+            "sha256": "d8aef4dfd064d9f9eae1e61f1e73f82976513f65073de1c861098a9c2ae950ae"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCHelperCode.h",
+            "kind": "file",
+            "bytes": 1631,
+            "sha256": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCLibVLCBridging.h",
+            "kind": "file",
+            "bytes": 9698,
+            "sha256": "604821b52a1862746e40978c9150684f21b87e49a352563abf19620e97e73cfc"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/PrivateHeaders/VLCMediaPlayer+Internal.h",
+            "kind": "file",
+            "bytes": 1765,
+            "sha256": "b4fcf9fbd4f9764b94f461cf4cdca277910befba6a050136f0c2937aee0e56d9"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/Resources/Info.plist",
+            "kind": "file",
+            "bytes": 1329,
+            "sha256": "d9a467de76c367cad39ccd282bcf9971e9e5e6241c14168ba91e43a68d9bf375"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/A/VLCKit",
+            "kind": "file",
+            "bytes": 62456952,
+            "sha256": "5cd6ac5f3bfe7477b6cc37e858b3880b7c68feea95447b584a58511eff952ad6"
+          },
+          {
+            "path": "Release/VLCKit.framework/Versions/Current",
+            "kind": "symlink",
+            "target": "A"
+          }
+        ],
+        "noAppOrRuntimeExecuted": true
+      },
+      "actualNormalTargetCount": 2,
+      "allNormalTargetExitZero": true,
+      "actualPublicHeaderSHA256": {
+        "VLCLibrary.h": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f",
+        "VLCStreamOutput.h": "708f680f2cc8ad358ef6c2ae95027db6618bf67a9583741e4ef77b3ca15254e8",
+        "VLCMediaPlayerTitleDescription.h": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5",
+        "VLCAdjustFilter.h": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743",
+        "VLCVideoView.h": "0fbd4c3404a2bd7f05870d5e4f88d9a85eca923390877f52779743553a31f862",
+        "VLCLogging.h": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80",
+        "VLCMediaSlave.h": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8",
+        "VLCMediaListPlayer.h": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328",
+        "VLCTranscoder.h": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2",
+        "VLCTime.h": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341",
+        "VLCStreamSession.h": "d0fb08bb1fef836acb212268e657293b1a77ad3a34e24636a92e2b4e1ac9a962",
+        "VLCVideoLayer.h": "a7154b535c92a831e8b497e4f2d938041d9ebf41fc25d7b1d432ad83fe5e653b",
+        "VLCConsoleLogger.h": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46",
+        "VLCAudioEqualizer.h": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90",
+        "VLCRendererItem.h": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96",
+        "VLCFileLogger.h": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290",
+        "VLCAudio.h": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00",
+        "VLCLogMessageFormatter.h": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1",
+        "VLCDrawable.h": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4",
+        "VLCMediaThumbnailer.h": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825",
+        "VLCMediaPlayer.h": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943",
+        "VLCKit.h": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570",
+        "VLCRendererDiscoverer.h": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839",
+        "VLCEventsConfiguration.h": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64",
+        "VLCFilter.h": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf",
+        "VLCMediaParser.h": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7",
+        "VLCMediaList.h": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e",
+        "VLCDialogProvider.h": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb",
+        "VLCVideoCommon.h": "72a869343b32e311ae76ebc0ac021099740b39f7f1bf14432bbff028b5e93f54",
+        "VLCMedia.h": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466",
+        "VLCMediaDownloader.h": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553",
+        "VLCMediaMetaData.h": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa",
+        "VLCMediaDiscoverer.h": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5",
+        "vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "vlc/libvlc_media_track.h": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "vlc/libvlc_renderer_discoverer.h": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "vlc/libvlc_media.h": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "vlc/libvlc_media_list_player.h": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "vlc/libvlc_media_player.h": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "vlc/libvlc_parser.h": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "vlc/libvlc_media_discoverer.h": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "vlc/libvlc_media_list.h": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "vlc/libvlc_version.h": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+        "vlc/libvlc_picture.h": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+      },
+      "headersExactToPublicNative7": true,
+      "actualModules302": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "actualRawFrameworkMetadata": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-mac-r1/BuildProducts/Release/VLCKit.framework/Versions/A/VLCKit",
+        "bytes": 62456952,
+        "sha256": "5cd6ac5f3bfe7477b6cc37e858b3880b7c68feea95447b584a58511eff952ad6",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "e5019bad-dfb1-3ddc-b996-8e287be0cfde",
+        "TEXT": {
+          "offset": 5920,
+          "bytes": 36364592,
+          "sha256": "67d9dc1581c2bc00fa29170895871ca697db01802d48ec8886b71d6322fdb2a9"
+        },
+        "buildVersion": {
+          "platform": 1,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      }
+    },
+    "sim": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-sim-r1/outcome.json",
+        "bytes": 2573,
+        "sha256": "3fac5e7f0ae129fce6757c26dd4079575b7ebb56c66be78d12f69c4a2ec87682"
+      },
+      "native": {
+        "scope": "ACTUAL_PURE_PRODUCTION_NATIVE8_TWO_OBJECTS_NOT_APP_OR_PUBLIC_RELEASE",
+        "passed": true,
+        "platform": "sim",
+        "actualNative": {
+          "es_out": {
+            "platform": 7,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          },
+          "avsamplebuffer": {
+            "platform": 7,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          }
+        },
+        "archiveProofs": {
+          "libvlccore.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-sim-r1/libvlccore.a",
+              "bytes": 6401400,
+              "sha256": "2b2e2dead32f7863e64ad97c2d211d50554c5be6aad82568b4fe30c2a4f2c8fc"
+            },
+            "memberCount": 178,
+            "replacementIndices": [
+              54
+            ],
+            "unrelatedPayloadsAndOrderExact": 177,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          },
+          "libvlc-full-static.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-sim-r1/libvlc-full-static.a",
+              "bytes": 822991736,
+              "sha256": "1dbd27b0d60d11cb028e512f06c050f9c86a2a1acee2da49464237ab7c7d3982"
+            },
+            "memberCount": 6266,
+            "replacementIndices": [
+              865,
+              30
+            ],
+            "unrelatedPayloadsAndOrderExact": 6264,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              },
+              "avsamplebuffer": {
+                "added": [
+                  "_OBJC_IVAR_$_VLCAVSample._drainObserver",
+                  "_OBJC_IVAR_$_VLCAVSample._drainRequested",
+                  "_OBJC_IVAR_$_VLCAVSample._paused"
+                ],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          }
+        },
+        "objects": {
+          "es_out": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-sim-r1/Objects/es_out.o",
+            "bytes": 278392,
+            "sha256": "76744134d6486b3d330c324da6aa96808b1c3a005a2be9d81f2e0f8edeb13467"
+          },
+          "avsamplebuffer": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-sim-r1/Objects/avsamplebuffer.o",
+            "bytes": 86248,
+            "sha256": "ca5262c6e5d8d7f126271dfb5a8cd91fdacb07b361cbd70bde6321a862bff023"
+          }
+        },
+        "noPrivateNumericProbe": true,
+        "originalInputsPreserved": true
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-continuation-r4/outcome.json",
+        "bytes": 16465,
+        "sha256": "c59a6af3aecc48ce16277d665f8528de355820e18b9d7488621eebc453180e44"
+      },
+      "wrapper": {
+        "scope": "ACTUAL_PURE_NATIVE8_SIM_WRAPPER_CONTINUATION_NOT_APP_OR_PUBLIC_RELEASE",
+        "platform": "sim",
+        "passed": true,
+        "failure": null,
+        "phases": [
+          {
+            "command": [
+              "/usr/bin/xcodebuild",
+              "-project",
+              "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/Wrapper/VLCKit.xcodeproj",
+              "-target",
+              "VLCKit",
+              "-configuration",
+              "Release",
+              "-sdk",
+              "iphonesimulator27.0",
+              "-jobs",
+              "4",
+              "ARCHS=arm64",
+              "ONLY_ACTIVE_ARCH=NO",
+              "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+              "CODE_SIGNING_ALLOWED=NO",
+              "CODE_SIGNING_REQUIRED=NO",
+              "ENABLE_BITCODE=NO",
+              "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts",
+              "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildIntermediates",
+              "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release",
+              "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildCaches/clang-modules",
+              "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildCaches/precompiled",
+              "OTHER_LDFLAGS=-ObjC -framework Metal",
+              "DEBUG_INFORMATION_FORMAT=dwarf",
+              "build"
+            ],
+            "exitCode": 0,
+            "ownSessionPID": 3360,
+            "stopReason": null,
+            "raw": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-continuation-r4/target-2.log",
+              "bytes": 336008,
+              "sha256": "2776261ae6c4d30fe90e74171f043bdd953dba92c3c4ecac68cf9d6d5137f6e3"
+            }
+          }
+        ],
+        "compiledMachO": {
+          "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release/VLCKit.framework/VLCKit",
+          "bytes": 54292376,
+          "sha256": "c6c95b93e78b51baab53cc529d9dd8a1e12ec6a7a69d49e96fb42db103acab83",
+          "architecture": "arm64",
+          "cpuSubtype": 0,
+          "UUID": "96a6547e-04a8-378d-9886-5c22a3e6b393",
+          "TEXT": {
+            "offset": 5600,
+            "bytes": 31758124,
+            "sha256": "cd9811cce2c8ae32fa68259fa5898e6805ea5f314c30b64c44623537219eef9e"
+          },
+          "buildVersion": {
+            "platform": 7,
+            "minimumRaw": 1703936,
+            "sdkRaw": 1769472,
+            "minos": "26.0.0"
+          }
+        },
+        "symbols": {
+          "actualUniqueModulesDefined": 302,
+          "publicLibvlcAPI": true
+        },
+        "originalInputsAndSourcesBeforeAfterExact": true,
+        "originalFailedOutcome": {
+          "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/outcome.json",
+          "bytes": 2300,
+          "sha256": "bc6cd8539620db4f87c184f390e7a78e6e389766225d7586475242d1df18bdf7"
+        },
+        "completedOriginalStaticTarget": {
+          "command": [
+            "/usr/bin/xcodebuild",
+            "-project",
+            "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/Wrapper/VLCKit.xcodeproj",
+            "-target",
+            "Static libVLC",
+            "-configuration",
+            "Release",
+            "-sdk",
+            "iphonesimulator27.0",
+            "-jobs",
+            "4",
+            "ARCHS=arm64",
+            "ONLY_ACTIVE_ARCH=NO",
+            "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+            "CODE_SIGNING_ALLOWED=NO",
+            "CODE_SIGNING_REQUIRED=NO",
+            "ENABLE_BITCODE=NO",
+            "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts",
+            "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildIntermediates",
+            "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release",
+            "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildCaches/clang-modules",
+            "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildCaches/precompiled",
+            "DEBUG_INFORMATION_FORMAT=dwarf",
+            "build"
+          ],
+          "exitCode": 0,
+          "ownSessionPID": 1111,
+          "stopReason": null,
+          "raw": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/target-1.log",
+            "bytes": 50913,
+            "sha256": "9264f5a71adb3cd497a963148cb2afeaeb145ce4e328f71080088706a4ae38f7"
+          }
+        },
+        "originalStaticProduct": {
+          "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release/libstatic-libvlc.a",
+          "bytes": 822995808,
+          "sha256": "4c633f4f9aab9c3e89fcf60d0432a7fa67da565ad7934b11dd24e34549c39818"
+        },
+        "ownRegenerableRemoved": [
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildIntermediates",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildCaches",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release/libstatic-libvlc.a"
+        ],
+        "productInventory": [
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAdjustFilter.h",
+            "kind": "file",
+            "bytes": 2592,
+            "sha256": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAudio.h",
+            "kind": "file",
+            "bytes": 2295,
+            "sha256": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAudioEqualizer.h",
+            "kind": "file",
+            "bytes": 2617,
+            "sha256": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCConsoleLogger.h",
+            "kind": "file",
+            "bytes": 1713,
+            "sha256": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCDialogProvider.h",
+            "kind": "file",
+            "bytes": 6521,
+            "sha256": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCDrawable.h",
+            "kind": "file",
+            "bytes": 4256,
+            "sha256": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCEventsConfiguration.h",
+            "kind": "file",
+            "bytes": 1527,
+            "sha256": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCFileLogger.h",
+            "kind": "file",
+            "bytes": 2487,
+            "sha256": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCFilter.h",
+            "kind": "file",
+            "bytes": 2757,
+            "sha256": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCKit.h",
+            "kind": "file",
+            "bytes": 3437,
+            "sha256": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLibrary.h",
+            "kind": "file",
+            "bytes": 4328,
+            "sha256": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLogMessageFormatter.h",
+            "kind": "file",
+            "bytes": 1592,
+            "sha256": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLogging.h",
+            "kind": "file",
+            "bytes": 5436,
+            "sha256": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMedia.h",
+            "kind": "file",
+            "bytes": 19104,
+            "sha256": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaDiscoverer.h",
+            "kind": "file",
+            "bytes": 4497,
+            "sha256": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaDownloader.h",
+            "kind": "file",
+            "bytes": 4521,
+            "sha256": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaList.h",
+            "kind": "file",
+            "bytes": 4769,
+            "sha256": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaListPlayer.h",
+            "kind": "file",
+            "bytes": 4402,
+            "sha256": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaMetaData.h",
+            "kind": "file",
+            "bytes": 4279,
+            "sha256": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaParser.h",
+            "kind": "file",
+            "bytes": 4052,
+            "sha256": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaPlayer.h",
+            "kind": "file",
+            "bytes": 35747,
+            "sha256": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaPlayerTitleDescription.h",
+            "kind": "file",
+            "bytes": 4510,
+            "sha256": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaSlave.h",
+            "kind": "file",
+            "bytes": 1944,
+            "sha256": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaThumbnailer.h",
+            "kind": "file",
+            "bytes": 5219,
+            "sha256": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCRendererDiscoverer.h",
+            "kind": "file",
+            "bytes": 3656,
+            "sha256": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCRendererItem.h",
+            "kind": "file",
+            "bytes": 2010,
+            "sha256": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCTime.h",
+            "kind": "file",
+            "bytes": 4188,
+            "sha256": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCTranscoder.h",
+            "kind": "file",
+            "bytes": 2572,
+            "sha256": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc.h",
+            "kind": "file",
+            "bytes": 16425,
+            "sha256": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_dialog.h",
+            "kind": "file",
+            "bytes": 8797,
+            "sha256": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_downloader.h",
+            "kind": "file",
+            "bytes": 14729,
+            "sha256": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media.h",
+            "kind": "file",
+            "bytes": 24371,
+            "sha256": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_discoverer.h",
+            "kind": "file",
+            "bytes": 7106,
+            "sha256": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_list.h",
+            "kind": "file",
+            "bytes": 6030,
+            "sha256": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_list_player.h",
+            "kind": "file",
+            "bytes": 7711,
+            "sha256": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_player.h",
+            "kind": "file",
+            "bytes": 141917,
+            "sha256": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_track.h",
+            "kind": "file",
+            "bytes": 6056,
+            "sha256": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_parser.h",
+            "kind": "file",
+            "bytes": 16954,
+            "sha256": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_picture.h",
+            "kind": "file",
+            "bytes": 4767,
+            "sha256": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_renderer_discoverer.h",
+            "kind": "file",
+            "bytes": 7973,
+            "sha256": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_version.h",
+            "kind": "file",
+            "bytes": 3185,
+            "sha256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_video.h",
+            "kind": "file",
+            "bytes": 2936,
+            "sha256": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/vlc.h",
+            "kind": "file",
+            "bytes": 1865,
+            "sha256": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Info.plist",
+            "kind": "file",
+            "bytes": 761,
+            "sha256": "475a18ee064e6f7efe654bd1697487ffddac7042948487f3c02e903388eeebc2"
+          },
+          {
+            "path": "Release/VLCKit.framework/Modules/module.modulemap",
+            "kind": "file",
+            "bytes": 841,
+            "sha256": "36cdffa80dac25741f23ef1319a7edc807ef1ce342255174e53d30e32b5c3729"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCCustomDialogProvider.h",
+            "kind": "file",
+            "bytes": 1704,
+            "sha256": "e065cf5f46c266c0cc98e7501140db1fd8d71368ff2bfb9cd19c14061a00d118"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCEmbeddedDialogProvider.h",
+            "kind": "file",
+            "bytes": 1594,
+            "sha256": "3a583126ffae78158304d9aaa8f7b2c97ddbce9e65cc856397ad17909d96f762"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCEventsHandler.h",
+            "kind": "file",
+            "bytes": 1784,
+            "sha256": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCFilter+Internal.h",
+            "kind": "file",
+            "bytes": 2577,
+            "sha256": "d8aef4dfd064d9f9eae1e61f1e73f82976513f65073de1c861098a9c2ae950ae"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCHelperCode.h",
+            "kind": "file",
+            "bytes": 1631,
+            "sha256": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCLibVLCBridging.h",
+            "kind": "file",
+            "bytes": 9698,
+            "sha256": "604821b52a1862746e40978c9150684f21b87e49a352563abf19620e97e73cfc"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCMediaPlayer+Internal.h",
+            "kind": "file",
+            "bytes": 1765,
+            "sha256": "b4fcf9fbd4f9764b94f461cf4cdca277910befba6a050136f0c2937aee0e56d9"
+          },
+          {
+            "path": "Release/VLCKit.framework/VLCKit",
+            "kind": "file",
+            "bytes": 54292376,
+            "sha256": "c6c95b93e78b51baab53cc529d9dd8a1e12ec6a7a69d49e96fb42db103acab83"
+          }
+        ],
+        "noAppOrRuntimeExecuted": true
+      },
+      "actualNormalTargetCount": 2,
+      "allNormalTargetExitZero": true,
+      "actualPublicHeaderSHA256": {
+        "VLCLibrary.h": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f",
+        "VLCMediaPlayerTitleDescription.h": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5",
+        "VLCAdjustFilter.h": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743",
+        "VLCLogging.h": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80",
+        "VLCMediaSlave.h": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8",
+        "VLCMediaListPlayer.h": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328",
+        "VLCTranscoder.h": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2",
+        "VLCTime.h": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341",
+        "VLCConsoleLogger.h": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46",
+        "VLCAudioEqualizer.h": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90",
+        "VLCRendererItem.h": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96",
+        "VLCFileLogger.h": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290",
+        "VLCAudio.h": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00",
+        "VLCLogMessageFormatter.h": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1",
+        "VLCDrawable.h": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4",
+        "VLCMediaThumbnailer.h": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825",
+        "VLCMediaPlayer.h": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943",
+        "VLCKit.h": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570",
+        "VLCRendererDiscoverer.h": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839",
+        "VLCEventsConfiguration.h": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64",
+        "VLCFilter.h": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf",
+        "VLCMediaParser.h": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7",
+        "VLCMediaList.h": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e",
+        "VLCDialogProvider.h": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb",
+        "VLCMedia.h": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466",
+        "VLCMediaDownloader.h": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553",
+        "VLCMediaMetaData.h": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa",
+        "VLCMediaDiscoverer.h": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5",
+        "vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "vlc/libvlc_media_track.h": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "vlc/libvlc_renderer_discoverer.h": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "vlc/libvlc_media.h": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "vlc/libvlc_media_list_player.h": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "vlc/libvlc_media_player.h": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "vlc/libvlc_parser.h": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "vlc/libvlc_media_discoverer.h": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "vlc/libvlc_media_list.h": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "vlc/libvlc_version.h": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+        "vlc/libvlc_picture.h": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+      },
+      "headersExactToPublicNative7": true,
+      "actualModules302": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "actualRawFrameworkMetadata": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-sim-r2/BuildProducts/Release/VLCKit.framework/VLCKit",
+        "bytes": 54292376,
+        "sha256": "c6c95b93e78b51baab53cc529d9dd8a1e12ec6a7a69d49e96fb42db103acab83",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "96a6547e-04a8-378d-9886-5c22a3e6b393",
+        "TEXT": {
+          "offset": 5600,
+          "bytes": 31758124,
+          "sha256": "cd9811cce2c8ae32fa68259fa5898e6805ea5f314c30b64c44623537219eef9e"
+        },
+        "buildVersion": {
+          "platform": 7,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      }
+    },
+    "device": {
+      "nativeOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-device-r1/outcome.json",
+        "bytes": 2588,
+        "sha256": "5fbe28e09db91283614096348fab3aea1af3cb93b58e32f35c7a546cc0b1178f"
+      },
+      "native": {
+        "scope": "ACTUAL_PURE_PRODUCTION_NATIVE8_TWO_OBJECTS_NOT_APP_OR_PUBLIC_RELEASE",
+        "passed": true,
+        "platform": "device",
+        "actualNative": {
+          "es_out": {
+            "platform": 2,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          },
+          "avsamplebuffer": {
+            "platform": 2,
+            "encodedMinimum": 1703936,
+            "encodedSDK": 1769472,
+            "minimum": "26.0.0",
+            "sdk": "27.0.0"
+          }
+        },
+        "archiveProofs": {
+          "libvlccore.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-device-r1/libvlccore.a",
+              "bytes": 6371856,
+              "sha256": "1a5ce62f755c3354a44811bc75e9f105c5a550f507b8dc96394402aea12a3323"
+            },
+            "memberCount": 178,
+            "replacementIndices": [
+              54
+            ],
+            "unrelatedPayloadsAndOrderExact": 177,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          },
+          "libvlc-full-static.a": {
+            "archive": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-device-r1/libvlc-full-static.a",
+              "bytes": 820065344,
+              "sha256": "be8f8073ff49b729d3d753a5a357a3776e660c815ab7e5afbd5eecaabb960b5b"
+            },
+            "memberCount": 6269,
+            "replacementIndices": [
+              865,
+              30
+            ],
+            "unrelatedPayloadsAndOrderExact": 6267,
+            "symbolProof": {
+              "es_out": {
+                "added": [],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              },
+              "avsamplebuffer": {
+                "added": [
+                  "_OBJC_IVAR_$_VLCAVSample._drainObserver",
+                  "_OBJC_IVAR_$_VLCAVSample._drainRequested",
+                  "_OBJC_IVAR_$_VLCAVSample._paused"
+                ],
+                "removed": [],
+                "allPriorDefinedNamesExact": true
+              }
+            }
+          }
+        },
+        "objects": {
+          "es_out": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-device-r1/Objects/es_out.o",
+            "bytes": 278120,
+            "sha256": "944d60b71f40ae656837e760b7a804645c9c72aeb77ebf7611ea0eb206ceb3c3"
+          },
+          "avsamplebuffer": {
+            "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Native-device-r1/Objects/avsamplebuffer.o",
+            "bytes": 86016,
+            "sha256": "3cddbfb3e71eb551f1eb02ede59966f4cf45bf00bfbb24842bb3825c7b261fb3"
+          }
+        },
+        "noPrivateNumericProbe": true,
+        "originalInputsPreserved": true
+      },
+      "wrapperOutcome": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/outcome.json",
+        "bytes": 15984,
+        "sha256": "5dc21230b73becf83059bbbc69ba17abf6c6b7464f527f5ade008a1ec8bc1032"
+      },
+      "wrapper": {
+        "scope": "ACTUAL_PURE_NATIVE8_WRAPPER_NOT_APP_ACCEPTANCE_OR_PUBLIC_RELEASE",
+        "platform": "device",
+        "passed": true,
+        "failure": null,
+        "phases": [
+          {
+            "command": [
+              "/usr/bin/xcodebuild",
+              "-project",
+              "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/Wrapper/VLCKit.xcodeproj",
+              "-target",
+              "Static libVLC",
+              "-configuration",
+              "Release",
+              "-sdk",
+              "iphoneos27.0",
+              "-jobs",
+              "4",
+              "ARCHS=arm64",
+              "ONLY_ACTIVE_ARCH=NO",
+              "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+              "CODE_SIGNING_ALLOWED=NO",
+              "CODE_SIGNING_REQUIRED=NO",
+              "ENABLE_BITCODE=NO",
+              "DEBUG_INFORMATION_FORMAT=dwarf",
+              "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts",
+              "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildIntermediates",
+              "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts/Release",
+              "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildCaches/clang-modules",
+              "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildCaches/precompiled",
+              "build"
+            ],
+            "exitCode": 0,
+            "ownSessionPID": 3553,
+            "stopReason": null,
+            "raw": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/target-1.log",
+              "bytes": 50962,
+              "sha256": "43aba63e2731d60b95a24e08bf9c82b2ff75ed6b38805e2b68a661a56e34522b"
+            }
+          },
+          {
+            "command": [
+              "/usr/bin/xcodebuild",
+              "-project",
+              "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/Wrapper/VLCKit.xcodeproj",
+              "-target",
+              "VLCKit",
+              "-configuration",
+              "Release",
+              "-sdk",
+              "iphoneos27.0",
+              "-jobs",
+              "4",
+              "ARCHS=arm64",
+              "ONLY_ACTIVE_ARCH=NO",
+              "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+              "CODE_SIGNING_ALLOWED=NO",
+              "CODE_SIGNING_REQUIRED=NO",
+              "ENABLE_BITCODE=NO",
+              "DEBUG_INFORMATION_FORMAT=dwarf",
+              "SYMROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts",
+              "OBJROOT=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildIntermediates",
+              "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts/Release",
+              "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildCaches/clang-modules",
+              "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildCaches/precompiled",
+              "OTHER_LDFLAGS=-ObjC -framework Metal",
+              "build"
+            ],
+            "exitCode": 0,
+            "ownSessionPID": 3595,
+            "stopReason": null,
+            "raw": {
+              "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/target-2.log",
+              "bytes": 334044,
+              "sha256": "040fc2da8353ac3ab52022d361f8e46c7634dd70e4eb6d2de95e0add3282c9ef"
+            }
+          }
+        ],
+        "compiledMachO": {
+          "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts/Release/VLCKit.framework/VLCKit",
+          "bytes": 52928920,
+          "sha256": "acd6cf3f1ed212524cf75cae8ca2e5967ca9e0addcfbfc90e181565d1c8ab246",
+          "architecture": "arm64",
+          "cpuSubtype": 0,
+          "UUID": "f831f3a2-367b-3a9f-b9b7-931b0d7ce919",
+          "TEXT": {
+            "offset": 16384,
+            "bytes": 30843436,
+            "sha256": "ce59eff2c7f5795be533b4868091e4f548cfd3b6cc8a21c032ca6576fa3944d5"
+          },
+          "buildVersion": {
+            "platform": 2,
+            "minimumRaw": 1703936,
+            "sdkRaw": 1769472,
+            "minos": "26.0.0"
+          }
+        },
+        "symbols": {
+          "actualUniqueModulesDefined": 302,
+          "publicLibvlcAPI": true
+        },
+        "originalInputsAndSourcesBeforeAfterExact": true,
+        "ownRegenerableRemoved": [
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildIntermediates",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildCaches",
+          "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts/Release/libstatic-libvlc.a"
+        ],
+        "productInventory": [
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAdjustFilter.h",
+            "kind": "file",
+            "bytes": 2592,
+            "sha256": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAudio.h",
+            "kind": "file",
+            "bytes": 2295,
+            "sha256": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCAudioEqualizer.h",
+            "kind": "file",
+            "bytes": 2617,
+            "sha256": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCConsoleLogger.h",
+            "kind": "file",
+            "bytes": 1713,
+            "sha256": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCDialogProvider.h",
+            "kind": "file",
+            "bytes": 6521,
+            "sha256": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCDrawable.h",
+            "kind": "file",
+            "bytes": 4256,
+            "sha256": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCEventsConfiguration.h",
+            "kind": "file",
+            "bytes": 1527,
+            "sha256": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCFileLogger.h",
+            "kind": "file",
+            "bytes": 2487,
+            "sha256": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCFilter.h",
+            "kind": "file",
+            "bytes": 2757,
+            "sha256": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCKit.h",
+            "kind": "file",
+            "bytes": 3437,
+            "sha256": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLibrary.h",
+            "kind": "file",
+            "bytes": 4328,
+            "sha256": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLogMessageFormatter.h",
+            "kind": "file",
+            "bytes": 1592,
+            "sha256": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCLogging.h",
+            "kind": "file",
+            "bytes": 5436,
+            "sha256": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMedia.h",
+            "kind": "file",
+            "bytes": 19104,
+            "sha256": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaDiscoverer.h",
+            "kind": "file",
+            "bytes": 4497,
+            "sha256": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaDownloader.h",
+            "kind": "file",
+            "bytes": 4521,
+            "sha256": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaList.h",
+            "kind": "file",
+            "bytes": 4769,
+            "sha256": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaListPlayer.h",
+            "kind": "file",
+            "bytes": 4402,
+            "sha256": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaMetaData.h",
+            "kind": "file",
+            "bytes": 4279,
+            "sha256": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaParser.h",
+            "kind": "file",
+            "bytes": 4052,
+            "sha256": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaPlayer.h",
+            "kind": "file",
+            "bytes": 35747,
+            "sha256": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaPlayerTitleDescription.h",
+            "kind": "file",
+            "bytes": 4510,
+            "sha256": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaSlave.h",
+            "kind": "file",
+            "bytes": 1944,
+            "sha256": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCMediaThumbnailer.h",
+            "kind": "file",
+            "bytes": 5219,
+            "sha256": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCRendererDiscoverer.h",
+            "kind": "file",
+            "bytes": 3656,
+            "sha256": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCRendererItem.h",
+            "kind": "file",
+            "bytes": 2010,
+            "sha256": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCTime.h",
+            "kind": "file",
+            "bytes": 4188,
+            "sha256": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/VLCTranscoder.h",
+            "kind": "file",
+            "bytes": 2572,
+            "sha256": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc.h",
+            "kind": "file",
+            "bytes": 16425,
+            "sha256": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_dialog.h",
+            "kind": "file",
+            "bytes": 8797,
+            "sha256": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_downloader.h",
+            "kind": "file",
+            "bytes": 14729,
+            "sha256": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media.h",
+            "kind": "file",
+            "bytes": 24371,
+            "sha256": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_discoverer.h",
+            "kind": "file",
+            "bytes": 7106,
+            "sha256": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_list.h",
+            "kind": "file",
+            "bytes": 6030,
+            "sha256": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_list_player.h",
+            "kind": "file",
+            "bytes": 7711,
+            "sha256": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_player.h",
+            "kind": "file",
+            "bytes": 141917,
+            "sha256": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_media_track.h",
+            "kind": "file",
+            "bytes": 6056,
+            "sha256": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_parser.h",
+            "kind": "file",
+            "bytes": 16954,
+            "sha256": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_picture.h",
+            "kind": "file",
+            "bytes": 4767,
+            "sha256": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_renderer_discoverer.h",
+            "kind": "file",
+            "bytes": 7973,
+            "sha256": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_version.h",
+            "kind": "file",
+            "bytes": 3185,
+            "sha256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/libvlc_video.h",
+            "kind": "file",
+            "bytes": 2936,
+            "sha256": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32"
+          },
+          {
+            "path": "Release/VLCKit.framework/Headers/vlc/vlc.h",
+            "kind": "file",
+            "bytes": 1865,
+            "sha256": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f"
+          },
+          {
+            "path": "Release/VLCKit.framework/Info.plist",
+            "kind": "file",
+            "bytes": 781,
+            "sha256": "fa7d76fe7940421ca419cf404d84f20775d6a062d7b4e4f11904a0ebe8a30fc1"
+          },
+          {
+            "path": "Release/VLCKit.framework/Modules/module.modulemap",
+            "kind": "file",
+            "bytes": 841,
+            "sha256": "36cdffa80dac25741f23ef1319a7edc807ef1ce342255174e53d30e32b5c3729"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCCustomDialogProvider.h",
+            "kind": "file",
+            "bytes": 1704,
+            "sha256": "e065cf5f46c266c0cc98e7501140db1fd8d71368ff2bfb9cd19c14061a00d118"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCEmbeddedDialogProvider.h",
+            "kind": "file",
+            "bytes": 1594,
+            "sha256": "3a583126ffae78158304d9aaa8f7b2c97ddbce9e65cc856397ad17909d96f762"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCEventsHandler.h",
+            "kind": "file",
+            "bytes": 1784,
+            "sha256": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCFilter+Internal.h",
+            "kind": "file",
+            "bytes": 2577,
+            "sha256": "d8aef4dfd064d9f9eae1e61f1e73f82976513f65073de1c861098a9c2ae950ae"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCHelperCode.h",
+            "kind": "file",
+            "bytes": 1631,
+            "sha256": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCLibVLCBridging.h",
+            "kind": "file",
+            "bytes": 9698,
+            "sha256": "604821b52a1862746e40978c9150684f21b87e49a352563abf19620e97e73cfc"
+          },
+          {
+            "path": "Release/VLCKit.framework/PrivateHeaders/VLCMediaPlayer+Internal.h",
+            "kind": "file",
+            "bytes": 1765,
+            "sha256": "b4fcf9fbd4f9764b94f461cf4cdca277910befba6a050136f0c2937aee0e56d9"
+          },
+          {
+            "path": "Release/VLCKit.framework/VLCKit",
+            "kind": "file",
+            "bytes": 52928920,
+            "sha256": "acd6cf3f1ed212524cf75cae8ca2e5967ca9e0addcfbfc90e181565d1c8ab246"
+          }
+        ],
+        "noAppOrRuntimeExecuted": true
+      },
+      "actualNormalTargetCount": 2,
+      "allNormalTargetExitZero": true,
+      "actualPublicHeaderSHA256": {
+        "VLCLibrary.h": "37d28dc3f560064c52894fe74af14dbfcf2ff9c36a989d8dedfe4e6fd955d63f",
+        "VLCMediaPlayerTitleDescription.h": "909d40b1bc5abcfb5bee7fbc60ba3a8bda2ba95f54f929d3fa076669930690a5",
+        "VLCAdjustFilter.h": "a23a2136ed205112c35298fbde189a04f1b9caff90224bde445b980141f1c743",
+        "VLCLogging.h": "18155169b2f38669e0a2805c881fb26bf7ac6a2f9abde444b831a4b61e5a9f80",
+        "VLCMediaSlave.h": "c7314cd5a27106abc8bc69a19d9bed4c6210e67cc8e64f4f4b3f989e8adb1fa8",
+        "VLCMediaListPlayer.h": "42a8279c30bef97ebe2e4a57b3d93e3194c380e9057e17fa7f8a1bf33e31c328",
+        "VLCTranscoder.h": "1708ce2d9eb914cb599e67bee18b34e743cabd73b44436f1ad2ca55ebad62fc2",
+        "VLCTime.h": "585da644d49478251a555589b40f3dad67c5ab7ff103300c497831245240c341",
+        "VLCConsoleLogger.h": "2717edc0141f07e2045020695e983f025cb2686972a1d6d26e30ab2beb964c46",
+        "VLCAudioEqualizer.h": "44e1b8f446d8258e3b906b6d3bf2ccb1a10a2357bf4af5cba0fe14a7d94e0a90",
+        "VLCRendererItem.h": "24c1fbe368e527b9ef6d4adfcf4bb01a6280cb6e476f7c237ca1204746584d96",
+        "VLCFileLogger.h": "1c8d0ba333496960735c4606f8900966bcc7fd5e68929d7d7ad27c2d42df6290",
+        "VLCAudio.h": "c4a1b47b800f6c443b7d3b525a2aa5e73d0bb8a72f3ec5d6121621e1ecfadb00",
+        "VLCLogMessageFormatter.h": "7f88c03c361039b5b5e4ce6b0524440e7590472dc7b29a25115708da4da984f1",
+        "VLCDrawable.h": "a731b2813f6d454154de438ca5e52f1e385d8c6d51a12aa79798b3f1f04810c4",
+        "VLCMediaThumbnailer.h": "084ec78c99bb69c2732fe88df988ed2dc501342086dce05890cfcb7c12e35825",
+        "VLCMediaPlayer.h": "ede6cda9e2ae811e8261503af6682cd01d232d70e8b2dadd076285c72da75943",
+        "VLCKit.h": "d5ebf6119777197bf0359e1001a0001b753c3e22a45e721c39d89eb5766ca570",
+        "VLCRendererDiscoverer.h": "ef46ec6143d9056ed865b63f80db04c02a27081fcd1f3831b359c54090c42839",
+        "VLCEventsConfiguration.h": "08f8b1639256aba629221d4ebd6b7db211bf4a7493e4bc79d02f0544e87eda64",
+        "VLCFilter.h": "aca74d7447e667d16b8ef5192ef3a8ec3203d98491e177839cda4b144e911dbf",
+        "VLCMediaParser.h": "9bf77131b6714f6cf7d50dfcb9b37adf77a30e4752bb5c7671a18f679abc9bf7",
+        "VLCMediaList.h": "32b68e07b917eab582414b8b084f8bca7dad48d101fa39505f45d2f3c0b8685e",
+        "VLCDialogProvider.h": "57769ee51315bf67e10f81045a4bb4fd69cfc9e5216bbca66c43168c5843c3cb",
+        "VLCMedia.h": "cdc35542a4d7991881bb9d00ed29dc975481fc7b888b03a5ebf7ab12f0cae466",
+        "VLCMediaDownloader.h": "49b864fba542a6b2faf5346bb64378345a4926a3d761a1e43fdf962ff2753553",
+        "VLCMediaMetaData.h": "2f97deea033efab923e079d412997070f18a159a8d21e5ca08f46442b81413aa",
+        "VLCMediaDiscoverer.h": "342f7765d5af4a1ea6e4eac1889c505fd558c4712700d1ddc86f526ea11a1ba5",
+        "vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "vlc/libvlc_media_track.h": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "vlc/libvlc_renderer_discoverer.h": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "vlc/libvlc_media.h": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "vlc/libvlc_media_list_player.h": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "vlc/libvlc_media_player.h": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "vlc/libvlc_parser.h": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "vlc/libvlc_media_discoverer.h": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "vlc/libvlc_media_list.h": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "vlc/libvlc_version.h": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+        "vlc/libvlc_picture.h": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854"
+      },
+      "headersExactToPublicNative7": true,
+      "actualModules302": {
+        "actualUniqueModulesDefined": 302,
+        "publicLibvlcAPI": true
+      },
+      "actualRawFrameworkMetadata": {
+        "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/Wrapper-device-r1/BuildProducts/Release/VLCKit.framework/VLCKit",
+        "bytes": 52928920,
+        "sha256": "acd6cf3f1ed212524cf75cae8ca2e5967ca9e0addcfbfc90e181565d1c8ab246",
+        "architecture": "arm64",
+        "cpuSubtype": 0,
+        "UUID": "f831f3a2-367b-3a9f-b9b7-931b0d7ce919",
+        "TEXT": {
+          "offset": 16384,
+          "bytes": 30843436,
+          "sha256": "ce59eff2c7f5795be533b4868091e4f548cfd3b6cc8a21c032ca6576fa3944d5"
+        },
+        "buildVersion": {
+          "platform": 2,
+          "minimumRaw": 1703936,
+          "sdkRaw": 1769472,
+          "minos": "26.0.0"
+        }
+      }
+    }
+  },
+  "actualAssembly": {
+    "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/AssemblyPrep/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2350,
+    "sha256": "dea23b287f41b3b6caec2ac2b10a6a488d94f8a2b1dc9f392fa5c4316d57e4be"
+  },
+  "binaryAsset": {
+    "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/AssemblyPrep/Assembly-r1/VLCKit-AetherFilm-native8-arm64.xcframework.zip",
+    "bytes": 68726734,
+    "sha256": "1ae7007adbfe8881472682a928caa8cee5011114b4b6d3002a1337c223230260",
+    "swiftPMChecksum": "1ae7007adbfe8881472682a928caa8cee5011114b4b6d3002a1337c223230260",
+    "plannedURL": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004-native8/VLCKit-AetherFilm-native8-arm64.xcframework.zip"
+  },
+  "allSixWrapperTargetsActuallyExitZero": true,
+  "allUnrelatedPublicNative7CoreAndFullPayloadsAndOrderExact": true,
+  "publicHeadersAnd302EntryPointsExactToNative7": true,
+  "allThreeSlicesARM64Min26SDK27": true,
+  "onlyAddedDefinedNames": [
+    "_OBJC_IVAR_$_VLCAVSample._drainObserver",
+    "_OBJC_IVAR_$_VLCAVSample._drainRequested",
+    "_OBJC_IVAR_$_VLCAVSample._paused"
+  ],
+  "privateNumericProbeIncluded": false,
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssembled": false,
+  "publicDownloadVerified": false,
+  "AppAndRuntimeReleaseAccepted": false,
+  "suppliedRecordBeforePathNormalization": {
+    "path": "${REPOSITORY}/.build/Native8ProductionCandidate20261004-r2/supplied-native8-build-record.json",
+    "bytes": 89730,
+    "sha256": "df86a5f2536410ffbc47345363f8c5298ca2e3a3c01e85ad06538d0026a418cf"
+  },
+  "pathNormalization": "Only repository and selected Developer directory prefixes tokenized; actual execution facts preserved"
+}

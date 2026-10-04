@@ -1,14 +1,14 @@
 {
-  "status": "LOCAL_ARTIFACT_ASSEMBLED_REMOTE_ASSET_NOT_PUBLISHED",
-  "nativeGeneration": 7,
+  "status": "COMPONENT_ASSEMBLY_VERIFIED",
+  "nativeGeneration": 8,
   "wrapperCommit": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "libVLCBaseCommit": "005e69e67a8730f128e44bde68437fbb048cf45f",
   "binaryAsset": {
-    "plannedTag": "vlckit-8f5ce02-aether-20261004",
-    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004/VLCKit-AetherFilm-native7-arm64.xcframework.zip",
-    "filename": "VLCKit-AetherFilm-native7-arm64.xcframework.zip",
-    "bytes": 68726561,
-    "sha256": "f629ad7fd1f02aa3fef00a1808bf85e8ccb7b6916c5263d0b0238faaad261e35"
+    "plannedTag": "vlckit-8f5ce02-aether-20261004-native8",
+    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004-native8/VLCKit-AetherFilm-native8-arm64.xcframework.zip",
+    "filename": "VLCKit-AetherFilm-native8-arm64.xcframework.zip",
+    "bytes": 68726734,
+    "sha256": "1ae7007adbfe8881472682a928caa8cee5011114b4b6d3002a1337c223230260"
   },
   "slices": [
     {
@@ -17,10 +17,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 62502856,
-      "binarySHA256": "74b8980766a85315d1027c8a1f08d889732a104d812319f44460d34eab38eb1f",
-      "UUID": "cc66a72b-5ef8-32a5-8c22-afb43c524dca",
-      "textSHA256": "27ec4f4accad3a71f58e6e581a0eb4f1a64ee18800180ddb7e8cc145d73103f4",
+      "binaryBytes": 62456952,
+      "binarySHA256": "5cd6ac5f3bfe7477b6cc37e858b3880b7c68feea95447b584a58511eff952ad6",
+      "UUID": "e5019bad-dfb1-3ddc-b996-8e287be0cfde",
+      "textSHA256": "67d9dc1581c2bc00fa29170895871ca697db01802d48ec8886b71d6322fdb2a9",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -37,7 +37,8 @@
       "publicHeadersExactToNative4": true,
       "publicHeaderCount": 48,
       "publicLibvlcAPI": true,
-      "publicHeadersExactToNative6": true
+      "publicHeadersExactToNative6": true,
+      "publicHeadersExactToNative7": true
     },
     {
       "identifier": "ios-arm64-simulator",
@@ -45,10 +46,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 54335368,
-      "binarySHA256": "cdf6422ec06ac1a3630c17cac23d9f185a8df877a30b28b828b527f9b15ea243",
-      "UUID": "0189d5c3-9492-3c1b-b5d2-a9371491f8a9",
-      "textSHA256": "ada5c61a1ca58e0bc381a6447e14ec42fa87423a9283cbe9e2be55ab70bb1284",
+      "binaryBytes": 54292376,
+      "binarySHA256": "c6c95b93e78b51baab53cc529d9dd8a1e12ec6a7a69d49e96fb42db103acab83",
+      "UUID": "96a6547e-04a8-378d-9886-5c22a3e6b393",
+      "textSHA256": "cd9811cce2c8ae32fa68259fa5898e6805ea5f314c30b64c44623537219eef9e",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -65,7 +66,8 @@
       "publicHeadersExactToNative4": true,
       "publicHeaderCount": 43,
       "publicLibvlcAPI": true,
-      "publicHeadersExactToNative6": true
+      "publicHeadersExactToNative6": true,
+      "publicHeadersExactToNative7": true
     },
     {
       "identifier": "ios-arm64",
@@ -73,10 +75,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 52971600,
-      "binarySHA256": "391fc7c85f94e3d19aab42b7a2dbb7b558268370ab072f6d6b7a5d61f27e69a9",
-      "UUID": "cb72c830-6e20-39ab-bf9b-b4febbd112ae",
-      "textSHA256": "58e4c1be2495f69691a2093948d7f206e34e2214c42fca3fa3bcf8492b505a05",
+      "binaryBytes": 52928920,
+      "binarySHA256": "acd6cf3f1ed212524cf75cae8ca2e5967ca9e0addcfbfc90e181565d1c8ab246",
+      "UUID": "f831f3a2-367b-3a9f-b9b7-931b0d7ce919",
+      "textSHA256": "ce59eff2c7f5795be533b4868091e4f548cfd3b6cc8a21c032ca6576fa3944d5",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -93,11 +95,14 @@
       "publicHeadersExactToNative4": true,
       "publicHeaderCount": 43,
       "publicLibvlcAPI": true,
-      "publicHeadersExactToNative6": true
+      "publicHeadersExactToNative6": true,
+      "publicHeadersExactToNative7": true
     }
   ],
   "AppAndRuntimeReleaseAccepted": false,
   "audioOutputDomainPatchSHA256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7",
   "outputClockCadencePatchSHA256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f",
-  "coreAudioCadencePatchSHA256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a"
+  "coreAudioCadencePatchSHA256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a",
+  "mediaPrerollRatePatchSHA256": "dbe103e3d13a0337bd91e9206ad72bf102b5c4398412600841d989d8bf6d7f4f",
+  "avSampleBufferDrainPatchSHA256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78"
 }

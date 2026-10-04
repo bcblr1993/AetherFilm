@@ -1,5 +1,19 @@
 # v0.1.0 验收矩阵
 
+2026-10-04 最新Native8统一候选已加入四项独立片尾回归，原iOS61 / Mac53断言与期限不变，完整套件为iOS65 / Mac57。纯三平台原生编译、六个wrapper目标和正常三切片组件组装均实际exit0；最低26、SDK27、ARM64、302模块与原公开头文件保持。最终私有C4在真实iPhone原三项 **3通过 / 0失败 / 0跳过**、新增四项 **4通过 / 0失败 / 0跳过**；八个排空至停止窗口没有后续有效native30 /31时钟点，原失败记录保留。该专项不是正式无探针组件的完整65 /57、完整UI或分发验收。证据 `.build/NativeAVDrainLifecycleControlsPhysicalApp20261004-r1/ACTUAL_C4_PHYSICAL_CLOSURE.json`、`.build/Native8ProductionCandidate20261004-r2/READY.json`。
+
+此前源码 `6100c1c` 的 CI `37202599510` 已完整核验通过：三平台 ARM64 构建均通过；Mac26.6.2 / SDK26.5 原完整播放 **53通过 / 0失败 / 0跳过**，iOS27 模拟器原完整播放 **61通过 / 0失败 / 0跳过**，源预期方法、原始日志与 xcresult 完整身份一致，无 iOS runtime warning。共享套件实际 **45通过 / 8项 SMB3 opt-in 跳过**，另五项执行器单测通过；日志的“53 tests passed”计入注册的跳过项，不能当成53项均执行。此前 CI 原失败完整保留。证据 `.build/Native7CICommit6100c1cReview20261004-r1/{MAC26_ACTUAL_REVIEW.json,IOS_ACTUAL_REVIEW.json,SHARED_ACTUAL_REVIEW.json}`。
+
+同轮真实 SMB 控制已确认：normal11.403725、video313 / audio545 后自动95%且磁盘读回true；同一HTTP1 / UUID的真实391字节尾读错误后磁盘false且续播11.662保留。完整来源 seek0 有新input回绕和normal0.800060，视频18→35、音频95→192。服务诊断明确总5712事件、仅保留512与省略5200；256对真实entry / return中最长READ约144ms，不能将有限记录解释为整轮传输或旧多秒超时的原因已解决。证据同目录 `SMB_ACTUAL_INTERVAL_REVIEW-r2.json`。
+
+私有 preroll-only 原生修正已在 iPhone12Pro / iOS27.0.1 通过原三项专项 **3通过 / 0失败 / 0跳过**：重播、暂停与倍速片尾跳转、半速自然完成。只将媒体预滚换算成系统时长，保留已有缓存补偿和1×行为；不修改原61、6秒 / 30秒期限或完成门。半速early normal0.805404 / input0.670468，最后normal12.105545 / input12.10236、347视频 / 562音频、完成一次。新增short-GOP严格尾输出两项实际 **1通过 / 1失败 / 0跳过**：2×最后normal11.771539低于新增原门11.8，虽然新音视频与完成一次通过，不能认证尾部全部消费。该失败保留；相同short两项在已知Native7实际 **2通过 / 0失败 / 0跳过**，因此不能用它证明原长GOP缺陷被负向拒绝。原片keyframe仅0秒、short片target11本身为keyframe，独立长GOP覆盖和真实音频排空仍在核对；私有数字探针版不可直接晋升生产。正式 Native7 的59/2真机失败仍保留。证据 `.build/NativeBufferingPrerollRateActualReadonly20261004-r1/REPORT.json`、`.build/NativeBufferingPrerollRatePhysicalApp20261004-r1/Focused3-r1/`。
+
+追加异步排空候选（未晋升生产）在同一 iPhone 的原三项实际 **3通过 / 0失败 / 0跳过**。新增四项初次 **2通过 / 2失败 / 0跳过**，计入30毫秒滤波stride后的第二轮仍 **3通过 / 1失败 / 0跳过**：2×长GOP最后normal12.286767超过12.26。该同一真实回调时刻的AV样本等效媒体点为12.008173，公开normal领先278594微秒；后续排空current510171微秒已越过24480 / 48000样本的510000微秒队列末尾。两轮全部实际音频排空，失败不能归因于尾音未消费。源代码确认normal按计划systemDate锚与rate推进；100毫秒observer加30毫秒stride不能证明它以nominal duration为上界，先前假设被实际结果反证。仅尚未合入的新helper拟按独立ContinuousClock实际seek至观察EOS的墙钟进展限制上界，保留全部原61、lower、真实回调配对、输出增量、6秒期限、最小消费墙钟及完成一次。相同最新源码的已知Native7长GOP对照仍真实 **0通过 / 2失败 / 0跳过**，因提前EOS没有新的normal / input配对被拒绝。证据 `.build/NativeAVSampleDrainTailControlsPhysicalApp20261004-r2/R3_COMPARISON_CLOSURE.json`、`.build/NativeAVDrainActualEndReadonly20261004-r1/{REPORT.json,R3_UPPER_COUNTEREXAMPLE.json}`；两轮失败原件完整保留。
+
+正式发布仍未完成：需要通过无探针新三端组件的统一完整回归、最终UI、新签名分发候选和安装播放、公开下载及官网部署。当前Native7的系统Disabled空TouchBar审计失败未豁免；用户NAS、人工听音与朗读VoiceOver仍未验收。
+
+## 此前候选记录（保留原失败与当时状态）
+
 2026-10-04 当前保存修正将后台写入同步登记到既有有序队列，显式flush等待此前全部提交，保留95% / 会话 / 失败回滚条件。原AppStore14项在SDK27 / iOS27模拟器实际 **14通过 / 0失败 / 0跳过**，包含CI失败的暂停片尾原方法，测试源码未改。播放器长视图表达式拆为画面、生命周期和弹窗三个编译单元，所有修饰器与动作顺序保留；标准SDK27 Mac Release构建exit0。Mac26新CI `37201155076` 的原字幕message表达式仍类型检查超时，分块后的SDK26结果尚待下一提交验证。证据 `.build/AppStoreFlushValidation20261004-r1/{outcome-r2.json,AppStore14-r2.xcresult}`、`.build/CITypecheckFixValidation20261004-r1/body-split-mac-build-r3-outcome.json`。
 
 真机数字探针确认实际音频模块为AVSampleBuffer，原两专项仍 **0通过 / 2失败 / 0跳过**：尾部样本真实入队后数毫秒被flush，两个bounded数字附件均未记录无条件音频Drain入口。该结果不支持此前CoreAudio未知延迟假设；正在查输入结束 / 缓冲关闭分支，原两方法、6秒期限与完成门保持。证据 `.build/Native7PhysicalNativeDrainFileApp20261004-r1/Focused2-r1/`；独立诊断的原stderr全0结果另行保留。

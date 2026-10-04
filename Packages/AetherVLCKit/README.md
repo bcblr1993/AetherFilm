@@ -3,7 +3,9 @@
 This package records the modified native backend used by AetherFilm. The current
 artifact contains only macOS ARM64, iOS ARM64 and iOS Simulator ARM64, with minimum
 OS 26.0 and SDK 27.0. `Provenance/artifact.json` and `Package.swift` pin the actual
-assembled Native7 binary. Its planned GitHub asset is not yet publicly distributed.
+assembled Native8 binary. The configured download URL and checksum identify that
+component; application and distribution acceptance are recorded separately in
+[the release gates](../../docs/RELEASE.md).
 
 The wrapper base is `8f5ce02f09a7da5d061a24ddac3cb432f2a9b332`; the libVLC base is
 `005e69e67a8730f128e44bde68437fbb048cf45f`. The source archive whose tree is
@@ -68,6 +70,24 @@ remain identical to Native6. No final application or public release acceptance
 is inferred from those component builds; the Native6 execution record remains
 unchanged historical evidence.
 
+Native8 retains all eight earlier patches and the Native4–7 execution records.
+Its ninth patch, `media-preroll-rate.patch`, converts only media preroll
+to system time at changed playback rates while preserving the existing caching terms.
+Its tenth patch, `avsamplebuffer-drain.patch`, waits for the real renderer
+time to reach the actual queued sample end before reporting drain completion.
+Pause blocks completion; flush and stop cancel pending reports. Completion and
+periodic timing reports share the original time queue, and paused/finished
+output does not emit later timing points. These two files were modified by
+AetherNative on 2026-10-04 without changing their original copyright/license.
+`native8-build-record.json` records the actual two-source incremental compilation
+and core/full archive replacements on each platform, plus six successful
+wrapper targets. Public headers and 302 module entry points remain exact
+to Native7; only three private implementation ivar names were added.
+The ten patches and thirteen source pins were checked without fuzz or offset;
+the AV source replaces its earlier pin and `src/input/es_out.c` is the
+thirteenth affected source. Component records do not establish a complete
+portable rebuild, final App, physical-device or public-distribution acceptance.
+
 ## Prepare source inputs
 
 Use a new owned directory on an ARM64 Mac with at least 12 GiB available. Obtain
@@ -99,7 +119,8 @@ verified Lua archive there. Apply the following local patches once per tree:
 ```sh
 for patch_name in native-aperture gsm-deployment paused-preview-core \
                   decoder-flush-preview held-io-recovery audio-output-domain \
-                  output-clock-cadence coreaudio-cadence; do
+                  output-clock-cadence coreaudio-cadence \
+                  media-preroll-rate avsamplebuffer-drain; do
   patch --directory="$vlc_source" -p1 --batch --forward --fuzz=0 \
     < "$package_dir/Patches/$patch_name.patch"
 done
@@ -110,7 +131,7 @@ does not itself reconstruct the original Git metadata used by version generation
 Resolving that metadata, checking full-tree identity and performing a fresh
 complete build remain explicit portable-build tasks; source preparation is not
 reported as a completed rebuild. For an alternative Git checkout, pin the base
-commit and apply the twelve official patches exactly once before the eight local
+commit and apply the twelve official patches exactly once before the ten local
 patches. Never combine that step with the already patched source archive.
 
 ## Core build entry point
@@ -149,7 +170,7 @@ Meson invocation. It does not replace an existing output or change `HOME` or
 exit still requires archive architecture, minimum-OS, module, symbol and license
 inspection, followed by wrapper and application tests.
 
-The driver intentionally checks all twelve Native7 release source hashes. When rebuilding
+The driver intentionally checks all thirteen Native8 release source hashes. When rebuilding
 with user modifications, retain the original release pins and create a separate
 record of the modified hashes and build identity. Such a rebuild is not the
 byte-identical release artifact.
@@ -171,7 +192,7 @@ requires regeneration and renewed symbol inspection. Header generation and this
 fresh wrapper preparation are not automated by the core driver and remain
 portable-build tasks.
 
-Use the two actual argv arrays in `Provenance/native7-build-record.json` as the
+Use the two actual argv arrays in `Provenance/native8-build-record.json` as the
 wrapper recipe: first target `Static libVLC`, then `VLCKit`, Release, four jobs,
 ARM64, minimum 26.0, SDK 27.0, unsigned, owned SYMROOT/OBJROOT/cache directories
 and `DEBUG_INFORMATION_FORMAT=dwarf`. Rebase `${REPOSITORY}` and select new

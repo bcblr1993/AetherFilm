@@ -1,0 +1,16 @@
+--- a/src/input/es_out.c
++++ b/src/input/es_out.c
+@@ -1256,7 +1256,12 @@
+     /* */
+     const vlc_tick_t i_current_date = EsOutIsPaused(p_sys) ? p_sys->i_pause_date : vlc_tick_now();
+ 
+-    const vlc_tick_t update = i_current_date - i_buffering_duration;
++    /* Preserve caching compensation; convert the media preroll to system ticks. */
++    const vlc_tick_t i_system_buffering_duration = p_sys->rate == 1.0f
++        ? i_buffering_duration
++        : i_buffering_duration - i_preroll_duration
++            + (vlc_tick_t)((double)i_preroll_duration / p_sys->rate);
++    const vlc_tick_t update = i_current_date - i_system_buffering_duration;
+ 
+     /* The call order of these 3 input_clock_t/vlc_clock_main_t functions is
+      * important:

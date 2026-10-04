@@ -1,0 +1,206 @@
+--- a/modules/audio_output/apple/avsamplebuffer.m
++++ b/modules/audio_output/apple/avsamplebuffer.m
+@@ -76,6 +76,9 @@
+     unsigned _sampleRate;
+     BOOL _stopped;
+     BOOL _dateReached;
++    BOOL _drainRequested;
++    BOOL _paused;
++    id _drainObserver;
+ }
+ @end
+ 
+@@ -223,8 +226,83 @@
+     return scaled.value;
+ }
+ 
++/* Called with _bufferLock held once all pending blocks are enqueued. */
++- (void)armDrainObserver
++{
++    if (!_drainRequested || _drainObserver != nil || _outChain != NULL
++     || _ptsSamples <= 0)
++        return;
++
++    const CMTime end = CMTimeMake(_ptsSamples, _sampleRate);
++    __weak typeof(self) weakSelf = self;
++    _drainObserver = [_sync addBoundaryTimeObserverForTimes:@[[NSValue valueWithCMTime:end]]
++                                                    queue:_timeQueue
++                                               usingBlock:^{
++        [weakSelf reportDrainedIfReady];
++    }];
++}
++
++- (void)reportDrainedIfReady
++{
++    vlc_mutex_lock(&_bufferLock);
++    if (!_drainRequested || _paused || _outChain != NULL)
++    {
++        vlc_mutex_unlock(&_bufferLock);
++        return;
++    }
++
++    const int64_t samples = _ptsSamples;
++    const vlc_tick_t first = _firstPts;
++    const CMTime current = [_sync currentTime];
++    const BOOL hasSamples = samples > 0;
++    if (hasSamples && (_stopped || !_dateReached || !CMTIME_IS_NUMERIC(current)
++        || CMTimeCompare(current, CMTimeMake(samples, _sampleRate)) < 0))
++    {
++        vlc_mutex_unlock(&_bufferLock);
++        return;
++    }
++    vlc_mutex_unlock(&_bufferLock);
++
++    /* Report the real renderer point before completion. TimingReport takes
++     * the core timing lock, so it must run without _bufferLock held. */
++    if (hasSamples)
++        aout_TimingReport(_aout, vlc_tick_now(),
++                         first + [VLCAVSample CMTimeTotick:current]);
++
++    vlc_mutex_lock(&_bufferLock);
++    if (_drainRequested && !_paused && _outChain == NULL && _ptsSamples == samples
++        && _firstPts == first && (!hasSamples || !_stopped))
++    {
++        _drainRequested = NO;
++        /* Completion and periodic timing callbacks share _timeQueue. Stop
++         * producing timing points once the physical queue has drained. The
++         * core flushes before any subsequent play, resetting this state. */
++        _stopped = YES;
++        vlc_cond_signal(&_bufferWait);
++        /* DrainedReport only stores the core's atomic drained flag. Keeping
++         * this lock excludes flush/stop cancellation from this report. */
++        aout_DrainedReport(_aout);
++    }
++    vlc_mutex_unlock(&_bufferLock);
++}
++
++- (void)drain
++{
++    vlc_mutex_lock(&_bufferLock);
++    _drainRequested = YES;
++    [self armDrainObserver];
++    vlc_mutex_unlock(&_bufferLock);
++    __weak typeof(self) weakSelf = self;
++    dispatch_async(_timeQueue, ^{
++        [weakSelf reportDrainedIfReady];
++    });
++}
++
+ - (void)flush
+ {
++    vlc_mutex_lock(&_bufferLock);
++    _drainRequested = NO;
++    vlc_mutex_unlock(&_bufferLock);
+     if (_ptsSamples >= 0)
+         [self stopSyncRenderer];
+ 
+@@ -238,20 +316,43 @@
+ {
+     (void) date;
+ 
++    vlc_mutex_lock(&_bufferLock);
++    _paused = pause;
+     if (_ptsSamples >= 0)
+         _sync.rate = pause ? 0.0f : 1.0f;
++    vlc_mutex_unlock(&_bufferLock);
++
++    if (pause)
++    {
++        /* The core calls pause outside its timing lock and this queue. Join
++         * any point already in flight before returning in paused state. */
++        dispatch_sync(_timeQueue, ^{});
++    }
++    else
++    {
++        __weak typeof(self) weakSelf = self;
++        dispatch_async(_timeQueue, ^{
++            [weakSelf reportDrainedIfReady];
++        });
++    }
+ }
+ 
+ - (void)whenTimeObserved:(CMTime) time
+ {
+-    assert(_firstPts != VLC_TICK_INVALID);
+-
+-    if (time.value == 0)
++    vlc_mutex_lock(&_bufferLock);
++    if (_stopped || _paused || _firstPts == VLC_TICK_INVALID || time.value == 0)
++    {
++        vlc_mutex_unlock(&_bufferLock);
+         return;
++    }
++    const vlc_tick_t first = _firstPts;
++    vlc_mutex_unlock(&_bufferLock);
++
+     vlc_tick_t system_now = vlc_tick_now();
+-    vlc_tick_t pos_ticks = [VLCAVSample CMTimeTotick:time] + _firstPts;
++    vlc_tick_t pos_ticks = [VLCAVSample CMTimeTotick:time] + first;
+ 
+     aout_TimingReport(_aout, system_now, pos_ticks);
++    [self reportDrainedIfReady];
+ }
+ 
+ - (void)startNow:(vlc_tick_t)delta
+@@ -339,6 +440,7 @@
+         [_renderer enqueueSampleBuffer:buffer];
+ 
+         CFRelease(buffer);
++        [self armDrainObserver];
+     }
+ 
+     vlc_mutex_unlock(&_bufferLock);
+@@ -376,6 +478,12 @@
+ - (void)stopSyncRenderer
+ {
+     vlc_mutex_lock(&_bufferLock);
++    _drainRequested = NO;
++    if (_drainObserver != nil)
++    {
++        [_sync removeTimeObserver:_drainObserver];
++        _drainObserver = nil;
++    }
+     _sync.rate = 0.0f;
+ 
+     [_renderer stopRequestingMediaData];
+@@ -404,6 +512,9 @@
+ 
+ - (void)stop
+ {
++    vlc_mutex_lock(&_bufferLock);
++    _drainRequested = NO;
++    vlc_mutex_unlock(&_bufferLock);
+     NSNotificationCenter *notifCenter = [NSNotificationCenter defaultCenter];
+ 
+     if (_ptsSamples >= 0)
+@@ -518,6 +629,8 @@
+ 
+     _stopped = NO;
+     _dateReached = NO;
++    _paused = NO;
++    _drainRequested = NO;
+ 
+     _ptsSamples = -1;
+     _firstPts = VLC_TICK_INVALID;
+@@ -594,6 +707,13 @@
+ }
+ 
+ static void API_AVAILABLE(macos(MIN_MACOS), ios(MIN_IOS), tvos(MIN_TVOS), watchos(MIN_WATCHOS) VISIONOS_API_AVAILABLE)
++Drain(audio_output_t *aout)
++{
++    VLCAVSample *sys = (__bridge VLCAVSample*)aout->sys;
++    [sys drain];
++}
++
++static void API_AVAILABLE(macos(MIN_MACOS), ios(MIN_IOS), tvos(MIN_TVOS), watchos(MIN_WATCHOS) VISIONOS_API_AVAILABLE)
+ Pause(audio_output_t *aout, bool pause, vlc_tick_t date)
+ {
+     VLCAVSample *sys = (__bridge VLCAVSample*)aout->sys;
+@@ -653,6 +773,7 @@
+         aout->play = Play;
+         aout->pause = Pause;
+         aout->flush = Flush;
++        aout->drain = Drain;
+         aout->volume_set = VolumeSet;
+         aout->mute_set = MuteSet;
+         aout->device_select = DeviceSelect;

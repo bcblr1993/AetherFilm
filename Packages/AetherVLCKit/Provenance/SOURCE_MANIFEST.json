@@ -1,5 +1,5 @@
 {
-  "scope": "SMALL_NATIVE7_CORRESPONDING_SOURCE_CANDIDATE",
+  "scope": "SMALL_NATIVE8_CORRESPONDING_SOURCE_CANDIDATE",
   "exclusions": [
     "Package.swift and Provenance/artifact.json are separately frozen by release integration",
     "SOURCE_MANIFEST.json excludes its own recursive hash",
@@ -33,6 +33,11 @@
       "sha256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7"
     },
     {
+      "path": "Patches/avsamplebuffer-drain.patch",
+      "bytes": 6054,
+      "sha256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78"
+    },
+    {
       "path": "Patches/coreaudio-cadence.patch",
       "bytes": 720,
       "sha256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a"
@@ -51,6 +56,11 @@
       "path": "Patches/held-io-recovery.patch",
       "bytes": 2855,
       "sha256": "2cd23d50c90440d8ecdda03bf872d03ddcb5cfd0e16166a7660a0fd990b77b6e"
+    },
+    {
+      "path": "Patches/media-preroll-rate.patch",
+      "bytes": 745,
+      "sha256": "dbe103e3d13a0337bd91e9206ad72bf102b5c4398412600841d989d8bf6d7f4f"
     },
     {
       "path": "Patches/native-aperture.patch",
@@ -94,8 +104,8 @@
     },
     {
       "path": "Provenance/local-inputs.json",
-      "bytes": 8421,
-      "sha256": "ed2c849fc9edc2f26e3217753d9a74d83bd2950ad0b98364b51ce865e85e858f"
+      "bytes": 10446,
+      "sha256": "f22df59ce22400ed61b2960bbddb44567ed5eba90ae624b172d765473ee6b76c"
     },
     {
       "path": "Provenance/material-verification.json",
@@ -138,14 +148,24 @@
       "sha256": "5d784420398c5435cc2405baeafdd7806cc271d0c42d08ecd9a95ec1e06774f5"
     },
     {
+      "path": "Provenance/native8-build-record.json",
+      "bytes": 88418,
+      "sha256": "98b848717203d4eff44dd7ec9549a7453d587a65358ef5a10766a6bae7eda527"
+    },
+    {
+      "path": "Provenance/native8-material-verification.json",
+      "bytes": 2982,
+      "sha256": "b41156395094f4fa990d40448504204c271cc5ce1f08815ce0858e9e2ebfa3b7"
+    },
+    {
       "path": "Provenance/source-materials.json",
       "bytes": 17070,
       "sha256": "b05b3eb2c07c71b083ea52e786db7a60f659f07114fda102ee92ec588724b049"
     },
     {
       "path": "README.md",
-      "bytes": 12030,
-      "sha256": "8a0bacd2c0103eb782431628dcc955e8909f71dbee8fd72abfd5be79150da0f6"
+      "bytes": 13510,
+      "sha256": "ad277f737672af682a6fc0ef16b1d7aee2a13cef289f64a9c1bbfd0a14bc3ab3"
     },
     {
       "path": "Tools/assemble_source_extension.py",
@@ -154,8 +174,8 @@
     },
     {
       "path": "Tools/rebuild_core.py",
-      "bytes": 8024,
-      "sha256": "93e2fed403cd14d680d027d56ced7d8ae841a23b24ad1bf66783faab0bfd8e2b"
+      "bytes": 8026,
+      "sha256": "e7bf2238c8d7b687ab4c59f6434be1e8b283621c649e90e376c226b93b88aaad"
     },
     {
       "path": "Tools/verify_source_materials.py",
@@ -163,9 +183,9 @@
       "sha256": "1f879fe4e2822c854600be7af98d99fe89cffd88b2a5b1160f25bb982ed487a7"
     }
   ],
-  "fileCount": 31,
-  "totalBytes": 401220,
+  "fileCount": 35,
+  "totalBytes": 502926,
   "fullPortableRebuildExecuted": false,
   "finalExtensionAssetAssembled": false,
-  "nativeGeneration": 7
+  "nativeGeneration": 8
 }
