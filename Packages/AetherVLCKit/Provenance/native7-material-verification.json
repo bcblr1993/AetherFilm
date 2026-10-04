@@ -1,0 +1,43 @@
+{
+  "scope": "NATIVE7_SMALL_SOURCE_PATCH_AND_COMPONENT_MATERIAL_CHECKS_NOT_PORTABLE_REBUILD_OR_FINAL_APP",
+  "priorNative6Preparation": {
+    "path": "${REPOSITORY}/Packages/AetherVLCKit/Provenance/native6-material-verification.json",
+    "bytes": 1930,
+    "sha256": "19e001189d1dc799c4e3e6bca31436c7f5bc139dcbc13a79180dc3e4a0253f6a"
+  },
+  "allEightPatchesActuallyAppliedWithoutFuzzOrOffset": true,
+  "allTwelveSourcePinsActualMatch": true,
+  "officialPatchedArchive": {
+    "path": "${REPOSITORY}/.build/Probe/vlc-patched-source.tar.gz",
+    "bytes": 38078280,
+    "sha256": "448c7842896f9881592ae1c0fd0f4893f4d2848764fc492ebe0b1d494f3589a0"
+  },
+  "officialOriginalCoreAudioSHA256": "5a114dcd794f0136b97fe1b99747f989cf6096fa9b5c82f7bbf744e731e9de8f",
+  "actualPatchedCoreAudioSHA256": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25",
+  "threeCompilerInputSourceSHA256": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25",
+  "allPreviousSevenPatchesAndElevenSourcePinsUnchanged": true,
+  "patchCount": 8,
+  "releaseSourcePinCount": 12,
+  "smallLocalInputFileCount": 11,
+  "actualPatchApplication": {
+    "path": "${REPOSITORY}/.build/Native7SourcePackageCandidate20261004-r3/PatchProof-r1/outcome.json",
+    "bytes": 5721,
+    "sha256": "83595904cb2a1aa17e5c1f00b39b07c850214848d45487a45b40f97264571568"
+  },
+  "toolsASTValid": true,
+  "NoticesEqual": true,
+  "NoticesExactToActualNative7MacAppCandidate": true,
+  "licensesExactUnmodified": true,
+  "native4Native5Native6BuildRecordsUnchanged": true,
+  "actualAssembly": {
+    "path": "${REPOSITORY}/.build/NativeCoreAudioClockCadenceCandidate20261004-r1/AssemblyPrep/Assembly-r1/ASSEMBLY.json",
+    "bytes": 2420,
+    "sha256": "db23b4b4a9f86425baebc45540a3a69f33de91891d32cb1b5c8e64649fa320c4"
+  },
+  "base665MBAssetAndLuaRetainedNotCopiedOrReextracted": true,
+  "onlyTwelveOfficialSourceFilesExtracted": true,
+  "fullPortableRebuildExecuted": false,
+  "finalSourceExtensionAssetAssembled": false,
+  "publicDistributionVerified": false,
+  "finalAppAcceptanceClaimed": false
+}

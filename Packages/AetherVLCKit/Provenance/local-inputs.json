@@ -1,5 +1,5 @@
 {
-  "scope": "SOURCE_INPUTS_FOR_NATIVE6_NOT_RELEASE_ACCEPTANCE",
+  "scope": "SOURCE_INPUTS_FOR_NATIVE7_NOT_RELEASE_ACCEPTANCE",
   "officialPatchedTree": "9cb4e084a5e41ba0f7037c209884d8816ef929ad",
   "official12AlreadyApplied": true,
   "patchOrder": [
@@ -9,7 +9,8 @@
     "Patches/decoder-flush-preview.patch",
     "Patches/held-io-recovery.patch",
     "Patches/audio-output-domain.patch",
-    "Patches/output-clock-cadence.patch"
+    "Patches/output-clock-cadence.patch",
+    "Patches/coreaudio-cadence.patch"
   ],
   "files": [
     {
@@ -61,6 +62,11 @@
       "path": "Patches/output-clock-cadence.patch",
       "bytes": 521,
       "sha256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f"
+    },
+    {
+      "path": "Patches/coreaudio-cadence.patch",
+      "bytes": 720,
+      "sha256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a"
     }
   ],
   "officialTouchedSourceSHA256": {
@@ -74,7 +80,8 @@
     "src/network/stream.c": "dbd070832d0601a10d7cf270fb267fe31be1b3d90f0a294750931541a5199077",
     "src/video_output/video_output.c": "c995848c2c772252c1f0375c14d86884d901f1c883557f397041a23a51e052f2",
     "src/audio_output/dec.c": "e30e86904188d6937aad0aadbaa5a1d9ac9d2081f9980ec395d598a4f341ac73",
-    "modules/audio_output/apple/avsamplebuffer.m": "bce45adc3f68e13c5c81b14b3e0efb0cd7e22a0b89db3919759378b28285f68e"
+    "modules/audio_output/apple/avsamplebuffer.m": "bce45adc3f68e13c5c81b14b3e0efb0cd7e22a0b89db3919759378b28285f68e",
+    "modules/audio_output/apple/coreaudio_common.c": "5a114dcd794f0136b97fe1b99747f989cf6096fa9b5c82f7bbf744e731e9de8f"
   },
   "native4TouchedSourceSHA256": {
     "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
@@ -115,5 +122,20 @@
     "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
     "modules/audio_output/apple/avsamplebuffer.m": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f"
   },
-  "outputClockCadencePatchApplicationActualPass": true
+  "outputClockCadencePatchApplicationActualPass": true,
+  "native7TouchedSourceSHA256": {
+    "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+    "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+    "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+    "src/input/input.c": "1de47b34f81825db83ef761c77cf5b0f510b1a9e11433a331beae44cf68d6ce5",
+    "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+    "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+    "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+    "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+    "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+    "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+    "modules/audio_output/apple/avsamplebuffer.m": "8b9d6ebe252d4273fac53cbf4113cf402709ac5b82fe86870204c00b9953d28f",
+    "modules/audio_output/apple/coreaudio_common.c": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25"
+  },
+  "coreAudioCadencePatchApplicationActualPass": true
 }

@@ -1,5 +1,15 @@
 # v0.1.0 验收矩阵
 
+2026-10-04 当前 Native7 的原完整 Mac53 在 macos27 / ARM64 虚拟机实际 **53通过 / 0失败 / 0跳过**，exit0。三平台 CoreAudio 真实输出报告周期从1000ms改为100ms；原正常时钟、片尾11.9秒断言、30秒上限及其他用例全部保持。半速最后normal12.276241、input12.25、实际EOS24.935秒，真实normal周期中位107ms；音视频349 /562、完成一次且无错误。完整53个case身份、原MTC与XCTest配置、源码 / Products / 输入前后守卫、严格封签及自有执行器清理均通过。原Native6失败保留在下方历史记录。证据 `.build/NativeCoreAudioClockCadenceMacVM20261004-r1/Execution-r1/outcome.json` 和 `ReadOnlyReview-r1/ACTUAL_REVIEW.json`（SHA `3f411873…`）。
+
+Native7 三平台增量C对象和六个wrapper目标均实际exit0，最低26.0 / SDK27.0 / ARM64保持；8项补丁、12个受影响源文件和对应源材料核验通过。Root实际整合12个材料文件，并核对74个编译App / 测试 / 夹具路径一致，证据 `.build/Native7FormalIntegration20261004-r1/RESULT.json`。新三切片ZIP为68,726,561字节，SHA `f629ad7f…`。完整全新可移植源重建未执行。新版iOS模拟器与真机播放、Mac26 CI、正式分发仍需各自实际结果。
+
+最终 Native6 r2 的完整UI与减少透明度验收已闭合：iPhone和iPad各原UI19 **18通过 / 0失败 / 1自然跳过**；Mac原UI19 **17通过 / 1失败 / 1自然跳过**。唯一失败为原未过滤描述审计报告的系统Disabled空TouchBar；未删除断言、筛选或给予豁免。三端随后真实开启系统减少透明度，原专项各 **1通过 / 0失败 / 0跳过**，原系统设置全部恢复。完整case、源码 / 产品 / 输入 / 配置 / 严格封签守卫及自有执行器清理已闭合，11张关键原PNG保留。证据 `.build/FinalUIReadOnlyClosure20261004-r1/UI_RESULTS_REPORT.json`（SHA `4a3a57f5…`）。这组UI绑定Native6组件；Native7沿用相同SwiftUI和测试源码，但不能将旧结果写作新版运行结果。
+
+最终共享回归实际 **45通过 / 0失败 / 8项SMB3 opt-in跳过**，exit0；原Mac执行器单元测试 **5/5通过**。独立真实SMB3.1.1加密专项 **8通过 / 0失败 / 0跳过**，exit0；97个客户端与97个服务端加密包、明文READ0，真实阻断与错误协议控制通过，自有服务器和临时目录已清理。证据 `.build/FinalNative6SharedTests20261004-r1.log` 与 `.build/FinalNative6SharedAndSMB3Acceptance20261004-r1/ACTUAL_REVIEW.json`。这认证测试服务器，用户实际NAS、人工听音和VoiceOver验收仍待补充。
+
+## 历史候选与原失败记录
+
 2026-10-04 同一最终 Native6 r2 在 macos27 虚拟机的原完整53项实际 **52通过 / 1失败 / 0跳过**，exit65。唯一失败是 `testHalfSpeedNaturalCompletionDoesNotDoubleDrainTime` 的原片尾输出时钟断言：normal11.747092低于11.9秒；其他52项通过，包括真实95%已看持久化后读错撤销。完整产品、源码、原配置与严格签名前后验证通过，执行器清理退出0；该失败仍阻塞播放验收，正在核对实际EOS与输出时序，不放宽断言。证据 `.build/FinalNative6MacPlaybackVMPrep20261004-r1/Execution-r1/outcome.json`；原完整结果保留在虚拟机 `native6-final-20261004-r2/Mac53-r1.xcresult`。
 
 2026-10-04 最终 Native6 r2 的 iPhone27 原完整UI19实际 **18通过 / 0失败 / 1自然跳过**，exit0；唯一跳过是系统尚未开启减少透明度的原条件，另行真实系统设置专项与iPad / Mac完整UI仍在执行。全部19项身份、原断言和期限保持，产品 / 源码 / 输入前后守卫通过。证据 `.build/FinalNative6PhysicalAndUIAcceptancePrep20261004-r2/PhoneUI19-r1/Exports/case-results.json`。

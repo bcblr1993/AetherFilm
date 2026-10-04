@@ -1,5 +1,34 @@
 # Release gates
 
+Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
+macOS / iOS 26.0. No App release has been published.
+
+Current Native7 source (2026-10-04): the unfiltered Mac53 passed 53/0/0 on the
+macos27 VM with original assertions, deadlines, full checker configuration,
+strict seals and source/product guards. The real CoreAudio clock-cadence fix
+and all three incremental C builds / six wrapper targets passed. The eight
+patches and twelve affected source files are pinned in the source materials;
+the assembled ARM64 component checksum is `f629ad7f…`. A complete fresh
+portable source rebuild has not executed. Native7 mobile runtime and physical
+device acceptance, Mac26 CI, final signed/notarized package, installed VM
+acceptance and public-download verification remain separate gates.
+
+Final Native6 UI results are closed and retained: Phone and Pad each 18/0/1,
+Mac 17/1/1; actual system Reduce Transparency separately passed 1/0/0 on all
+three targets with original settings restored. The sole Mac failure is the
+unfiltered system Disabled empty TouchBar description audit. No exception has
+been granted. These results bind the preceding Native6 component, while the
+SwiftUI and UI test source remain unchanged in Native7. Shared tests passed
+45 with eight opt-in SMB3 skips; the dedicated encrypted SMB3 suite passed
+8/0/0 and the runner unit tests passed 5/5. User-NAS, audible and VoiceOver
+acceptance remain open. `TEST_MATRIX.md` records exact artifacts and scope.
+
+The Native7 dependency and corresponding source are prepared for a separate
+technical prerelease. Publishing that component permits reproducible SwiftPM
+resolution and current-commit CI; it does not publish or certify the App.
+
+## Historical candidate evidence
+
 2026-10-04 authentication continuation: after the user authenticated UI automation inside the macos27 VM, the same narrow UI candidate passed the actual Reduce Transparency case with1 pass /0 failures /0 skips, exit0. The original absent preference key and false API state were restored. Both earlier runner-initialization timeouts remain retained. This does not replace acceptance of the final unified Native6 source. Evidence: `.build/NativeSMBAXTypeUIExecution20261004-r2/MacReduceReview-r3/`.
 
 Target: v0.1.0. No release has been published.
@@ -23,8 +52,6 @@ Baseline frozen Native4 evidence (2026-10-04): the three ARM64/min26 framework s
 Independent candidate evidence (2026-10-04): the hidden-control view-tree correction passed the unchanged full UI19 on both iPhone and iPad simulators (18 passes / zero failures / one natural skip each), plus a real system Reduce Transparency check on each device with settings restored. The qualified unread seek8 target and confirmed-progress correction passed all53 iOS27 playback cases, including real healthy pre-EOS95% confirmation and preservation of prior/manual watched records. These exact tested source changes are merged. The Native4 four-container smoke passed on an owned iOS26.5 simulator; full minimum-system and combined-source regression remain required. The first SMB identifier-only correction failed its unchanged case during exclusive execution; a native label-click correction is awaiting the user's shared-VM test window.
 
 The half-speed audio timing correction is built into all three Native5 framework slices. Its new functional case actually passed1/1 with zero failures or skips: the12-second clip reached EOS around24.57 seconds,22.056 seconds after early real output readiness, within the independent30-second bound and above the21.202-second lower bound. Real tail audio/video, normal/input time, engine identity and exactly one completion were checked. The test is merged without changing the original53 cases or deadlines; the older60-second measurement is retained separately. Final Native5 playback54 /46, full UI, physical device, distribution and public-download acceptance are pending. The macOS26 CI job is configured and five local runner failure/control tests pass; hosted build/runtime has not executed. The pinned synthetic EOF asset pair preserves byte-range qualification across encoder versions. No App release or gate waiver is claimed.
-
-## Historical candidate evidence
 
 Latest physical-device execution (2026-10-04): the original native3 unfiltered50 run on the USB iPhone12Pro / iOS27 was39 passes /1 failure /10 SMB bootstrap skips. The four original local seek cases passed. The sole 4K failure was subsequently matched with a precise static-log recognition correction; the unchanged original 4K case passed1/1, exit0, with VideoToolbox selected/accepted-frame evidence and real video/audio output. Strict signatures and source/product guards passed before and after that run. The first full result remains preserved; physical SMB, full UI, audible acceptance, minimum26 runtime and distribution still require evidence. The fixed-cache native IO mechanism control passed24/24 primary expected outcomes and all13 candidate controls, but its no-drain negative hypothesis was disproved and the original runner exit1 is retained. That C correction is not yet built into the App and does not establish recovery of the original App's intermittent held-tail failure. See `TEST_MATRIX.md` for the exact artifacts and limitations.
 

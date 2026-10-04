@@ -55,7 +55,7 @@ def main():
     require(output.parent.is_dir(), "Create the owned output parent directory first")
     require(output != source and source not in output.parents, "Build output must be outside source")
     inputs = json.loads((PACKAGE / "Provenance/local-inputs.json").read_text())
-    for relative, expected in inputs["native6TouchedSourceSHA256"].items():
+    for relative, expected in inputs["native7TouchedSourceSHA256"].items():
         require(digest(source / relative) == expected, f"Patched source differs: {relative}")
     config = PACKAGE / "Configuration/build26.conf"
     expected_config = next(row for row in inputs["files"] if row["path"] == "Configuration/build26.conf")
@@ -76,7 +76,7 @@ def main():
                "--config=" + str(config), "--disable-debug", "-j4"]
     plan = {"scope": "PARAMETERIZED_REBUILD_NOT_PREVIOUSLY_EXECUTED", "command": command,
             "cwd": str(output), "platform": args.platform, "sdk": sdk, "minimum": "26.0",
-            "rustTarget": rust_target, "sourceMatchesElevenNative6TouchedFiles": True,
+            "rustTarget": rust_target, "sourceMatchesTwelveNative7TouchedFiles": True,
             "fullTreeIdentityRequiresVerifiedSourceArchive": True, "releaseAccepted": False}
     if not args.execute:
         print(json.dumps(plan, indent=2))

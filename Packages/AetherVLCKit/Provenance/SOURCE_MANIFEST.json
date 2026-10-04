@@ -1,5 +1,5 @@
 {
-  "scope": "SMALL_FORMAL_NATIVE6_CORRESPONDING_SOURCE_MATERIALS",
+  "scope": "SMALL_NATIVE7_CORRESPONDING_SOURCE_CANDIDATE",
   "exclusions": [
     "Package.swift and Provenance/artifact.json are separately frozen by release integration",
     "SOURCE_MANIFEST.json excludes its own recursive hash",
@@ -31,6 +31,11 @@
       "path": "Patches/audio-output-domain.patch",
       "bytes": 2832,
       "sha256": "ac1fe50261f73b86a1a9a111c8cd440e430cf8f6e14400451a5a5706582bf2d7"
+    },
+    {
+      "path": "Patches/coreaudio-cadence.patch",
+      "bytes": 720,
+      "sha256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a"
     },
     {
       "path": "Patches/decoder-flush-preview.patch",
@@ -89,8 +94,8 @@
     },
     {
       "path": "Provenance/local-inputs.json",
-      "bytes": 6733,
-      "sha256": "503a20e4dab9a923a55833a1f45935bd65181d496a417a9a562647bdba300420"
+      "bytes": 8421,
+      "sha256": "ed2c849fc9edc2f26e3217753d9a74d83bd2950ad0b98364b51ce865e85e858f"
     },
     {
       "path": "Provenance/material-verification.json",
@@ -123,14 +128,24 @@
       "sha256": "19e001189d1dc799c4e3e6bca31436c7f5bc139dcbc13a79180dc3e4a0253f6a"
     },
     {
+      "path": "Provenance/native7-build-record.json",
+      "bytes": 40121,
+      "sha256": "f81460bef2ef840319c1a7b9d5536ac223692b39237fd47f8f45ab3d220294e4"
+    },
+    {
+      "path": "Provenance/native7-material-verification.json",
+      "bytes": 2066,
+      "sha256": "5d784420398c5435cc2405baeafdd7806cc271d0c42d08ecd9a95ec1e06774f5"
+    },
+    {
       "path": "Provenance/source-materials.json",
       "bytes": 17070,
       "sha256": "b05b3eb2c07c71b083ea52e786db7a60f659f07114fda102ee92ec588724b049"
     },
     {
       "path": "README.md",
-      "bytes": 11042,
-      "sha256": "959219049ca74850cb60a91d78c0c5a69d91795935ba4d63a7cbd988076c0413"
+      "bytes": 12030,
+      "sha256": "8a0bacd2c0103eb782431628dcc955e8909f71dbee8fd72abfd5be79150da0f6"
     },
     {
       "path": "Tools/assemble_source_extension.py",
@@ -140,7 +155,7 @@
     {
       "path": "Tools/rebuild_core.py",
       "bytes": 8024,
-      "sha256": "cd32aa7d4932fac0c59eff004820b45b9c2e82c9036c7a72e0f8b272453b3a94"
+      "sha256": "93e2fed403cd14d680d027d56ced7d8ae841a23b24ad1bf66783faab0bfd8e2b"
     },
     {
       "path": "Tools/verify_source_materials.py",
@@ -148,9 +163,9 @@
       "sha256": "1f879fe4e2822c854600be7af98d99fe89cffd88b2a5b1160f25bb982ed487a7"
     }
   ],
-  "fileCount": 28,
-  "totalBytes": 355637,
+  "fileCount": 31,
+  "totalBytes": 401220,
   "fullPortableRebuildExecuted": false,
   "finalExtensionAssetAssembled": false,
-  "nativeGeneration": 6
+  "nativeGeneration": 7
 }

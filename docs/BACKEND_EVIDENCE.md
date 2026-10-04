@@ -5,9 +5,41 @@ evidence and scoped diagnostic results. These results are not an assertion
 that the final combined AetherFilm candidate or device acceptance has passed;
 the release acceptance matrix remains in `TEST_MATRIX.md`.
 
-## Current Native6 source and execution boundary
+## Current Native7 source and execution boundary
 
-The current pinned dependency is the Native6 ARM64 component. It retains the
+The pinned ARM64 component adds `Patches/coreaudio-cadence.patch` (SHA256
+`3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a`).
+CoreAudio reports real output timestamps every 100 ms instead of one second.
+The patch does not interpolate clocks or change playback rate, drain, flush,
+audio-output selection, test assertions or deadlines. The earlier sample-buffer
+clock correction remains included.
+
+All three affected C objects and both wrapper targets on each platform actually
+built successfully. The eight local patches and twelve affected source files
+were independently verified against the corresponding source materials.
+Each full archive changed exactly one member; all other member payloads and
+the generated 302-module definitions were preserved. The three ARM64 slices
+retain minimum OS 26.0, SDK 27.0 and platform values 1/7/2.
+
+`VLCKit-AetherFilm-native7-arm64.xcframework.zip` is 68,726,561 bytes, SHA256
+`f629ad7fd1f02aa3fef00a1808bf85e8ccb7b6916c5263d0b0238faaad261e35`.
+`Package.swift`, `Provenance/artifact.json`, `native7-build-record.json` and
+`native7-material-verification.json` record this component. These are verified
+incremental builds; a fresh complete portable source rebuild has not executed.
+The component and corresponding source are prepared for a technical prerelease.
+
+The same compiled App passed the original unfiltered Mac 53-case suite on the
+macos27 VM: 53 passed, zero failed or skipped, exit 0. The half-speed regression
+retained its original 11.9-second tail assertion and 30-second limit. Last real
+normal time was 12.276241, input time 12.25, and EOS arrived at 24.935 seconds;
+normal-clock cadence measured 107 ms. Exact source, products, configuration,
+strict seals and owned-runner cleanup passed before and after execution.
+Native7 mobile runtime, physical-device and distribution acceptance remain
+separate gates in `TEST_MATRIX.md`.
+
+## Historical Native6 source and execution boundary
+
+The preceding pinned dependency was the Native6 ARM64 component. It retained the
 Native5 audio output-domain fix and adds
 `Patches/output-clock-cadence.patch` (SHA256
 `d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f`).
@@ -24,8 +56,8 @@ portable source rebuild.
 The assembled `VLCKit-AetherFilm-native6-arm64.xcframework.zip` is 68,725,880
 bytes, with measured SwiftPM checksum
 `ced058ad2baa7cb74b4b1a842abbc0573a6f3bf6ddcd11f83c04d997c8414005`.
-`Package.swift` and `Provenance/artifact.json` pin this component. Its binary
-and corresponding source are prepared for a separate technical prerelease.
+The historical package and artifact records pinned this component. It was
+superseded before its planned technical prerelease was published.
 
 The final combined candidate passed the unfiltered 61-case playback suites on
 iOS 27 and iOS 26.5 Simulators (61 passed, zero failed or skipped on each).
