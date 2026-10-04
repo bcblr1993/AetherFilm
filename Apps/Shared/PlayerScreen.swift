@@ -124,14 +124,7 @@ struct PlayerScreen: View {
             if let message { subtitleError = message; revealControls() }
         }
         .onChange(of: showingOptions) { _, _ in revealControls() }
-        .onDisappear {
-            let sessionID = playbackSessionID
-            player.stop()
-            Task {
-                await store.flushProgress()
-                if let sessionID { await store.stopStreaming(for: item.id, sessionID: sessionID) }
-            }
-        }
+        .onDisappear(perform: stopPlaybackOnDisappear)
         .onChange(of: scenePhase) { _, phase in
             #if os(iOS)
             if phase == .background { player.pause() }
@@ -147,6 +140,15 @@ struct PlayerScreen: View {
         .alert("无法打开字幕", isPresented: Binding(get: { subtitleError != nil }, set: { if !$0 { subtitleError = nil } })) {
             Button("好", role: .cancel) { subtitleError = nil }
         } message: { Text(subtitleError ?? "") }
+    }
+
+    private func stopPlaybackOnDisappear() {
+        let sessionID = playbackSessionID
+        player.stop()
+        Task {
+            await store.flushProgress()
+            if let sessionID { await store.stopStreaming(for: item.id, sessionID: sessionID) }
+        }
     }
 
     private var showsControls: Bool { controlsVisible || player.seekStatus != nil }

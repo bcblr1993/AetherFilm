@@ -3,7 +3,7 @@
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. No App release has been published.
 
-Current Native7 source (2026-10-04): the unfiltered Mac53 passed 53/0/0 on the
+Native7 source `987ce91` (2026-10-04): the unfiltered Mac53 passed 53/0/0 on the
 macos27 VM with original assertions, deadlines, full checker configuration,
 strict seals and source/product guards. The real CoreAudio clock-cadence fix
 and all three incremental C builds / six wrapper targets passed. The eight
@@ -23,9 +23,36 @@ SwiftUI and UI test source remain unchanged in Native7. Shared tests passed
 8/0/0 and the runner unit tests passed 5/5. User-NAS, audible and VoiceOver
 acceptance remain open. `TEST_MATRIX.md` records exact artifacts and scope.
 
-The Native7 dependency and corresponding source are prepared for a separate
-technical prerelease. Publishing that component permits reproducible SwiftPM
-resolution and current-commit CI; it does not publish or certify the App.
+The Native7 dependency and corresponding source are public in a separate
+technical prerelease. This permits reproducible SwiftPM resolution and
+current-commit CI; it does not publish or certify the App.
+
+Latest execution for source `987ce91` (2026-10-04): Native7 iOS27 and26.5
+Simulators passed the full61, zero failures or skips on each. The physical
+iPhone12Pro / iOS27.0.1 full61 was59/2/0; an unchanged two-case diagnostic
+reproduced0/2/0, with native EOS179/195ms after tail seeks and stale input.
+These core failures still block App publication. All original deadlines and
+completion conditions remain intact while native drain timing is investigated.
+
+Native7 current fullUI is Phone/Pad18/0/1 each and Mac17/1/1, plus actual
+Reduce Transparency1/0/0 on each with settings restored. The sole Mac audit
+failure remains the system Disabled empty TouchBar; no exception is granted.
+The earlier Native6 results below remain historical.
+
+The Native7 technical prerelease is now public and all three binary/source
+assets were anonymously downloaded in full with matching length and SHA256.
+Its first source push was `987ce91`. CI37198775841 failed: shared passed; Mac26
+typechecking failed in the PlayerScreen exit task; the platform Mac build
+passed but generic Simulator also attempted x86_64. Narrow source/helper and
+explicit ARM64 Simulator configuration corrections await current-commit CI.
+
+The same source produced a signed iOS development archive with34 inspection
+checks passed and an ARM64 Developer ID Mac candidate with both notarizations
+Accepted, valid stapled tickets and actual mounted-volume/content checks.
+These candidates remain unpublished. Host assessment has a pre-existing
+security override and does not replace installed VM acceptance. A source
+change requires a newly built distribution candidate. Exact paths and
+limitations are at the top of `TEST_MATRIX.md`.
 
 ## Historical candidate evidence
 

@@ -26,7 +26,10 @@ retain minimum OS 26.0, SDK 27.0 and platform values 1/7/2.
 `Package.swift`, `Provenance/artifact.json`, `native7-build-record.json` and
 `native7-material-verification.json` record this component. These are verified
 incremental builds; a fresh complete portable source rebuild has not executed.
-The component and corresponding source are prepared for a technical prerelease.
+The component and corresponding source are public in technical prerelease
+`vlckit-8f5ce02-aether-20261004`; all three assets were anonymously downloaded
+in full with matching byte counts and SHA256. This is dependency availability,
+not an App release.
 
 The same compiled App passed the original unfiltered Mac 53-case suite on the
 macos27 VM: 53 passed, zero failed or skipped, exit 0. The half-speed regression
@@ -34,8 +37,12 @@ retained its original 11.9-second tail assertion and 30-second limit. Last real
 normal time was 12.276241, input time 12.25, and EOS arrived at 24.935 seconds;
 normal-clock cadence measured 107 ms. Exact source, products, configuration,
 strict seals and owned-runner cleanup passed before and after execution.
-Native7 mobile runtime, physical-device and distribution acceptance remain
-separate gates in `TEST_MATRIX.md`.
+The corresponding iOS27 and26.5 Simulator full61 suites also passed61/0/0.
+Physical iPhone27.0.1 full61 was59/2/0, and a bounded two-case trace reproduced
+both tail-seek completion failures. Native EOS preceded any new target normal
+clock, with stale input still captured; its native drain timing is under
+investigation. Physical-device and distribution acceptance remain separate
+gates in `TEST_MATRIX.md`.
 
 ## Historical Native6 source and execution boundary
 

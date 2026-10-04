@@ -1,5 +1,15 @@
 # v0.1.0 验收矩阵
 
+2026-10-04 Native7 / 源码 `987ce91` 的完整移动播放结果已闭合：iOS27 与 iOS26.5 模拟器各 **61通过 / 0失败 / 0跳过**；自有26.5实际恢复Shutdown。USB iPhone12Pro / iOS27.0.1 经真实局域网SMB完整61为 **59通过 / 2失败 / 0跳过**。两项失败是重播第二次完成、暂停与2倍速后跳到片尾的自然完成；原6秒期限保持，其他59项（含半速、SMB、4K和已看回滚）通过。全部方法身份、源码 / 输入 / 产品 / 完整原配置和严格签名前后检查通过。证据 `.build/NativeCoreAudioClockCadenceMobileAcceptance20261004-r1/{Full61-iOS27-r1,Full61-iOS26.5-r1,Physical61-r4}/outcome.json`；真机小复核 `Physical61-r4/FAILED_CASE_READONLY_REVIEW.json`。
+
+同一生产App另加已有bounded生命周期记录与失败附件的独立诊断，仅两测试文件setup / teardown增加记录，原两方法、断言与期限保持，实际专项 **0通过 / 2失败 / 0跳过**。1115与1398条事件均无淘汰；两个倍速playing-seek11后仅179 /195ms便出现native EOS，没有新的目标normal时钟，停止input仍是5.932315 /0.678776旧位置。重播第一次虽原门通过，但仅70ms即EOS，不能据此认定片尾真实呈现。原生排空 / 输入统计时序仍待验证；不以时长、seek估值或延长期限绕过完成门。证据 `.build/Native7PhysicalSeekTrace20261004-r1/Focused2-r1/ACTUAL_TIMING_REVIEW.json`。
+
+Native7 当前UI已完整实跑：Phone、Pad各原19项 **18通过 / 0失败 / 1自然跳过**，真实系统减少透明度另各 **1通过 / 0失败 / 0跳过**并恢复设置；Mac原19项 **17通过 / 1失败 / 1自然跳过**，真实减少透明度另 **1通过 / 0失败 / 0跳过**，恢复key不存在 / API false。Mac唯一失败仍是未过滤审计的系统Disabled空TouchBar；没有豁免。所有源 / 输入 / 产品 / 配置 / 严格封签守卫闭合。证据 `.build/NativeCoreAudioClockCadenceUIAcceptance20261004-r1/FINAL_MOBILE_UI_GUARD_CLOSURE.json`、`.build/NativeCoreAudioClockCadenceMacUI20261004-r1/{UI19-Exports-r1,Reduce-ReadOnly-r1}/`。这些结果绑定 `987ce91` 的界面源码。
+
+公开技术组件 `vlckit-8f5ce02-aether-20261004` 已发布；新ZIP、665MB基础源码、精确提交扩展均匿名完整流式下载，长度与SHA256匹配，未发布App。提交 `987ce91` 的 CI `37198775841` 整轮失败：共享通过，Mac26构建在PlayerScreen退出异步表达式类型检查超时，平台任务的Mac构建通过、Simulator误构建x86_64而不能链接ARM64组件。两项构建问题分别以独立退出清理方法、显式Simulator ARCHS=arm64修正，等待新提交CI实证，不能记作Mac26播放通过。
+
+正式 `987ce91` iOS Release归档实际构建exit0，独立34项检查通过：0.1.0/build1、最低26、iPhone/iPad、ARM64、真实Native7 UUID、严格签名 / profile / dSYM / 许可证 / 无夹具；这是开发签名归档，非公开iOS分发。Mac ARM64候选已Developer ID签名、App与DMG两项公证Accepted、票据有效，真实只读挂载卷AetherFilm和内容检查通过；32,380,078字节、SHA `30e45d1b…`。宿主Gatekeeper有既有security override，不代替VM安装与播放；未发布App，后续源码改动须新候选。证据 `.build/FinalNative7IOSRelease20261004-r1/archive-inspection.json` 和 `.build/FormalNative7MacRelease20261004-r1/MOUNT_INSPECTION.json`。
+
 2026-10-04 当前 Native7 的原完整 Mac53 在 macos27 / ARM64 虚拟机实际 **53通过 / 0失败 / 0跳过**，exit0。三平台 CoreAudio 真实输出报告周期从1000ms改为100ms；原正常时钟、片尾11.9秒断言、30秒上限及其他用例全部保持。半速最后normal12.276241、input12.25、实际EOS24.935秒，真实normal周期中位107ms；音视频349 /562、完成一次且无错误。完整53个case身份、原MTC与XCTest配置、源码 / Products / 输入前后守卫、严格封签及自有执行器清理均通过。原Native6失败保留在下方历史记录。证据 `.build/NativeCoreAudioClockCadenceMacVM20261004-r1/Execution-r1/outcome.json` 和 `ReadOnlyReview-r1/ACTUAL_REVIEW.json`（SHA `3f411873…`）。
 
 Native7 三平台增量C对象和六个wrapper目标均实际exit0，最低26.0 / SDK27.0 / ARM64保持；8项补丁、12个受影响源文件和对应源材料核验通过。Root实际整合12个材料文件，并核对74个编译App / 测试 / 夹具路径一致，证据 `.build/Native7FormalIntegration20261004-r1/RESULT.json`。新三切片ZIP为68,726,561字节，SHA `f629ad7f…`。完整全新可移植源重建未执行。新版iOS模拟器与真机播放、Mac26 CI、正式分发仍需各自实际结果。
