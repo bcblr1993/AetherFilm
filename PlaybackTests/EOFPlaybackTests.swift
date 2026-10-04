@@ -1840,12 +1840,12 @@ final class EOFPlaybackTests: XCTestCase {
 
     func testActiveOneAndHalfSpeedLongGOPForwardTailSeekConsumesRealOutputOnce() async throws {
         try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 1.5,
-            fixtureName: "clip-h264.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
+            fixtureName: "clip-tail-long-gop.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
     }
 
     func testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce() async throws {
         try await assertActiveForwardTailSeekConsumesRealOutputOnce(rate: 2,
-            fixtureName: "clip-h264.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
+            fixtureName: "clip-tail-long-gop.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
     }
 
     private func assertActiveForwardTailSeekConsumesRealOutputOnce(rate: Float,
@@ -1863,9 +1863,11 @@ final class EOFPlaybackTests: XCTestCase {
         // requires11 seconds of actual preroll before the same target.
         let actualPacketTailSeconds = 1.0
         let minimumSeekToEOSSeconds = actualPacketTailSeconds / Double(rate) - 0.15
-        // AVSampleBuffer's real observer runs every 100 ms. The last actual
-        // normal point may precede the last sample by one observer interval.
-        let minimumFinalNormal = 12.0 - max(1.0 / 15.0, Double(rate) * 0.1)
+        // A normal point is a sampled clock, not a measurement at EOS. The
+        // timer's refresh period is a minimum dispatch interval, not a maximum
+        // sampling delay. Check clock continuity at the native EOS callback
+        // using both callbacks' original ContinuousClock timestamps below.
+        let minimumClockAtEOS = 12.0 - 1.0 / 15.0
         // The independent upper uses only Swift ContinuousClock elapsed
         // seconds since this seek request and the unchanged requested rate.
         // VLC systemDate is used for real callback pairing, never subtracted
@@ -2022,6 +2024,41 @@ final class EOFPlaybackTests: XCTestCase {
             return abs(finalNormal - Double(time) / 1_000_000) < 0.000002
         })
         let finalNormalCallback = try XCTUnwrap(finalTrace.pairedCallback(for: finalNormalDelivery, callbackCode: 30))
+        struct TimedCallbacks: Decodable {
+            struct Record: Decodable {
+                let sequence: Int
+                let eventCode: Int
+                let generation: Int
+                let elapsedSeconds: Double
+                let state: Int?
+                let sourceSequence: Int?
+                let accepted: Bool?
+            }
+            let records: [Record]
+        }
+        let timedCallbacks = try JSONDecoder().decode(TimedCallbacks.self,
+            from: XCTUnwrap(player.debugLifecycleTraceData()))
+        let clockCallback = try XCTUnwrap(timedCallbacks.records.first {
+            $0.sequence == finalNormalCallback.sequence && $0.eventCode == 30
+                && $0.generation == marker.generation
+        })
+        let eosCallback = try XCTUnwrap(timedCallbacks.records.first {
+            $0.eventCode == 50 && $0.generation == marker.generation
+                && $0.sequence > clockCallback.sequence
+                && $0.state == Int(AetherVLCMediaStoppingReason.endOfStream.rawValue)
+                && $0.accepted == true
+        })
+        XCTAssertTrue(timedCallbacks.records.contains {
+            $0.eventCode == 51 && $0.generation == marker.generation
+                && $0.sourceSequence == eosCallback.sequence && $0.accepted == true
+        })
+        let callbackToEOSSeconds = eosCallback.elapsedSeconds - clockCallback.elapsedSeconds
+        XCTAssertTrue(callbackToEOSSeconds.isFinite && callbackToEOSSeconds >= 0)
+        XCTAssertLessThanOrEqual(callbackToEOSSeconds, 6)
+        let projectedClockAtNativeEOS = finalNormal + Double(rate) * callbackToEOSSeconds
+        // This is explicitly an oracle projection, never a replacement for
+        // the raw backend clock or evidence of rendered audio. Real output,
+        // minimum consumption wall time and exactly-once EOS remain required.
         struct ActualFinalNormalPair: Encodable {
             let marker: TailPhaseTrace.Record
             let delivery: TailPhaseTrace.Record
@@ -2029,25 +2066,38 @@ final class EOFPlaybackTests: XCTestCase {
             let actualSeekToObservedEOSSeconds: Double
             let actualClockObserverIntervalSeconds: Double
             let wallClockMaximumFinalNormal: Double
+            let originalClockCallbackElapsedSeconds: Double
+            let originalEOSCallbackElapsedSeconds: Double
+            let callbackToEOSSeconds: Double
+            let projectedClockAtNativeEOS: Double
+            let minimumClockAtEOS: Double
         }
         let finalPair = ActualFinalNormalPair(marker: finalMarker, delivery: finalNormalDelivery,
             callback: finalNormalCallback, actualSeekToObservedEOSSeconds: seekToEOS,
             actualClockObserverIntervalSeconds: actualClockObserverIntervalSeconds,
-            wallClockMaximumFinalNormal: maximumFinalNormal)
+            wallClockMaximumFinalNormal: maximumFinalNormal,
+            originalClockCallbackElapsedSeconds: clockCallback.elapsedSeconds,
+            originalEOSCallbackElapsedSeconds: eosCallback.elapsedSeconds,
+            callbackToEOSSeconds: callbackToEOSSeconds,
+            projectedClockAtNativeEOS: projectedClockAtNativeEOS,
+            minimumClockAtEOS: minimumClockAtEOS)
         let finalPairAttachment = XCTAttachment(data: try JSONEncoder().encode(finalPair), uniformTypeIdentifier: "public.json")
         finalPairAttachment.name = "Actual final live native31-to30 pair and independent ContinuousClock upper"
         finalPairAttachment.lifetime = .keepAlways
         add(finalPairAttachment)
         observations.append(["phase": "actual-tail-completion-timing", "rate": rate,
             "seekToEOSSeconds": seekToEOS, "minimumSeekToEOSSeconds": minimumSeekToEOSSeconds,
-            "actualPacketTailSeconds": actualPacketTailSeconds, "minimumFinalNormal": minimumFinalNormal,
+            "actualPacketTailSeconds": actualPacketTailSeconds, "minimumClockAtEOS": minimumClockAtEOS,
+            "rawFinalNormal": finalNormal, "projectedClockAtNativeEOS": projectedClockAtNativeEOS,
+            "callbackToEOSSeconds": callbackToEOSSeconds,
             "maximumFinalNormal": maximumFinalNormal,
             "actualClockObserverIntervalSeconds": actualClockObserverIntervalSeconds,
             "clockUpperDomain": "Swift ContinuousClock elapsed seconds since seek; no VLC date mixing"])
         XCTAssertGreaterThanOrEqual(seekToEOS, minimumSeekToEOSSeconds,
                                     "EOS must consume the pinned actual tail; the old 70–220 ms stop is insufficient.")
         XCTAssertLessThanOrEqual(seekToEOS, 6)
-        XCTAssertGreaterThanOrEqual(try XCTUnwrap(player.backendClockTime), minimumFinalNormal)
+        XCTAssertGreaterThanOrEqual(projectedClockAtNativeEOS, minimumClockAtEOS,
+                                    "The sampled normal clock must continue through the pinned final video PTS at native EOS.")
         XCTAssertLessThanOrEqual(try XCTUnwrap(player.backendClockTime), maximumFinalNormal)
         XCTAssertGreaterThan(player.displayedVideoFrames, displayed + 5)
         XCTAssertGreaterThan(player.playedAudioBuffers, played + 5)

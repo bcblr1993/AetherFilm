@@ -56,6 +56,33 @@ def generate_eof_fixture(folder, ffmpeg, ffprobe):
     print(f"Staged canonical {output.name} ({size} bytes), verified EOF tail ({size - hold_at} bytes)", flush=True)
 
 
+def stage_long_gop_tail_fixture(folder, ffprobe):
+    """Pin the dedicated rate/preroll control without changing generated clips."""
+    name = "clip-tail-long-gop.mp4"
+    output = folder / name
+    if output.exists():
+        raise SystemExit("Long-GOP tail fixture already exists. Choose a fresh output directory.")
+    source = Path(__file__).resolve().parent.parent / "TestAssets/Playback" / name
+    data = source.read_bytes()
+    if len(data) != 747808 or hashlib.sha256(data).hexdigest() != "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b":
+        raise SystemExit("The canonical long-GOP tail fixture changed.")
+    packets = json.loads(subprocess.check_output([
+        ffprobe, "-v", "error", "-show_packets", "-show_entries",
+        "packet=stream_index,pts_time,duration_time,pos,size,flags", "-of", "json", str(source)
+    ], text=True))["packets"]
+    if not packets or any(int(p["pos"]) < 0 or int(p["size"]) <= 0
+                          or int(p["pos"]) + int(p["size"]) > len(data) for p in packets):
+        raise SystemExit("The canonical long-GOP packet bounds are invalid.")
+    video = [p for p in packets if p["stream_index"] == 0]
+    keys = [float(p["pts_time"]) for p in video if "K" in p.get("flags", "")]
+    end = max(float(p["pts_time"]) + float(p["duration_time"]) for p in packets)
+    if keys != [0.0] or abs(max(float(p["pts_time"]) for p in video) - 11.933333) > 0.000001 or abs(end - 12.0) > 0.000001:
+        raise SystemExit("The canonical long-GOP keyframe or tail layout changed.")
+    with output.open("xb") as file:
+        file.write(data)
+    print(f"Staged canonical {name} ({len(data)} bytes), verified keyframe0 and packet tail", flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path(".build/PlaybackFixtures"))
@@ -113,6 +140,7 @@ def main():
          "-disposition:s:0", "default", "-disposition:s:1", "0"], "clip-multitrack.mkv")
     (folder / "broken.mkv").write_bytes(b"AetherFilm malformed media fixture\n")
     generate_eof_fixture(folder, ffmpeg, ffprobe)
+    stage_long_gop_tail_fixture(folder, ffprobe)
 
 
 if __name__ == "__main__":
