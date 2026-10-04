@@ -1,5 +1,9 @@
 # v0.1.0 验收矩阵
 
+2026-10-04 提交 `38e187d` 的 CI `37200022745` 已结束，整轮失败。共享测试与 Mac / ARM64 Simulator / iOS Device 三平台构建均通过；Mac26.6.2 / Xcode26.6 / SDK26.5 在字幕导入回调类型检查超时，尚未执行播放。iOS完整61的原始日志记录58通过、3失败、0跳过：暂停片尾已看状态、真实尾部读错撤销的等待、完整SMB seek0预热。原始失败与附件保留，不能据此记作全部通过。证据 `.build/Native7CICommitCReview20261004-r1/{SNAPSHOT-r4.json,macos26-job-api-r2.log,platform-job-api.log}`。
+
+字幕导入成功回调改为显式 `Result<URL, Error>` 私有方法，保留原成功动作、允许类型与修饰器顺序。本机标准 SDK27 / ARM64 Release 构建实际exit0；SDK26的完整编译与播放仍等待修正提交CI，语法parse不是其替代。证据 `.build/CITypecheckFixValidation20261004-r1/file-importer-mac-build-r2-outcome.json`。
+
 2026-10-04 Native7 / 源码 `987ce91` 的完整移动播放结果已闭合：iOS27 与 iOS26.5 模拟器各 **61通过 / 0失败 / 0跳过**；自有26.5实际恢复Shutdown。USB iPhone12Pro / iOS27.0.1 经真实局域网SMB完整61为 **59通过 / 2失败 / 0跳过**。两项失败是重播第二次完成、暂停与2倍速后跳到片尾的自然完成；原6秒期限保持，其他59项（含半速、SMB、4K和已看回滚）通过。全部方法身份、源码 / 输入 / 产品 / 完整原配置和严格签名前后检查通过。证据 `.build/NativeCoreAudioClockCadenceMobileAcceptance20261004-r1/{Full61-iOS27-r1,Full61-iOS26.5-r1,Physical61-r4}/outcome.json`；真机小复核 `Physical61-r4/FAILED_CASE_READONLY_REVIEW.json`。
 
 同一生产App另加已有bounded生命周期记录与失败附件的独立诊断，仅两测试文件setup / teardown增加记录，原两方法、断言与期限保持，实际专项 **0通过 / 2失败 / 0跳过**。1115与1398条事件均无淘汰；两个倍速playing-seek11后仅179 /195ms便出现native EOS，没有新的目标normal时钟，停止input仍是5.932315 /0.678776旧位置。重播第一次虽原门通过，但仅70ms即EOS，不能据此认定片尾真实呈现。原生排空 / 输入统计时序仍待验证；不以时长、seek估值或延长期限绕过完成门。证据 `.build/Native7PhysicalSeekTrace20261004-r1/Focused2-r1/ACTUAL_TIMING_REVIEW.json`。

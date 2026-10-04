@@ -3,6 +3,13 @@
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. No App release has been published.
 
+CI37200022745 for `38e187d` completed with failure: shared tests and all three
+ARM64 platform builds passed. Mac26 compilation still timed out in the subtitle
+import callback before playback; the typed callback correction passes the local
+SDK27 Release build and awaits remote SDK26 validation. The iOS full61 raw log
+contains58 passes and3 failures in watched-state and real-SMB scenarios. The
+original assertions, failures and artifacts remain; App publication is blocked.
+
 Native7 source `987ce91` (2026-10-04): the unfiltered Mac53 passed 53/0/0 on the
 macos27 VM with original assertions, deadlines, full checker configuration,
 strict seals and source/product guards. The real CoreAudio clock-cadence fix

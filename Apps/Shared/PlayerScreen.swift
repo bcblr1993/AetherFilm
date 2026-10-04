@@ -133,13 +133,16 @@ struct PlayerScreen: View {
         }
         .fileImporter(isPresented: $showingSubtitlePicker,
                       allowedContentTypes: [.plainText, UTType(filenameExtension: "srt") ?? .data,
-                                            UTType(filenameExtension: "ass") ?? .data, UTType(filenameExtension: "vtt") ?? .data]) { result in
-            if case .success(let url) = result { player.addSubtitle(url) }
-        }
+                                            UTType(filenameExtension: "ass") ?? .data, UTType(filenameExtension: "vtt") ?? .data],
+                      onCompletion: handleSubtitleImport)
         .sheet(isPresented: $showingOptions) { playbackOptions }
         .alert("无法打开字幕", isPresented: Binding(get: { subtitleError != nil }, set: { if !$0 { subtitleError = nil } })) {
             Button("好", role: .cancel) { subtitleError = nil }
         } message: { Text(subtitleError ?? "") }
+    }
+
+    private func handleSubtitleImport(_ result: Result<URL, Error>) {
+        if case .success(let url) = result { player.addSubtitle(url) }
     }
 
     private func stopPlaybackOnDisappear() {
