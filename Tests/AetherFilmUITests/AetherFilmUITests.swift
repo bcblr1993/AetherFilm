@@ -393,6 +393,65 @@ final class AetherFilmUITests: XCTestCase {
         XCTAssertTrue(video.waitForExistence(timeout: 5))
     }
 
+    func testNASFavoriteAndLastDirectoryRemainAvailableAfterSourceSwitch() {
+        launch("--ui-source-fixtures")
+        let prefix = "media.row.33CCCCCC-4444-5555-8888-AAAABBBBCCCC:"
+        XCTAssertTrue(element(prefix + "Movies").waitForExistence(timeout: 15))
+        activate(element(prefix + "Movies"))
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        activate(menuAction("设为常用目录"))
+        selectLocalFiles()
+        XCTAssertTrue(element("library.empty").waitForExistence(timeout: 5))
+        selectSection(sidebar: "sidebar.smb.33CCCCCC-4444-5555-8888-AAAABBBBCCCC",
+                      menu: "source.smb.33CCCCCC-4444-5555-8888-AAAABBBBCCCC")
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        XCTAssertTrue(menuAction("移除常用目录").waitForExistence(timeout: 5))
+        activate(menuAction("共享根目录"))
+        XCTAssertTrue(element(prefix + "Movies").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        activate(menuAction("Movies"))
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        capture("NAS favorite directory restored")
+    }
+
+    func testAutoplayPreferencePersistsAndShowsNextVideo() {
+        launch("--ui-fixtures")
+        XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))
+        activate(firstMediaRow)
+        showPlayerControls()
+        activate(element("player.options"))
+        let autoplay = element("player.autoNext")
+        XCTAssertTrue(autoplay.waitForExistence(timeout: 5))
+        XCTAssertTrue(element("player.nextTitle").exists)
+        #if os(iOS)
+        let toggle = autoplay.switches.firstMatch.exists ? autoplay.switches.firstMatch : autoplay
+        #else
+        let toggle = autoplay
+        #endif
+        XCTAssertEqual(nativeValueString(toggle.value), "1")
+        activate(toggle)
+        XCTAssertTrue(waitForValueContaining("0", in: toggle, timeout: 5))
+        activate(element("player.options.done"))
+        showPlayerControls()
+        activate(element("player.close"))
+        app.terminate(); app.launch()
+        XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))
+        activate(firstMediaRow)
+        showPlayerControls()
+        activate(element("player.options"))
+        let reopened = element("player.autoNext")
+        XCTAssertTrue(reopened.waitForExistence(timeout: 5))
+        #if os(iOS)
+        let reopenedToggle = reopened.switches.firstMatch.exists ? reopened.switches.firstMatch : reopened
+        #else
+        let reopenedToggle = reopened
+        #endif
+        XCTAssertTrue(waitForValueContaining("0", in: reopenedToggle, timeout: 5))
+        capture("Autoplay preference restored")
+    }
+
     func testCurrentListFilterShowsNoResults() {
         launch("--ui-fixtures")
         XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))

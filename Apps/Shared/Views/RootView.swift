@@ -235,6 +235,28 @@ struct RootView: View {
                 }
                 if let source = store.selectedConnection {
                     Menu {
+                        Button(store.currentDirectoryIsFavorite ? "移除常用目录" : "设为常用目录",
+                               systemImage: store.currentDirectoryIsFavorite ? "star.slash" : "star") {
+                            Task { await store.toggleFavoriteDirectory() }
+                        }
+                        .disabled(store.isLoading || store.errorMessage != nil)
+                        .accessibilityIdentifier("browser.favoriteToggle")
+                        if !store.favoriteDirectories.isEmpty {
+                            Section("常用目录") {
+                                ForEach(store.favoriteDirectories, id: \.self) { path in
+                                    Button(path.isEmpty ? source.share : path, systemImage: "folder") {
+                                        Task { await store.browse(path: path) }
+                                    }
+                                    .disabled(store.isLoading)
+                                }
+                            }
+                        }
+                        Button("共享根目录", systemImage: "externaldrive") {
+                            Task { await store.browse(path: source.rootPath) }
+                        }
+                        .disabled(store.isLoading)
+                        .accessibilityIdentifier("browser.root")
+                        Divider()
                         Button("移除片源", systemImage: "minus.circle", role: .destructive) {
                             connectionToRemove = source
                         }
@@ -279,6 +301,7 @@ struct RootView: View {
     }
 
     private var fileList: some View {
+        ScrollViewReader { proxy in
         List {
             if !folders.isEmpty {
                 Section {
@@ -311,6 +334,17 @@ struct RootView: View {
         }
         .accessibilityIdentifier("browser.list")
         .accessibilityLabel("文件列表")
+        .onAppear { restoreBrowserPosition(using: proxy) }
+        .onChange(of: store.isLoading) { _, loading in
+            if !loading { restoreBrowserPosition(using: proxy) }
+        }
+        }
+    }
+
+    private func restoreBrowserPosition(using proxy: ScrollViewProxy) {
+        guard searchQuery.isEmpty, let id = store.lastBrowsedItemID,
+              filteredItems.contains(where: { $0.id == id }) else { return }
+        proxy.scrollTo(id, anchor: .center)
     }
 
     private func mediaButton(_ item: MediaItem) -> some View {
@@ -324,6 +358,7 @@ struct RootView: View {
             MediaRowView(item: item, progress: store.progress(for: item))
         }
         .buttonStyle(.plain)
+        .id(item.id)
         .disabled(store.isLoading)
         .accessibilityHint(item.isDirectory ? "打开文件夹" : "播放视频")
         .contextMenu {

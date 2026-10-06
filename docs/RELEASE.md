@@ -1,3 +1,5 @@
+> 2026-10-06 P0 / NAS 优化工作区候选尚未提交或发布。旧 v0.1.0 公开 DMG 的证据不覆盖新改动。真实 NAS 先前跳转失败已有连续通过的单次兼容恢复候选，最终统一源 iOS27 和新建 iOS26.5 模拟器完整回归均68通过 / 0失败 / 1私有NAS跳过，首轮倍速预热失败仍保留，最终 Mac 播放回归被 XCTest 会话连接阻塞，Mac UI 被系统 Automation Mode 认证阻塞，完整物理 iPhone、听音、VoiceOver 和新候选分发验收尚未完成。当前结果见 [TEST_MATRIX.md](TEST_MATRIX.md#2026-10-06-p0-与-nas-浏览优化工作区候选未提交--未发布)。
+
 # Release gates
 
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum

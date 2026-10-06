@@ -70,6 +70,18 @@ import FilmDomain
             }
             try await group.waitForAll()
         }
+        // Receiving Content-Length bytes is not a server completion barrier:
+        // URLSession can return before NWConnection's final send callback.
+        // Preserve all phase assertions, but let each response finish before
+        // stop() deliberately cancels any remaining server tasks.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while true {
+            let pending = try JSONDecoder().decode(TraceSnapshot.self,
+                from: #require(await server.debugTraceData()))
+            if Set(pending.events.filter { $0.phase == "requestFinished" }.map(\.requestID)).count == 3 { break }
+            try #require(ContinuousClock.now < deadline, "All three server responses must finish naturally.")
+            try await Task.sleep(for: .milliseconds(10))
+        }
         await server.stop()
         let data = try #require(await server.debugTraceData())
         let snapshot = try JSONDecoder().decode(TraceSnapshot.self, from: data)

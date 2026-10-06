@@ -1930,8 +1930,7 @@ final class EOFPlaybackTests: XCTestCase {
         }) {
             guard let normal = self.player.backendClockTime,
                   let input = self.player.backendInputTime,
-                  let data = self.player.debugLifecycleTraceData(),
-                  let trace = try? JSONDecoder().decode(TailPhaseTrace.self, from: data),
+                  let trace = TailPhaseTrace.capture(self.player),
                   trace.evictedEvents == 0, let marker = trace.latestSeekMarker(),
                   marker.targetSeconds == target,
                   input >= target - 0.05, input < 12.2 else { return false }

@@ -7,6 +7,24 @@
 - **发布标签**：GitHub Release `v0.1.0` 已公开发布，附带 DMG、`SHA256SUMS.txt` 与完整发布说明。
 - **iOS 归档状态**：`build/AetherFilm-iOS.xcarchive` 已构建并通过代码签名校验；App Store / TestFlight 审核分发按开发者账号排期推进。
 
+## 2026-10-06 P0 与 NAS 浏览优化（工作区候选，未提交 / 未发布）
+
+- NAS 常用目录、恢复上次目录 / 打开行、持久化自动连播开关及真实下一文件名已实现；库格式仍为 schema 1，旧数据默认自动连播开启。移除片源只移除对应浏览状态，不删除原视频。
+- 共享当前套件实际 **48通过 / 0失败 / 8项 SMB3 opt-in 跳过**；真实 SMB AddressSanitizer 集成 **5通过 / 0失败 / 0跳过**，包括20轮读取消 / 关闭 / 重开。旧 native teardown crash 尚未认证修复。
+- 原 CI `37407702629` 的共享 trace 阶段断言失败及三项 iOS 倍速片尾失败仍保留。仅为 trace 测试加入真正的 server requestFinished 屏障；将主动片尾轮询的 JSON 编解码换成同一 typed snapshot，原断言、时钟和期限均未修改。当前本地通过不替代 CI 重跑。
+- 优化候选 iOS 原完整播放加新增测试 **68通过 / 0失败 / 1明确 opt-in 跳过**；NAS 用例缺少私有启动器时跳过。远程 Mac mini 当前 AppStore 修正后的完整播放 **60通过 / 0失败 / 0跳过**，原 Main Thread Checker、原方法身份与严格签名检查保留。macOS / iOS Simulator Debug、iOS Device unsigned Release 构建通过；unsigned build 不是设备验收。
+- iPad 完整 UI **20通过 / 0失败 / 1自然跳过**；后续最终 AppStore 候选的收藏 / 自动连播 / 实际开启 Reduce Transparency 专项 **3通过 / 0失败 / 0跳过**，恢复原系统设置；最终 iPhone 实际开启该系统设置的专项另 **1通过 / 0失败 / 0跳过**并恢复原设置。首次误用不存在方法名的启动记录实际0项用例，不计入验收。最终 AppStore 修正后的 iPhone / iPad 整套各另 **20通过 / 0失败 / 1自然跳过**，无 runtime warning；最终 AppStore 修正后的 iOS 整套另 **68通过 / 0失败 / 1明确 opt-in 跳过**，无 runtime warning。Mac 最终 UI 在系统 Automation Mode 认证阶段超时，实际0项用例执行；不替代此前 TouchBar 审计失败。听音、VoiceOver 朗读和完整物理 iPhone 验收仍未完成。
+- 兼容恢复后的最终源码 iPhone / iPad 完整 UI 各 **20通过 / 0失败 / 1系统 Reduce Transparency 未开启而自然跳过**，无runtime warning。前述真正开启系统设置的各专项仍单独保留。再次检查当前候选常用目录恢复和大字体暗色连播设置截图，控件 / 下一文件名 / 顺序说明可读；没有据此认证整个矩阵的人工 VoiceOver 朗读。
+- 用户授权的真实 NAS 只读验证：认证、有限目录发现、三个视频的头 / 中 / 尾 Range 通过。生产 SMBProvider + SMBStreamingServer + FilmPlayer 对较大视频的首次音视频输出及中途跳转 **1通过**。另一视频首次输出成功，跳转专项先出现播放错误，后续诊断复现为正在输出但没有正常时钟、超出原30秒期限，**原失败保留**。第二种失败的 sourceReadFailure=false，iPad 后续也复现。生产 provider / HTTP 的四组512KiB Range 内容均与独立客户端 SHA256 比较通过，但跳转仍失败；同视频走独立 HTTP 传输的对照则首次播放 / 跳转通过，这不是生产验收通过，也不单凭对照认证根因。独立 FFprobe 对初始 / 中段 / 后段解析，以及 FFmpeg 中段音视频解码均 exit0、错误行0。不能只选通过的视频，不能据此认证 NAS 全部通过。
+- 后续兼容诊断：原生音频 observer 持续运行、首 PTS 正常，但该视频跳转后输入连续创建50个时钟上下文。加载前使用已锁定组件内的 AVFormat 解析器通过，同参数加载后设置的早先尝试并未证明解析器生效。默认改用 AVFormat 的整套回归实际 iOS **63通过 / 5失败 / 1跳过**、Mac **54通过 / 6失败 / 0跳过**，影响真实片尾阻塞用例，方案已撤回；全部结果保留。
+- 当前候选保持默认解析器，仅对 NAS loopback MP4 / M4V / MOV 跳转，在真实新增音视频、输入明显超前、且没有新鲜正常输出时钟时尝试一次兼容恢复，保持媒体 / 外挂字幕、播放设置、音轨选择和 App 会话回调。普通片源等待不触发恢复。早先仅检查 clock=nil 的候选仍失败，保留 `user-nas-fallback-r18-ipad.xcresult`；最新缺失或停滞时钟候选对原失败视频连续 **3次通过**（r19/r20/r21），r21还核实音轨 / 字幕选择。最早恢复候选完整 iOS **68通过 / 0失败 / 1 opt-in跳过**；最终音轨保持候选统一源首轮 iOS **67通过 / 1失败 / 1 opt-in跳过**，倍速预热 normal3.937超过原3.0上限，失败保留。随后停止其他本地构建和NAS专项，以相同源码 / 产品和原断言独占完整复测 **68通过 / 0失败 / 1 opt-in跳过**，无runtime warning；不能仅凭重跑通过就认证首次预热失败根因已解决。最终源码三个已发现 NAS 视频均各1通过 / 0失败 / 0跳过（r21/r22/r23），每个均完成四组独立512KiB字节校验及真实首播 / 跳转；兼容恢复路径的多音轨和外挂字幕仍需专门样片验收。以上不能替代真机、听音 / VoiceOver、Mac UI、CI和分发门禁。
+- 最终兼容恢复源码在新建自有 iOS26.5 模拟器上完整播放回归 **68通过 / 0失败 / 1私有NAS opt-in跳过**，共69项，无runtime warning；与iOS27使用相同最终构建产品和原断言。此前旧26.5设备 runner启动失败记录保留，新设备通过不能单凭此认证旧环境故障根因，也不替代精确26.0或物理设备验收。证据 `fallback-final-ios26-fresh-full.xcresult` 及对应summary JSON。
+- 最终兼容恢复源码 Mac build-for-testing 通过；本机与远程36个 Swift / 项目 / 版本 / package输入 SHA256全部匹配。后续两次 Mac XCTest 启动均实际0项执行，首次进程采样停在 `_prepareTestConfigurationAndIDESession`，保留全部日志与xcresult；仅终止带本轮session标记的自建进程。尝试重新启动用户 testmanagerd 服务被系统 SIP拒绝，未绕过保护。此前60项通过结果不覆盖这次兼容恢复修正，当前完整Mac回归仍未完成。
+- 收尾续验远程 Mac mini可连接，但 `devicectl list devices` 中 iPhone16ProMax 当前为 unavailable；未安装候选。此前设备可连接记录不能作为当前连接或物理验收证明。
+- 凭据仅在启动器内存和临时 loopback bootstrap 中使用；未写入源码 / fixture / xcresult。NAS 不保存原视频或截图，仅失败时保留 bounded numeric lifecycle 附件。
+
+证据：`.build/P0Optimization20261006/` 的 `shared-final.log`、`smb-asan.log`、`optimized-ios.xcresult`、`ipad-ui.xcresult`、`ipad-final-controls.xcresult`、`user-nas-ios27-r3.xcresult`、`user-nas-small-r4.xcresult`、`user-nas-small-r5.xcresult` 与 `nas-small-r5-attachments/`；Mac mini 隔离目录 `/Users/chenxu/AetherFilmQA/P0Optimization20261006/.build/{MacPlaybackFinal/,MacUI/}`。iOS26.5 真实 NAS 第二次尝试是模拟器 runner / launchd 环境故障且未执行用例，和真实 NAS 播放失败分开记录。新候选尚无签名公证分发验收，P0 保持开放。
+
 ## 2026-10-06 收尾记录（测试执行于2026-10-05）：当前续验以 `375fc63` 为基础，保留会话开始前已有的 SMB cancellation mock 屏障修改；App 与原播放 / UI 断言及期限未改。三平台本地 build-for-testing 均通过，iOS Device 开发签名构建通过。最新 GitHub CI `37215169426` 确实执行了构建和测试：三平台构建成功，但共享 cancellation 测试失败、Mac 原完整播放 **56通过 / 1失败 / 0跳过**、iOS 原完整播放 **62通过 / 3失败 / 0跳过**。第三项 iOS 失败是 4K 测试进程崩溃，原 crash 的故障栈位于 AMSMB2 `smb2_read_data → smb2_service → disconnect → deinit`；不能仅凭测试名称归因为 4K 解码。实际失败记录不支持“只是 GitHub 额度不足”。
 
 本轮真实结果：共享 **45通过 / 8项 SMB3 opt-in 跳过**；单独真实 SMB3 加密 **8通过 / 0失败 / 0跳过**（client / server encrypted frames 各97、plaintext READ 0）；AddressSanitizer 下真实 SMB 集成 **4通过 / 0失败 / 0跳过**；执行器单测 **8通过**。iOS27 与 iOS26.5 ARM64 模拟器的原完整播放各 **65通过 / 0失败 / 0跳过**，逐项身份核对且无 runtime warning。26.5 不等于精确26.0或真机验收。这些通过不改写 CI 旧失败，也不认证偶发 native SMB 崩溃已经修复。

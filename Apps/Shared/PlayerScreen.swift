@@ -259,6 +259,21 @@ struct PlayerScreen: View {
     private var playbackOptions: some View {
         NavigationStack {
             Form {
+                Section("连续播放") {
+                    Toggle("自动播放下一条", isOn: Binding(
+                        get: { store.snapshot.automaticallyPlayNext },
+                        set: { enabled in Task { await store.setAutomaticallyPlayNext(enabled) } }))
+                        .accessibilityIdentifier("player.autoNext")
+                    if let next = store.nextItem(after: item) {
+                        LabeledContent("下一条", value: next.title)
+                            .accessibilityIdentifier("player.nextTitle")
+                    } else {
+                        Text("已经是列表最后一条").foregroundStyle(.secondary)
+                    }
+                    Text("按当前列表的文件名顺序播放。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Section("音轨") {
                     ForEach(player.audioTracks) { track in
                         Button { player.selectAudio(track.id) } label: {

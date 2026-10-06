@@ -4,7 +4,7 @@
 
 轻一点的私人影院。A native personal video player from [AetherNative](https://www.aethernative.com/).
 
-**开发验收中，尚未发布。** Apple Silicon Mac（macOS 26+）· iOS / iPadOS 26+ · Swift 6 · SwiftUI · Liquid Glass.
+**[v0.1.0 macOS 已发布](https://github.com/bcblr1993/AetherFilm/releases/tag/v0.1.0)，iOS / iPadOS 验收与分发准备中。** Apple Silicon Mac（macOS 26+）· iOS / iPadOS 26+ · Swift 6 · SwiftUI · Liquid Glass。完整验收状态与已知风险见 [测试矩阵](docs/TEST_MATRIX.md)。
 
 AetherFilm focuses on adding your own media, browsing a compact library, and reliable playback. Inspired by everyday Infuse workflows, it is an independent application and is not affiliated with Firecore.
 

@@ -1,8 +1,22 @@
 import XCTest
+@testable import AetherFilm
 
 /// Adversarial sequences exercise the same pure predicate used by actual
 /// SMB/decoder tests. Synthetic inputs are never counted as playback evidence.
 final class TailPhaseOracleTests: XCTestCase {
+    func testTypedLifecycleSnapshotMatchesRecordedJSONIncludingEviction() throws {
+        let trace = PlaybackLifecycleTrace(origin: .now, capacity: 128)
+        for index in 0..<160 {
+            trace.record(.callbackClock, generation: 3, time: Int64(index) * 100_000,
+                         systemDate: Int64(index) + 1, displayed: UInt64(index), played: UInt64(index + 4))
+        }
+        let typed = TailPhaseTrace.from(trace.snapshot())
+        let json = try JSONDecoder().decode(TailPhaseTrace.self, from: XCTUnwrap(trace.snapshotData()))
+        XCTAssertEqual(typed.evictedEvents, 32)
+        XCTAssertEqual(typed.evictedEvents, json.evictedEvents)
+        XCTAssertEqual(typed.totalEvents, json.totalEvents)
+        XCTAssertEqual(typed.records, json.records)
+    }
     func testTailReadGateOnlyExemptsValidatedFinalByteProbe() {
         let fileBytes: Int64 = 796257
         XCTAssertTrue(TailReadGate.isFinalByteProbe(796256..<796257, fileBytes: fileBytes))

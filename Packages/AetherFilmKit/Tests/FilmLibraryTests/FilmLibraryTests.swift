@@ -38,6 +38,29 @@ import FilmDomain
         #expect(try Data(contentsOf: url) == bytes)
     }
 
+    @Test func originalSchemaLoadsWithSafeBrowsingAndPlaybackDefaults() async throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        try Data(#"{"schema":1,"localItems":[],"recentItems":[],"connections":[],"progress":{}}"#.utf8).write(to: url)
+        let restored = try await LibraryStore(url: url).load()
+        #expect(restored.nasBrowse.isEmpty)
+        #expect(restored.automaticallyPlayNext)
+    }
+
+    @Test func browsingAndAutoplayPreferencesSurviveReopening() async throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let store = LibraryStore(url: url)
+        var state = try await store.load()
+        state.nasBrowse["source"] = NASBrowseState(lastPath: "中文/Season 2", lastItemID: "source:episode2",
+                                                  favoritePaths: ["", "中文/Season 2"])
+        state.automaticallyPlayNext = false
+        try await store.save(state)
+        let restored = try await LibraryStore(url: url).load()
+        #expect(restored.nasBrowse == state.nasBrowse)
+        #expect(!restored.automaticallyPlayNext)
+    }
+
     @Test func futureSchemaIsPreserved() async throws {
         let url = try location()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
