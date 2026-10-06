@@ -3,6 +3,49 @@
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. No App release has been published.
 
+## Current continuation: 2026-10-06 (tests executed 2026-10-05)
+
+On base `375fc63` with the pre-existing SMB cancellation-fixture barrier,
+local shared tests actually passed45 with8 opt-in SMB3 skips; separate encrypted
+SMB3 passed8/0/0 and AddressSanitizer SMB integration passed4/0/0. All three
+platform build-for-testing targets and the development-signed iOS Device build
+passed. Original iOS27 and iOS26.5 Simulator playback each passed65/0/0,
+with no runtime warnings;26.5 does not certify exact26.0 or a physical device.
+Original playback on
+the user-approved remote Mac mini (ARM64, macOS27.0.1, Xcode26.5, SDK26.5)
+passed57/0/0 with unchanged assertions, deadlines and Main Thread Checker.
+The remote182 protected source/fixture hashes match the snapshot; strict signing
+verification and owned fixture / Aqua-agent cleanup passed.
+
+Current Phone and Pad full UI each passed18/0/1; the real system Reduce
+Transparency case separately passed1/0/0 on each, restoring the original setting.
+The first Mac mini UI run could not initialize because automation mode required
+administrator authentication; that zero-case failure is retained. The subsequent
+original full19 run completed17 passes,1 failure and1 natural Reduce Transparency
+skip, exit65. The sole failure is the unfiltered accessibility description audit
+of an empty Disabled system TouchBar. An independent minimal native AppKit
+window/button control reproduced the same audit failure (0/1/0); a temporary
+SwiftUI TouchBar customization also failed and was reverted. Neither diagnostic
+waives the original audit. Actual Mac Reduce Transparency and spoken VoiceOver
+acceptance remain open; no audit filtering or weakened assertions were applied.
+
+CI37215169426 remains failed, with real shared/Mac/iOS failures and a native
+SMB teardown crash in the iOS4K test. Successful local runs do not certify that
+intermittent crash fixed, or rewrite the CI result as a quota problem. Current
+physical-iPhone full acceptance, user-NAS/listening/spoken VoiceOver, desktop UI,
+minimum macOS runtime, final signed/notarized installation and distribution gates
+remain open. The user authorized a source push on2026-10-06; release tags and
+App publication are outside this continuation. A source push does not close
+these release gates.
+
+Evidence: `.build/Continuation20261005/`, especially `MacMiniPlayback-r2/`,
+`MacMiniUI-r1/`, `MacMiniUI-r2/`, `MacMiniUI-native-control-r1/`,
+`MacMiniUI-audit-touchbar-r1/`, `iOS-Full-r1.xcresult`, `iOS26-Full-r1.xcresult`, the four Phone/Pad UI bundles,
+`SMB3-r1.json` and retained validation logs. Exact counts and limitations are in
+`TEST_MATRIX.md`.
+
+## Historical candidate notes: 2026-10-04
+
 The unified Native8 candidate now contains four additional tail regressions;
 the original61 iOS /53 Mac assertions and deadlines remain unchanged. Its pure
 three-platform native build, six wrapper targets and three-slice assembly passed.

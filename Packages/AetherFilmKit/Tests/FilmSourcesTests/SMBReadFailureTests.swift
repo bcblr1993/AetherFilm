@@ -149,6 +149,30 @@ private final class SMBReadFailureObserver: @unchecked Sendable {
     func record(_ error: SMBError) { lock.withLock { values.append(error) } }
 }
 
+private final class SMBReadCancellationBarrier: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancelled = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    func install(_ continuation: CheckedContinuation<Void, Never>) {
+        let alreadyCancelled = lock.withLock {
+            if cancelled { return true }
+            self.continuation = continuation
+            return false
+        }
+        if alreadyCancelled { continuation.resume() }
+    }
+
+    func cancel() {
+        let waiting = lock.withLock {
+            cancelled = true
+            defer { continuation = nil }
+            return continuation
+        }
+        waiting?.resume()
+    }
+}
+
 private actor SMBReadFailureProvider: SMBFileProviding {
     enum Behavior: Sendable {
         case normal, shortChunks(Int), emptyAfter(Int), failAfter(Int, SMBError), lateError, stall
@@ -169,8 +193,13 @@ private actor SMBReadFailureProvider: SMBFileProviding {
         case .failAfter(let count, let error) where index >= count: throw error
         case .emptyAfter(let count) where index >= count: return Data()
         case .lateError:
-            await withCheckedContinuation { continuation in
-                DispatchQueue.global().asyncAfter(deadline: .now()+0.2) { continuation.resume() }
+            let cancellation = SMBReadCancellationBarrier()
+            // The error must arrive after the real consumer reset cancels this
+            // read task, rather than after an unrelated scheduler deadline.
+            await withTaskCancellationHandler {
+                await withCheckedContinuation { cancellation.install($0) }
+            } onCancel: {
+                cancellation.cancel()
             }
             completed += 1
             throw NSError(domain: NSPOSIXErrorDomain, code: Int(ECONNRESET), userInfo: [NSLocalizedDescriptionKey: "unsafe endpoint detail"])

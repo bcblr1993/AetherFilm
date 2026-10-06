@@ -13,10 +13,15 @@ if [[ "$TASK_PLATFORM" != "macOS" && "$TASK_PLATFORM" != "iOS" ]]; then
 fi
 
 if [[ "$TASK_PLATFORM" == "macOS" ]]; then
-  # Desktop automation belongs in the dedicated macos27 VM, never on the host Mac.
+  # Default to the dedicated VM. A user-approved remote Mac must be selected
+  # explicitly and this machine must actually own the supplied IPv4 address.
   if ! system_profiler SPHardwareDataType 2>/dev/null | /usr/bin/grep -q "VirtualMac"; then
-    echo "macOS UI tests must run inside the Tart macos27 virtual machine." >&2
-    exit 2
+    TASK_REMOTE_MAC_ADDRESS="${AETHERFILM_UI_REMOTE_MAC_ADDRESS:-}"
+    if [[ -z "$TASK_REMOTE_MAC_ADDRESS" || "$TASK_REMOTE_MAC_ADDRESS" == 127.* ]] || \
+       ! /sbin/ifconfig | /usr/bin/awk '$1 == "inet" { print $2 }' | /usr/bin/grep -Fxq -- "$TASK_REMOTE_MAC_ADDRESS"; then
+      echo "macOS UI tests require the Tart macos27 VM or an explicitly selected remote Mac's own IPv4 address." >&2
+      exit 2
+    fi
   fi
   TASK_DESTINATION="${TASK_DESTINATION:-platform=macOS}"
 else

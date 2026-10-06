@@ -33,6 +33,25 @@ def test_cases(tree):
     return rows
 
 
+def owns_console_session(console=None):
+    uid, user = os.getuid(), getpass.getuser()
+    if uid == 0:
+        return False
+    if console is None:
+        console = subprocess.check_output(["stat", "-f", "%u %Su", "/dev/console"], text=True).strip().split()
+    if console == [str(uid), user]:
+        return True
+    # /dev/console can remain root-owned during an active Screen Sharing
+    # session. Consult the current ConsoleUser state, retaining both identity
+    # and completed foreground-login requirements before launching in Aqua.
+    state = subprocess.check_output(["scutil"], input="show State:/Users/ConsoleUser\n", text=True)
+    name = re.search(r"^\s*Name\s*:\s*(\S+)\s*$", state, re.MULTILINE)
+    owner = re.search(r"^\s*UID\s*:\s*(\d+)\s*$", state, re.MULTILINE)
+    return bool(name and owner and name.group(1) == user and int(owner.group(1)) == uid
+                and re.search(r"kCGSSessionOnConsoleKey\s*:\s*TRUE\b", state)
+                and re.search(r"kCGSessionLoginDoneKey\s*:\s*TRUE\b", state))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--products", required=True, type=Path)
@@ -47,7 +66,7 @@ def main():
         parser.error("Use built Mac products and a fresh result path.")
     version = subprocess.check_output(["sw_vers", "-productVersion"], text=True).strip()
     console = subprocess.check_output(["stat", "-f", "%u %Su", "/dev/console"], text=True).strip().split()
-    if console != [str(os.getuid()), getpass.getuser()] or os.getuid() == 0:
+    if not owns_console_session(console):
         parser.error("The test user must own the real Aqua console session.")
     if args.require_os_major is not None and int(version.split(".")[0]) != args.require_os_major:
         parser.error("The actual OS does not match the requested runtime gate.")
@@ -124,7 +143,7 @@ def main():
             "sourceCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
             "command": command, "target": target, "compiledCases": compiled}, indent=2) + "\n")
         attempted_bootstrap = True
-        subprocess.run(["launchctl", "bootstrap", "gui/" + console[0], str(agent)], check=True)
+        subprocess.run(["launchctl", "bootstrap", "gui/" + str(os.getuid()), str(agent)], check=True)
         loaded = True
         deadline = time.monotonic() + 900
         while not status.exists():
@@ -153,7 +172,7 @@ def main():
     finally:
         try:
             if attempted_bootstrap:
-                cleanup = subprocess.run(["launchctl", "bootout", "gui/" + console[0] + "/" + label],
+                cleanup = subprocess.run(["launchctl", "bootout", "gui/" + str(os.getuid()) + "/" + label],
                                          capture_output=True, text=True, check=False)
                 (own / "cleanup.json").write_text(json.dumps({"exitCode": cleanup.returncode,
                     "stdout": cleanup.stdout, "stderr": cleanup.stderr}) + "\n")

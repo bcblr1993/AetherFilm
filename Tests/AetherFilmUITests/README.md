@@ -1,11 +1,19 @@
 # AetherFilm UI regression
 
-共享 XCUITest 文件分别加入 macOS 和 iOS 的 UI test target，测试语言固定为中文。macOS 自动化只能在 Tart `macos27` 虚拟机运行；脚本会拒绝宿主 Mac。iOS 必须传入明确的模拟器或设备 destination。
+共享 XCUITest 文件分别加入 macOS 和 iOS 的 UI test target，测试语言固定为中文。macOS 自动化默认在 Tart `macos27` 虚拟机运行；脚本会拒绝未明确选择的物理 Mac。用户在 2026-10-05 授权以远程 Mac mini 替代不可用的 VM。iOS 必须传入明确的模拟器或设备 destination。
 
 ```sh
 scripts/test_ui.sh macOS
 scripts/test_ui.sh iOS 'platform=iOS Simulator,id=SIMULATOR_UUID'
 ```
+
+用户已授权的远程 Mac 可在该机器的已解锁桌面会话运行：
+
+```sh
+AETHERFILM_UI_REMOTE_MAC_ADDRESS=ASSIGNED_IPV4 AETHERFILM_UI_SIGNING=YES scripts/test_ui.sh macOS
+```
+
+将 `ASSIGNED_IPV4` 替换为远程测试机器实际拥有的 IPv4 地址。脚本校验该地址属于本机接口，拒绝 loopback 和其他机器的地址；默认保护仍保留。物理 Mac 的结果按实际系统版本记录，不能替代未运行的 VM 或最低系统验证。
 
 物理 iPhone 运行时传入已授权设备 UUID，并设置 `AETHERFILM_UI_SIGNING=YES`。产物默认写入 `build/ui-results/`，包含日志、独立 `.xcresult` 和截图 attachments；可通过 `AETHERFILM_UI_RESULTS` 指定目录。截图需要逐张检查布局，测试通过不代表已完成视觉验收。
 

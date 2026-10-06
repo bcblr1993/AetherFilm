@@ -1,5 +1,17 @@
 # v0.1.0 验收矩阵
 
+2026-10-06 收尾记录（测试执行于2026-10-05）：当前续验以 `375fc63` 为基础，保留会话开始前已有的 SMB cancellation mock 屏障修改；App 与原播放 / UI 断言及期限未改。三平台本地 build-for-testing 均通过，iOS Device 开发签名构建通过。最新 GitHub CI `37215169426` 确实执行了构建和测试：三平台构建成功，但共享 cancellation 测试失败、Mac 原完整播放 **56通过 / 1失败 / 0跳过**、iOS 原完整播放 **62通过 / 3失败 / 0跳过**。第三项 iOS 失败是 4K 测试进程崩溃，原 crash 的故障栈位于 AMSMB2 `smb2_read_data → smb2_service → disconnect → deinit`；不能仅凭测试名称归因为 4K 解码。实际失败记录不支持“只是 GitHub 额度不足”。
+
+本轮真实结果：共享 **45通过 / 8项 SMB3 opt-in 跳过**；单独真实 SMB3 加密 **8通过 / 0失败 / 0跳过**（client / server encrypted frames 各97、plaintext READ 0）；AddressSanitizer 下真实 SMB 集成 **4通过 / 0失败 / 0跳过**；执行器单测 **8通过**。iOS27 与 iOS26.5 ARM64 模拟器的原完整播放各 **65通过 / 0失败 / 0跳过**，逐项身份核对且无 runtime warning。26.5 不等于精确26.0或真机验收。这些通过不改写 CI 旧失败，也不认证偶发 native SMB 崩溃已经修复。
+
+用户明确以远程 Mac mini 替代不可用的 Tart VM。本轮 Mac mini / ARM64 / macOS27.0.1 / Xcode26.5 / SDK26.5 开发测试候选的原完整播放实际 **57通过 / 0失败 / 0跳过**，逐项身份与编译的57方法一致，原 Main Thread Checker 保留；原始日志无 MTC / background UI / 固定 GL 报错，测试前后严格签名验证通过。远程 App / 包 / 原测试 / fixture 的182项文件哈希与源快照一致；临时 Aqua agent 和 SMB fixture 均已清理。该物理27结果不替代未执行的最低 macOS26 / VM / 正式分发验收。
+
+当前源 iPhone / iPad 的 UI 原完整19项分别 **18通过 / 0失败 / 1自然跳过**，各自真实开启系统 Reduce Transparency 的专项另 **1通过 / 0失败 / 0跳过**并恢复原设置。亮 / 暗、大字体 SMB 表单、横屏控制和播放设置的关键截图已人工查看；没有声称全部截图逐张审阅。Mac mini UI 第一次运行在系统授权阶段超时：日志明确 `Writer daemon requires authentication to enable automation mode`，xcresult 记录1项系统初始化失败，实际0项原UI用例执行；没有跳过或豁免旧 TouchBar 审计。后续原完整19项已实际执行，结果 **17通过 / 1失败 / 1自然跳过**、exit65，完整逐项身份、原配置及 Main Thread Checker 保留，严格签名与临时 Aqua agent 清理通过。唯一失败为 `testAccessibilityDescriptions` 对空且 Disabled 系统 TouchBar 的描述审计；独立纯 AppKit 窗口 / 原生按钮对照在同一机器、原审计下也 **0通过 / 1失败 / 0跳过**，同一 TouchBar 问题复现。临时 SwiftUI TouchBar 定制专项仍失败，已撤回，正式 App 源码不含该尝试。对照不豁免正式审计，Mac 真实减少透明度与 VoiceOver 朗读仍待验收。
+
+证据：`.build/Continuation20261005/{logs/,SMB3-r1.json,iOS-Full-r1.xcresult,iOS26-Full-r1.xcresult,MacMiniPlayback-r2/,MacMiniUI-r1/,MacMiniUI-r2/,MacMiniUI-native-control-r1/,MacMiniUI-audit-touchbar-r1/,PhoneUI-r1.xcresult,PadUI-r1.xcresult,PhoneReduce-r1.xcresult,PadReduce-r1.xcresult,source-manifest.json}`。Mac mini 隔离目录 `/Users/chenxu/AetherFilmQA/Continuation20261005-e74ec7cb`；远程网络获取失败后使用原锁定依赖的离线副本，不更改用户现有应用或服务。用户已于2026-10-06授权推送代码，本轮提交包含测试稳定性、远程执行器与验收记录，不包含打 tag 或发布；当前完整 iPhone 真机、用户 NAS / 听音 / 朗读 VoiceOver、Mac UI 与新签名公证安装及公开分发仍待完成。
+
+## 2026-10-04 候选记录（保留原失败与当时状态）
+
 2026-10-04 最新Native8统一候选已加入四项独立片尾回归，原iOS61 / Mac53断言与期限不变，完整套件为iOS65 / Mac57。纯三平台原生编译、六个wrapper目标和正常三切片组件组装均实际exit0；最低26、SDK27、ARM64、302模块与原公开头文件保持。最终私有C4在真实iPhone原三项 **3通过 / 0失败 / 0跳过**、新增四项 **4通过 / 0失败 / 0跳过**；八个排空至停止窗口没有后续有效native30 /31时钟点，原失败记录保留。该专项不是正式无探针组件的完整65 /57、完整UI或分发验收。证据 `.build/NativeAVDrainLifecycleControlsPhysicalApp20261004-r1/ACTUAL_C4_PHYSICAL_CLOSURE.json`、`.build/Native8ProductionCandidate20261004-r2/READY.json`。
 
 此前源码 `6100c1c` 的 CI `37202599510` 已完整核验通过：三平台 ARM64 构建均通过；Mac26.6.2 / SDK26.5 原完整播放 **53通过 / 0失败 / 0跳过**，iOS27 模拟器原完整播放 **61通过 / 0失败 / 0跳过**，源预期方法、原始日志与 xcresult 完整身份一致，无 iOS runtime warning。共享套件实际 **45通过 / 8项 SMB3 opt-in 跳过**，另五项执行器单测通过；日志的“53 tests passed”计入注册的跳过项，不能当成53项均执行。此前 CI 原失败完整保留。证据 `.build/Native7CICommit6100c1cReview20261004-r1/{MAC26_ACTUAL_REVIEW.json,IOS_ACTUAL_REVIEW.json,SHARED_ACTUAL_REVIEW.json}`。

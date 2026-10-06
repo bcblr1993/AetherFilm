@@ -153,7 +153,7 @@ targets:
     platform: macOS
     sources:
       - path: PlaybackTests
-        excludes: ["*.py", "README.md"]
+        excludes: ["*.py", "*.pyc", "__pycache__", "README.md"]
       - Tests/AppStoreTests
       - path: .build/PlaybackFixtures
         type: folder
@@ -182,7 +182,7 @@ targets:
     platform: iOS
     sources:
       - path: PlaybackTests
-        excludes: ["*.py", "README.md"]
+        excludes: ["*.py", "*.pyc", "__pycache__", "README.md"]
       - Tests/AppStoreTests
       - path: .build/PlaybackFixtures
         type: folder

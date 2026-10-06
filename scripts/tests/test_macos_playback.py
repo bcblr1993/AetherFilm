@@ -16,6 +16,25 @@ spec.loader.exec_module(runner)
 
 
 class MacPlaybackRunnerTests(unittest.TestCase):
+    def test_root_owned_console_accepts_matching_completed_foreground_session(self):
+        state = "Name : qa\nUID : 501\nkCGSSessionOnConsoleKey : TRUE\nkCGSessionLoginDoneKey : TRUE\n"
+        with patch.object(runner.os, "getuid", return_value=501), \
+                patch.object(runner.getpass, "getuser", return_value="qa"), \
+                patch.object(runner.subprocess, "check_output", side_effect=["0 root\n", state]):
+            self.assertTrue(runner.owns_console_session())
+
+    def test_console_fallback_rejects_other_user_incomplete_or_background_session(self):
+        for state in [
+            "Name : other\nUID : 502\nkCGSSessionOnConsoleKey : TRUE\nkCGSessionLoginDoneKey : TRUE\n",
+            "Name : qa\nUID : 501\nkCGSSessionOnConsoleKey : FALSE\nkCGSessionLoginDoneKey : TRUE\n",
+            "Name : qa\nUID : 501\nkCGSSessionOnConsoleKey : TRUE\nkCGSessionLoginDoneKey : FALSE\n",
+            "No such key\n",
+        ]:
+            with self.subTest(state=state), patch.object(runner.os, "getuid", return_value=501), \
+                    patch.object(runner.getpass, "getuser", return_value="qa"), \
+                    patch.object(runner.subprocess, "check_output", side_effect=["0 root\n", state]):
+                self.assertFalse(runner.owns_console_session())
+
     def exercise(self, mode):
         with tempfile.TemporaryDirectory(prefix="AetherFilm-runner-test-") as temporary:
             folder = Path(temporary)
@@ -32,7 +51,9 @@ class MacPlaybackRunnerTests(unittest.TestCase):
                 if arguments[0] == "sw_vers":
                     return "26.6.2\n"
                 if arguments[0] == "stat":
-                    return "501 qa\n"
+                    return "0 root\n" if mode == "root-console" else "501 qa\n"
+                if arguments[0] == "scutil":
+                    return "Name : qa\nUID : 501\nkCGSSessionOnConsoleKey : TRUE\nkCGSessionLoginDoneKey : TRUE\n"
                 if arguments[0] == "ps":
                     return ""
                 if arguments[0] == "dyld_info":
@@ -111,6 +132,11 @@ class MacPlaybackRunnerTests(unittest.TestCase):
 
     def test_complete_matching_result_can_pass(self):
         code, error = self.exercise("complete-result")
+        self.assertIsNone(error)
+        self.assertEqual(code, 0)
+
+    def test_root_console_fallback_launches_and_cleans_actual_user_gui(self):
+        code, error = self.exercise("root-console")
         self.assertIsNone(error)
         self.assertEqual(code, 0)
 

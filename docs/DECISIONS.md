@@ -1,6 +1,6 @@
 # Scope decisions
 
-Updated: 2026-10-04 (Asia/Shanghai).
+Updated: 2026-10-06 (Asia/Shanghai).
 
 ## Confirmed by the user
 
@@ -12,6 +12,8 @@ Updated: 2026-10-04 (Asia/Shanghai).
 - Show Infuse's feature inventory first, then let the user select phase-one features.
 - Phase-one features: **1, 2, 3, 4, 5, 9**. Primary source: **SMB NAS**. These cover playback, controls, subtitles / audio, local files, SMB browsing, progress / resume and next video.
 - The user explicitly requires a polished UI experience and an attractive app icon.
+- On 2026-10-05, the user reported the Tart VM was unavailable and explicitly selected their remote Mac mini for desktop validation. Record its actual OS/toolchain and preserve the default host-Mac UI protection; this does not certify unexecuted VM or minimum-system gates.
+- On 2026-10-06, the user authorized pushing the current code to the remote repository. App publication and release tags still require their own authorization and acceptance gates.
 
 ## Scope boundaries
 
