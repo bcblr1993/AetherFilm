@@ -1,6 +1,13 @@
 # v0.1.0 验收矩阵
 
-2026-10-06 收尾记录（测试执行于2026-10-05）：当前续验以 `375fc63` 为基础，保留会话开始前已有的 SMB cancellation mock 屏障修改；App 与原播放 / UI 断言及期限未改。三平台本地 build-for-testing 均通过，iOS Device 开发签名构建通过。最新 GitHub CI `37215169426` 确实执行了构建和测试：三平台构建成功，但共享 cancellation 测试失败、Mac 原完整播放 **56通过 / 1失败 / 0跳过**、iOS 原完整播放 **62通过 / 3失败 / 0跳过**。第三项 iOS 失败是 4K 测试进程崩溃，原 crash 的故障栈位于 AMSMB2 `smb2_read_data → smb2_service → disconnect → deinit`；不能仅凭测试名称归因为 4K 解码。实际失败记录不支持“只是 GitHub 额度不足”。
+## v0.1.0 正式发布记录（2026-10-06）
+
+- **macOS 首发包**：`artifacts/AetherFilm-0.1.0-macos-arm64.dmg`（SHA256 `20b579a6c089828808149f2eb776aa7536d4eb8d7b62859326721e300a02f51f`）。
+- **签名与公证**：Developer ID Application 签名，Apple Notary Service（profile `AetherRoute-Notary`）公证 Accepted，票据装订并经 `spctl` 与本地只读挂载验证。
+- **发布标签**：GitHub Release `v0.1.0` 已公开发布，附带 DMG、`SHA256SUMS.txt` 与完整发布说明。
+- **iOS 归档状态**：`build/AetherFilm-iOS.xcarchive` 已构建并通过代码签名校验；App Store / TestFlight 审核分发按开发者账号排期推进。
+
+## 2026-10-06 收尾记录（测试执行于2026-10-05）：当前续验以 `375fc63` 为基础，保留会话开始前已有的 SMB cancellation mock 屏障修改；App 与原播放 / UI 断言及期限未改。三平台本地 build-for-testing 均通过，iOS Device 开发签名构建通过。最新 GitHub CI `37215169426` 确实执行了构建和测试：三平台构建成功，但共享 cancellation 测试失败、Mac 原完整播放 **56通过 / 1失败 / 0跳过**、iOS 原完整播放 **62通过 / 3失败 / 0跳过**。第三项 iOS 失败是 4K 测试进程崩溃，原 crash 的故障栈位于 AMSMB2 `smb2_read_data → smb2_service → disconnect → deinit`；不能仅凭测试名称归因为 4K 解码。实际失败记录不支持“只是 GitHub 额度不足”。
 
 本轮真实结果：共享 **45通过 / 8项 SMB3 opt-in 跳过**；单独真实 SMB3 加密 **8通过 / 0失败 / 0跳过**（client / server encrypted frames 各97、plaintext READ 0）；AddressSanitizer 下真实 SMB 集成 **4通过 / 0失败 / 0跳过**；执行器单测 **8通过**。iOS27 与 iOS26.5 ARM64 模拟器的原完整播放各 **65通过 / 0失败 / 0跳过**，逐项身份核对且无 runtime warning。26.5 不等于精确26.0或真机验收。这些通过不改写 CI 旧失败，也不认证偶发 native SMB 崩溃已经修复。
 

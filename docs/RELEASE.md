@@ -1,7 +1,18 @@
 # Release gates
 
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
-macOS / iOS 26.0. No App release has been published.
+macOS / iOS 26.0. v0.1.0 macOS release published on GitHub with Developer ID signature,
+Apple Notarization Accepted and stapled DMG.
+
+## Release published: 2026-10-06 (v0.1.0)
+
+v0.1.0 macOS release asset `AetherFilm-0.1.0-macos-arm64.dmg` (SHA256 `20b579a6c089828808149f2eb776aa7536d4eb8d7b62859326721e300a02f51f`)
+was signed with Developer ID Application: YanNan Chen (5984KQD4D7), notarized via Apple Notary Service
+(profile `AetherRoute-Notary`, status Accepted) and stapled. Downloaded artifact was verified with
+`shasum -a 256 -c SHA256SUMS.txt` and Gatekeeper assessment `spctl --assess --type open`.
+GitHub release `v0.1.0` published with release notes, compatibility scope and explicit iOS distribution state.
+The signed iOS Release archive (`build/AetherFilm-iOS.xcarchive`) was built and validated; iOS distribution
+proceeds per developer account conditions.
 
 ## Current continuation: 2026-10-06 (tests executed 2026-10-05)
 
