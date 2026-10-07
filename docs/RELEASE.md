@@ -1,3 +1,7 @@
+> build4 分发候选已实际完成：Mac App / DMG 公证均 Accepted，票据、严格签名与 Gatekeeper 全部通过。只读挂载确认卷名 AetherFilm、build4 及 App / Applications / Notices / 安装说明；DMG SHA256 `a644996bfc2efc8d8e0e6ce94282aa943294063c39b2242d9a4c5a0b55cb2230`，30,758,771 字节。远程 Mac mini 独立目录安装后版本、票据、严格签名与 Gatekeeper 通过；不认证实际播放。Mac 普通 CI37623016669 原 xcresult 实际62通过 / 0失败 / 0跳过、原生崩溃0、runtime warnings为空，79份附件及8份停止换片命令快照已核对。iOS 普通 CI 仍运行，签名归档不替代真机验收。证据：`release-build4-dmg-r3-review.json`、`release-build4-remote-install-r1.json`、`ci-lifecycle-build4-mac-r1/`。
+
+> build4 分发进度：125a2ad 的普通 Mac Release 与 iOS 签名归档均构建成功，版本与快照类已核对，未链接 ASAN。CI37623016669 运行中。两次 App 公证 Accepted，DMG 等待出现连接超时；服务实际收到请求且仍 In Progress，不能将超时记为请求失败或完成。旧脚本错误收尾删除了两次精确 DMG，现修正为先保存提交回执、失败时保留精确签名 App / DMG。实际函数的失败控制保留原 exit73、回执和字节，未认证服务公证。新版候选仍在打包，当前无新公开下载。
+
 > 当前源码候选：v0.1.1 / build4，包含快照生命周期修复；以下6b17364 CI为修复前最近一次普通CI失败记录。新提交的普通CI与新安装包验收尚待完成。
 
 > 当前发布门禁（2026-10-07）：提交 `6b17364` 的 [CI37607953659](https://github.com/bcblr1993/AetherFilm/actions/runs/37607953659) 整体失败。Mac实际62通过 / 0失败 / 0跳过，原生崩溃采集0条；iOS实际69通过 / 1失败 / 1私有NAS条件跳过。唯一失败为真实SMB第二轮打开后跳转62秒：首次运行正常时钟在提交后4.65秒到达64.961秒，已经越过原62.2～64秒目标窗口，随后时钟继续推进。不能将本轮解释为固定时钟停滞，也不能记为根因修复。原断言和期限不变；证据为 `.build/P0Optimization20261006/ci-stop-change-phase-{ios-seek,mac}-review.json` 及原xcresult。
