@@ -564,6 +564,17 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
     func testPendingValidatorOldSessionCannotFinishNewFilm() async throws {
+        #if DEBUG
+        player.debugEnableLifecycleTrace(origin: origin)
+        defer {
+            if let data = player.debugLifecycleTraceData() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Old validator and new session actual lifecycle including failure"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+        #endif
         let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL?.appendingPathComponent("PlaybackFixtures"))
         var validationEntered = false
         var continuation: CheckedContinuation<Bool, Never>?

@@ -1,4 +1,4 @@
-> v0.1.1 发布推进中：用户授权发布 NAS 优化版，并选定3号浅色玻璃A图标；当前候选0.1.1 / build3。PR #1开放且为draft，GitHub Release仍为草稿，尚未公开发布。提交 `422ba86` 的三个CI任务曾通过，后续文档提交 `fa916e5` 的CI37591286532整体失败；当前仅测试验收修正的iOS完整回归69 / 0 / 1通过，Mac完整回归尚在启动。真机、完整Mac UI、听音与VoiceOver等门禁仍未闭合。
+> 最新状态（2026-10-07）：候选 v0.1.1 / build3。提交 5d8b2bc 的 CI37595707384 整体失败：共享通过；Mac26.6.2 实际61通过 / 0失败 / 0跳过；iOS27实际65通过 / 4失败 / 1私有NAS跳过。两端 xcresult runtime warning 为空，Mac原生崩溃采集0条。GitHub Release仍为草稿，未公开发布。
 
 > 2026-10-06的P0 / NAS优化阶段记录保留于 [TEST_MATRIX.md](TEST_MATRIX.md)。旧v0.1.0公开DMG的证据不覆盖新改动；最新候选和验收限制见下方 Current candidate，历史失败不因本轮通过而覆盖。
 
@@ -10,7 +10,7 @@ Apple Notarization Accepted and stapled DMG.
 
 ## Current candidate: 2026-10-07 (v0.1.1 / build3)
 
-最新CI失败及SMB恢复验收修正、完整iOS70 / Mac启动状态、ASAN20与人工门禁见 [TEST_MATRIX.md](TEST_MATRIX.md)。下方保留已完成的候选分发与历史CI证据，不能覆盖最新失败。
+最新CI失败及SMB恢复验收修正、完整iOS70 / Mac61与远程初始化失败、ASAN20与人工门禁见 [TEST_MATRIX.md](TEST_MATRIX.md)。下方保留已完成的候选分发与历史CI证据，不能覆盖最新失败。
 
 - 用户选定的3号浅色玻璃A已接入macOS / iOS图标；版本唯一来源为 `Version.xcconfig`，最低系统仍为26.0。
 - 提交 `422ba86` 的CI [37588324314](https://github.com/bcblr1993/AetherFilm/actions/runs/37588324314) 三任务全部成功。独立xcresult为Mac26.6.2播放60通过 / 0失败 / 0跳过，iOS27模拟器播放68通过 / 0失败 / 1私有NAS opt-in跳过；两端runtime warnings均为空。此前37584686443与37586192664的片尾失败、共享认证失败及Mac原生崩溃仍保留，重跑成功不认证根因修复。

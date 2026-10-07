@@ -1,3 +1,18 @@
+
+## 2026-10-07：5d8b2bc 完整 CI 与官网候选
+
+本轮仅补充测试诊断：服务端数值记录改为首64 / 末448的有界保留，并在清理前独立写入CI已上传的build/Logs目录；不记录路径、凭据或协议内容。修正诊断hook转发可选协商参数，避免监控本身改变协议调用。原断言、期限和App / 原生播放代码未改。15项执行器 / 崩溃采集 / 数值记录单元测试通过；独立真实SMB2控制完成270次字节校验读取，552事件保留512、明确省略40，负向子进程exit65正确保留。原四失败用例本机各重复3次，共12次通过，runtime warnings为空；不替代失败CI。补充诊断后的iOS与Mac build-for-testing均通过，validator原单项1/0/0且实际生成991事件、旧新generation附件。第一次诊断验证命令误用了-test-iterations 1，Xcode在执行前拒绝、实际0项；移除无效参数后的r2原断言通过。测试设备最终已处于Shutdown。证据为`numeric-timing-fixture-control-r2-review.json`、`failure-focused-r1-review.json`及原结果。
+
+CI37595707384已结束，整体失败。共享任务通过，Mac26.6.2原完整61项全部通过；iOS27原完整70项为65通过 / 4失败 / 1私有NAS条件跳过。独立xcresult实际用例身份与计数一致，两端runtime warnings为空，Mac崩溃采集0条。修正后的SMB20次循环跳转 / 重开、恢复误通过控制及SMB seek-zero均通过，不能覆盖其他失败。
+
+四个iOS失败用例：`testActiveDoubleSpeedForwardTailSeekConsumesRealOutputOnce`、`testPendingValidatorOldSessionCannotFinishNewFilm`、`testPriorWatchedStateSurvivesRealTailReadFailure`、`testRealSMBColdResumeHasOutputAndCompletes`。控制台8条失败记录属于4个用例。短GOP2倍速原始观察在seek后0.631秒有normal11.608605及新增音视频，但clockRunning一直false、最终ended1；没有达到原新鲜运行时钟门禁。其他三项分别在新会话真实输出、held初播、SMB冷续播输出等待中超时，未由此证明原播放状态保护错误或认证根因修复。不放宽期限或将缓存时钟当成真实播放。
+
+远程Mac27完整运行exit65，runner建立连接前挂起，实际0项用例；保留通道拒绝、采样和结果，临时Agent清理exit0、严格签名复核通过。iPhone16ProMax / iOS27.0.1当前paired且connected，DeveloperMode仍disabled，真机播放门禁继续开放。
+
+官网候选仅在隔离目录准备：基于官网8ccc6e7，只改AetherFilm app.yaml、releases.yaml、media/icon.png。165项测试、338页构建、9042站内链接、3份签名清单和469个本地JSON地址检查通过；浏览器复核中文产品页及中英v0.1.1说明。未部署，原官网工作区未改动。发布时须刷新日期、最终限制说明并先验证GitHub匿名下载。
+
+证据：`.build/P0Optimization20261006/ci-seek-gate-{mac,ios}-case-review.json`、`ci-seek-gate-ios-failure-review.json`、两端原xcresult及attachments、`seek-gate-mac-full-r1/Results-runner/outcome.json`、`website-v011-candidate-review.json`。完整Mac UI、真机、听音、VoiceOver及恢复路径多轨道 / 外挂字幕仍待完成，Release保持草稿。
+
 > 2026-10-07：用户反馈本机简单测试基本无问题；按基本使用 smoke 反馈记录，未据此认证 VoiceOver、完整设备或全部矩阵。用户选定3号图标后已重新构建build3；公开分发及完整验收仍未完成。
 
 # v0.1.0 验收矩阵
