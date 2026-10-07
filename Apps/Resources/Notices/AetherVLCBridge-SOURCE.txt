@@ -10,10 +10,12 @@ corresponding source.
 The fixed upstream VLCKit wrapper revision is
 8f5ce02f09a7da5d061a24ddac3cb432f2a9b332. The historical stock binary archive checksum is
 f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb.
-AetherNative's modified generated wrapper files carry a 2026-10-03 notice.
+AetherNative's modified generated wrapper files carry a 2026-10-07 notice.
 Changes include a separate player/delegate/notification namespace, typed
 stopping snapshots and clock/input callbacks, checked clock interpolation,
-and package-relative header imports. The derived bridge layer is separate from the modified Native8 libVLC core.
+and package-relative header imports. Event-handler-owned primitive snapshots
+allow native callbacks to read snapshot values without promoting the weak player.
+The derived bridge layer is separate from the modified Native8 libVLC core.
 Its ten local patches and thirteen affected-source hashes are recorded in
 Packages/AetherVLCKit; the current modified binary checksum is in its
 Provenance/artifact.json.
