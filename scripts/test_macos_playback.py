@@ -14,6 +14,15 @@ import sys
 import time
 from urllib.parse import urlsplit
 import uuid
+import importlib.util
+
+
+def retain_native_crashes(since, output):
+    specification = importlib.util.spec_from_file_location(
+        "playback_crashes", Path(__file__).with_name("collect_playback_crashes.py"))
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    module.collect(Path.home() / "Library/Logs/DiagnosticReports", since, output)
 
 
 def test_cases(tree):
@@ -118,6 +127,7 @@ def main():
                "-test-timeouts-enabled", "YES", "-default-test-execution-time-allowance", "120",
                "-maximum-test-execution-time-allowance", "180"]
     status = own / "exit-status.json"
+    crash_evidence_start = time.time()
     child = own / "run.py"
     agent = own / "launchagent.plist"
     label = "com.aethernative.qa.macplayback." + session
@@ -170,6 +180,11 @@ def main():
         subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
         return code
     finally:
+        try:
+            retain_native_crashes(crash_evidence_start, own / "native-crashes.json")
+        except Exception:
+            # Do not disclose parser input or prevent removal of the owned agent.
+            print("Native crash evidence collection failed; original test status is retained.", file=sys.stderr)
         try:
             if attempted_bootstrap:
                 cleanup = subprocess.run(["launchctl", "bootout", "gui/" + str(os.getuid()) + "/" + label],
