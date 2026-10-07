@@ -63,6 +63,7 @@ public final class FilmPlayer: NSObject {
     }
     @ObservationIgnored private var seekPresentation: SeekPresentation?
     @ObservationIgnored private var seekStatusDelay: Task<Void, Never>?
+    @ObservationIgnored private var seekOutputMonitor: Task<Void, Never>?
     @ObservationIgnored private var wantsToPlay = false
     @ObservationIgnored private var backendIsLoading = false
     @ObservationIgnored private var didStart = false
@@ -126,6 +127,7 @@ public final class FilmPlayer: NSObject {
 
     isolated deinit {
         seekStatusDelay?.cancel()
+        seekOutputMonitor?.cancel()
         streamingSeekMonitor?.cancel()
         completionEvaluation?.cancel()
         openingTimeout?.cancel()
@@ -739,6 +741,7 @@ public final class FilmPlayer: NSObject {
 
     private func beginSeekPresentation(target: Double, engine: AetherVLCMediaPlayer) {
         seekStatusDelay?.cancel()
+        seekOutputMonitor?.cancel()
         let requestID = UUID()
         seekPresentation = SeekPresentation(id: requestID, target: target, began: .now,
             callbackBaseline: engine.seekCallbackSequence,
@@ -763,6 +766,17 @@ public final class FilmPlayer: NSObject {
         }
         seekStatus = .seeking
         let token = sessionID
+        // Output statistics may update after the last paused preview callback.
+        // Recheck actual evidence while this request remains active; elapsed
+        // time alone never completes a seek or resumes paused playback.
+        seekOutputMonitor = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
+                guard !Task.isCancelled, let self, self.sessionID == token,
+                      self.seekPresentation?.id == requestID else { return }
+                self.refreshSeekPresentation()
+            }
+        }
         // This changes presentation only. It is not a read deadline or failure.
         seekStatusDelay = Task { [weak self] in
             do { try await Task.sleep(for: .seconds(3)) } catch { return }
@@ -783,6 +797,8 @@ public final class FilmPlayer: NSObject {
         #endif
         seekStatusDelay?.cancel()
         seekStatusDelay = nil
+        seekOutputMonitor?.cancel()
+        seekOutputMonitor = nil
         seekPresentation = nil
         seekStatus = nil
     }
