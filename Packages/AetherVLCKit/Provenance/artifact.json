@@ -1,5 +1,5 @@
 {
-  "status": "COMPONENT_ASSEMBLY_VERIFIED_PENDING_PUBLICATION",
+  "status": "COMPONENT_PUBLISHED_AND_ANONYMOUS_DOWNLOAD_VERIFIED",
   "nativeGeneration": 9,
   "wrapperCommit": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "libVLCBaseCommit": "005e69e67a8730f128e44bde68437fbb048cf45f",
@@ -8,7 +8,8 @@
     "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261008-native9/VLCKit-AetherFilm-native9-arm64.xcframework.zip",
     "filename": "VLCKit-AetherFilm-native9-arm64.xcframework.zip",
     "bytes": 68747057,
-    "sha256": "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493"
+    "sha256": "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493",
+    "tag": "vlckit-8f5ce02-aether-20261008-native9"
   },
   "slices": [
     {
@@ -118,5 +119,28 @@
   "mediaPrerollRatePatchSHA256": "dbe103e3d13a0337bd91e9206ad72bf102b5c4398412600841d989d8bf6d7f4f",
   "avSampleBufferDrainPatchSHA256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78",
   "deferredPauseCancelPatchSHA256": "a56b2fceb3ecadaa8c7c83dca621402ea0dae995726db2bcb69188e5e77c1e1c",
-  "fullPortableRebuildExecuted": false
+  "fullPortableRebuildExecuted": false,
+  "correspondingSourceExtension": {
+    "asset": "AetherFilm-native9-source-extension-a73effb1784f.tar.gz",
+    "bytes": 11754925,
+    "sha256": "018c891f19c52cb4a9ca8d191e05f53f09a4c7c2b100dc9d2be534581954f538",
+    "applicationCommit": "a73effb1784f88d205e1ae6c44138667e6c46b98",
+    "releaseAccepted": false
+  },
+  "componentAnonymousDownloadsVerified": [
+    {
+      "asset": "VLCKit-AetherFilm-native9-arm64.xcframework.zip",
+      "anonymousCurlExitCode": 0,
+      "httpStatus": "200",
+      "bytes": 68747057,
+      "sha256": "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493"
+    },
+    {
+      "asset": "AetherFilm-native9-source-extension-a73effb1784f.tar.gz",
+      "anonymousCurlExitCode": 0,
+      "httpStatus": "200",
+      "bytes": 11754925,
+      "sha256": "018c891f19c52cb4a9ca8d191e05f53f09a4c7c2b100dc9d2be534581954f538"
+    }
+  ]
 }
