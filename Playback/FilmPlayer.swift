@@ -285,6 +285,10 @@ public final class FilmPlayer: NSObject {
         debugRecordLifecycle(.enginePlaySubmitted)
         #endif
         engine.play()
+        // A queued pause can be cancelled before the backend leaves playing,
+        // so resuming need not produce another playing-state callback.
+        isPlaying = wantsToPlay && engine.state == .playing
+        refreshLoading()
             #endif
         }
     }
