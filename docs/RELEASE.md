@@ -1,3 +1,5 @@
+> 2026-10-08 普通 Mac 核心恢复构建 exit0，完整静态归档已生成；Simulator 核心也 exit0，Device 核心已接续。普通 Mac 两个 wrapper 目标编译链接均 exit0，实际最终 Mach-O 的 302 个插件入口加独立 core 入口与基线一致，315 个公开 libVLC 导出名称与基线一致，最低 macOS 26.0，无 ASAN 符号或运行库引用。原静态归档的 Apple nm 检查因无法解析部分 Rust LLVM 元数据失败，未声明该检查通过；最终链接产品采用全体已定义符号检查（插件是局部 t 符号）及独立公开 libVLC 导出检查。证据：候选目录的 normal-mac-linked-framework-review.json、普通构建日志及 outcome。普通 App 播放 / 完整 CI / 设备 / 分发仍未通过，v0.1.1 继续为草稿。
+
 > 2026-10-08 普通引擎构建记录：Mac 初轮在 contrib 阶段实际退出 1，原因是独立 Cargo 目录缺少 cargo-capi；原日志和 outcome 保留。已核对现有 cargo-c 0.10.9+cargo-0.85.0 及四个工具 SHA，复制到自有缓存后，在相同源码 / 输出目录继续构建并写独立 build-r2.log / outcome-r2.json。私有候选的移动端构建入口增加工具版本 / SHA 预检和自有缓存复制，两个移动端计划再次通过，等待 Mac 终态。该工具修复未修改全局安装或当前公开依赖。
 >
 > 时钟语义进一步核对：timer.c 对失效来源的首条时钟设置 VLC_TICK_MAX，仅禁用插值，不等于 input 进入暂停。候选片尾 5 轮均无实际暂停事件，首条运行时钟约 11.38 秒；CI 片尾的 11.812464 初始化点不能作为延后暂停根因证据。SMB CI 失败另有实际 paused-state 回调，仍需独立定位。证据：候选目录的 first-clock-sentinel-review.json、cargo-capi-tool-copy-review.json 和普通构建原始记录。普通引擎、完整 CI 和最终发布尚未完成。
