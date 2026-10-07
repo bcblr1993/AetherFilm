@@ -1,0 +1,50 @@
+{
+  "status": "ACTUAL_NATIVE4_THREE_ARM64_CONSUMERS_COMPILED_AND_LINKED",
+  "sourceFilesExact": 22,
+  "callbacks": [
+    "stopping",
+    "clock",
+    "input",
+    "seeking"
+  ],
+  "getterAndSequenceTypesCompiled": true,
+  "builds": [
+    {
+      "platform": "macos-arm64",
+      "exitCode": 0,
+      "SHA256": "d67b4407e16c6bff478b9a8ba07e3f3a9364291711143c2bc91a16e2ee23698d",
+      "UUID": "UUID: 5D1C6CD3-589C-3A96-9BD4-DB4843DBD57D (arm64) /Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-macos-arm64/out/Products/Debug/ContractConsumer",
+      "buildVersion": "/Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-macos-arm64/out/Products/Debug/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform MACOS\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "automaticObjectiveCARC": true,
+      "artifactCount": 1,
+      "ownedClassDefined": true,
+      "stockPlayerClassDefined": false
+    },
+    {
+      "platform": "ios-arm64",
+      "exitCode": 0,
+      "SHA256": "b9a1942752c526b3597c36139717d50ac55cd67436bbfd1a180bac47a5935f1b",
+      "UUID": "UUID: 10E2883B-CF3E-3D17-8C04-4624F3081256 (arm64) /Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-ios-arm64/out/Products/Debug-iphoneos/ContractConsumer",
+      "buildVersion": "/Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-ios-arm64/out/Products/Debug-iphoneos/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOS\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "automaticObjectiveCARC": true,
+      "artifactCount": 1,
+      "ownedClassDefined": true,
+      "stockPlayerClassDefined": false
+    },
+    {
+      "platform": "sim-arm64",
+      "exitCode": 0,
+      "SHA256": "e53b746c17b9a96efc9f95f9f6a128dc93e168cd7f0216d229e37abfddc55568",
+      "UUID": "UUID: 20DE3F56-6DD5-3613-93EE-3AE6F3C7F431 (arm64) /Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-sim-arm64/out/Products/Debug-iphonesimulator/ContractConsumer",
+      "buildVersion": "/Users/chenxu/IdeaProjects/infuse/.build/Native4Consumers20261004-r1/Build-sim-arm64/out/Products/Debug-iphonesimulator/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "automaticObjectiveCARC": true,
+      "artifactCount": 1,
+      "ownedClassDefined": true,
+      "stockPlayerClassDefined": false
+    }
+  ],
+  "historicalReview": "Provenance/History/consumer-stock-five-platform-20261003.json",
+  "AppOrRuntimePerformed": false,
+  "distributionAccepted": false,
+  "sourceProofSHA256": "2d88cbf0ad61af5b3bbbd294946852f578da633702c818e1a0686bd2ec9dad21"
+}

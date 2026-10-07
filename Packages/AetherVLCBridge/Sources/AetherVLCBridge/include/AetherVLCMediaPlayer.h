@@ -1,4 +1,4 @@
-/* Modified by AetherNative on 2026-10-03.
+/* Modified by AetherNative on 2026-10-07.
  * Changes: player/notification namespace, typed callbacks with fixed stopping snapshots,
  * checked interpolation, seek-state callback snapshots, and target-relative SwiftPM header imports.
  * Original LGPL notices are retained.

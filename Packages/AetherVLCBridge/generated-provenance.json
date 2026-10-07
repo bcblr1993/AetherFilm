@@ -2,14 +2,14 @@
   "status": "FROZEN_EXACT_TESTED_CALLBACK_SOURCE_RELEASE_ACCEPTANCE_PENDING",
   "fixedWrapperRevision": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "fixedBinaryArchiveSHA256": "f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb",
-  "modificationDate": "2026-10-03",
+  "modificationDate": "2026-10-07",
   "capturedPrototypeHashes": {
-    "src/AetherVLCMediaPlayer.m": "b6861d0d719145baa984a28fb6410afc14df3ae56a20738d55010607cd9a279e",
+    "src/AetherVLCMediaPlayer.m": "144d3ab23fbf600e07b78f79b14cf616685d9f3714c4d0676be789c9082816d5",
     "include/AetherVLCMediaPlayer.h": "8fdd178681de0729cec7a1a22d2dddb099f9494ec3a6bbcf13e6aff28315e9c3"
   },
-  "prototypePatchSHA256": "efceaa696151e8584ee9d2c44b9fc1425a44cde6f1dafc256372221879d885eb",
+  "prototypePatchSHA256": "cb9d2e4d0e4916b47d135400111cc91a8691aa0cc13179180a501d6ebb5469aa",
   "frozenApproved": true,
-  "patchSource": "Owner-frozen namespaced player snapshot; original C stopping callback copies input time/error under an owned NSLock, then queues only immutable values",
+  "patchSource": "Reviewed event-handler-owned primitive snapshot; native callback snapshot access does not promote the weak player",
   "inputs": {
     "PinnedInputs/Wrapper/COPYING": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "PinnedInputs/PublicC/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
@@ -46,21 +46,22 @@
     "package-relative header imports and dated changes banners",
     "prototype measuredCoreTime getter removed from final public API",
     "typed on_seek callback sequence and immutable target/state snapshots",
-    "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status"
+    "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status",
+    "primitive snapshots owned by the event handler; native callbacks never promote the weak player for snapshot access"
   ],
   "fixedBinaryArchiveURL": "https://download.videolan.org/cocoapods/unstable/VLCKit-4.0-20260929-1631.zip",
   "candidateSourceOrigin": "Exact source reproduced from the macOS / iOS Simulator / physical iPhone native3 seek-status candidate; see docs/TEST_MATRIX.md.",
   "priorOwnershipApproval": "Root explicitly authorized formal package integration after the five-platform consumer matrix; playback owner froze these m/h bytes and the three callback interfaces",
-  "ownershipApproval": "Root promoted the exact previously tested typed-seek callback source after original four-case runtime checks on macOS, iOS Simulator and physical iPhone. This source freeze does not certify the new native4 artifact or distribution.",
+  "ownershipApproval": "Root froze the user-authorized lifecycle fix after original Mac ASAN stop/change 20/0/0, full Mac ASAN 62/0/0 and full iOS ASAN 70/0/1. Public callback API and fixed inputs are unchanged. Non-diagnostic CI, physical device and distribution gates remain open.",
   "fixedBinaryMeaning": "Historical official archive and public-header baseline only; current locally rebuilt native4 binary and native modifications are recorded separately. No unchanged-core claim.",
   "patchContextLines": 0,
   "generatedFiles": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "49ebef69171c62d69d1e4a927a7d5238acfc61664d907583ee2e696e8b853bac",
-    "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "63bc5cfa1b4635f674d2e9bf951ff8731dc2dcb0b76ee3a314669b4c169cdce6",
-    "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "e1b2c6c6b638da39d02a2dc1e5e5325f9d0543871caa663ebf504b0e2a634b42",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "26ffdcbf9a97d498374c267b2c925cf0e9aab3ac2fe3df6f3a3659b844a09d90",
+    "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "251e6da8801e57b8335cfb9735923528a0a533885b1092a984189cdfb1bea2ba",
+    "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "9a0e2371fb6ac251e3357aadbe92608734c36979953b88460d2ca575101c9d6f",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
     "Sources/AetherVLCBridge/Private/VLCHelperCode.h": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1",
-    "Sources/AetherVLCBridge/Private/VLCLibVLCBridging.h": "49e20a9a6b65083883cbeb57be0ffcb82a454dd67a7124bf3ad883daf8a7858c",
+    "Sources/AetherVLCBridge/Private/VLCLibVLCBridging.h": "9a6cefa27caddd76bbc08172afc8105521f1991b0496f5a5bc88a0deeb6f4e19",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
@@ -76,6 +77,6 @@
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_version.h": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
     "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
-    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "2bb90786e500e27eeedf1cc9c17920b7aa75781afcb27f176db0ede3adf33ba8"
+    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "dd342637bdc88421f05ada411991f9c1439e47d339fbf2ffb14093812a541125"
   }
 }

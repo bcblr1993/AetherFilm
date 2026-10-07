@@ -2,14 +2,14 @@
   "status": "FROZEN_EXACT_TESTED_CALLBACK_SOURCE_RELEASE_ACCEPTANCE_PENDING",
   "fixedWrapperRevision": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "fixedBinaryArchiveSHA256": "f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb",
-  "modificationDate": "2026-10-03",
+  "modificationDate": "2026-10-07",
   "capturedPrototypeHashes": {
-    "src/AetherVLCMediaPlayer.m": "b6861d0d719145baa984a28fb6410afc14df3ae56a20738d55010607cd9a279e",
+    "src/AetherVLCMediaPlayer.m": "144d3ab23fbf600e07b78f79b14cf616685d9f3714c4d0676be789c9082816d5",
     "include/AetherVLCMediaPlayer.h": "8fdd178681de0729cec7a1a22d2dddb099f9494ec3a6bbcf13e6aff28315e9c3"
   },
-  "prototypePatchSHA256": "efceaa696151e8584ee9d2c44b9fc1425a44cde6f1dafc256372221879d885eb",
+  "prototypePatchSHA256": "cb9d2e4d0e4916b47d135400111cc91a8691aa0cc13179180a501d6ebb5469aa",
   "frozenApproved": true,
-  "patchSource": "Owner-frozen namespaced player snapshot; original C stopping callback copies input time/error under an owned NSLock, then queues only immutable values",
+  "patchSource": "Reviewed event-handler-owned primitive snapshot; native callback snapshot access does not promote the weak player",
   "inputs": {
     "PinnedInputs/Wrapper/COPYING": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "PinnedInputs/PublicC/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
@@ -46,12 +46,13 @@
     "package-relative header imports and dated changes banners",
     "prototype measuredCoreTime getter removed from final public API",
     "typed on_seek callback sequence and immutable target/state snapshots",
-    "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status"
+    "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status",
+    "primitive snapshots owned by the event handler; native callbacks never promote the weak player for snapshot access"
   ],
   "fixedBinaryArchiveURL": "https://download.videolan.org/cocoapods/unstable/VLCKit-4.0-20260929-1631.zip",
   "candidateSourceOrigin": "Exact source reproduced from the macOS / iOS Simulator / physical iPhone native3 seek-status candidate; see docs/TEST_MATRIX.md.",
   "priorOwnershipApproval": "Root explicitly authorized formal package integration after the five-platform consumer matrix; playback owner froze these m/h bytes and the three callback interfaces",
-  "ownershipApproval": "Root promoted the exact previously tested typed-seek callback source after original four-case runtime checks on macOS, iOS Simulator and physical iPhone. This source freeze does not certify the new native4 artifact or distribution.",
+  "ownershipApproval": "Root froze the user-authorized lifecycle fix after original Mac ASAN stop/change 20/0/0, full Mac ASAN 62/0/0 and full iOS ASAN 70/0/1. Public callback API and fixed inputs are unchanged. Non-diagnostic CI, physical device and distribution gates remain open.",
   "fixedBinaryMeaning": "Historical official archive and public-header baseline only; current locally rebuilt native4 binary and native modifications are recorded separately. No unchanged-core claim.",
   "patchContextLines": 0
 }

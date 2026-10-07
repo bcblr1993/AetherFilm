@@ -2,12 +2,12 @@
   "frozenApproved": true,
   "sameGeneratedSources": 22,
   "generatedSourceSHA256": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "26ffdcbf9a97d498374c267b2c925cf0e9aab3ac2fe3df6f3a3659b844a09d90",
-    "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "251e6da8801e57b8335cfb9735923528a0a533885b1092a984189cdfb1bea2ba",
-    "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "9a0e2371fb6ac251e3357aadbe92608734c36979953b88460d2ca575101c9d6f",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "49ebef69171c62d69d1e4a927a7d5238acfc61664d907583ee2e696e8b853bac",
+    "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "63bc5cfa1b4635f674d2e9bf951ff8731dc2dcb0b76ee3a314669b4c169cdce6",
+    "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "e1b2c6c6b638da39d02a2dc1e5e5325f9d0543871caa663ebf504b0e2a634b42",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
     "Sources/AetherVLCBridge/Private/VLCHelperCode.h": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1",
-    "Sources/AetherVLCBridge/Private/VLCLibVLCBridging.h": "9a6cefa27caddd76bbc08172afc8105521f1991b0496f5a5bc88a0deeb6f4e19",
+    "Sources/AetherVLCBridge/Private/VLCLibVLCBridging.h": "49e20a9a6b65083883cbeb57be0ffcb82a454dd67a7124bf3ad883daf8a7858c",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
@@ -23,7 +23,7 @@
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_version.h": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
     "Sources/AetherVLCBridge/Vendor/vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
     "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
-    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "dd342637bdc88421f05ada411991f9c1439e47d339fbf2ffb14093812a541125"
+    "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "2bb90786e500e27eeedf1cc9c17920b7aa75781afcb27f176db0ede3adf33ba8"
   },
   "exactCapturedPrototypeVerifiedBeforeImportsAndBanner": true,
   "reproductionCommand": "python3 Tools/generate_package_sources.py --require-frozen --output NEW_DIRECTORY",
@@ -32,11 +32,9 @@
   "prototypeGetterAbsent": true,
   "diagnosticGetterDoesNotClearSeekStatus": true,
   "formalPackageReproducesSources": true,
-  "sourceInventorySHA256": "e28a8dfd6dfd62f5f20a71974411c956d358fa62f2356868a645d4974bd25ac9",
+  "sourceInventorySHA256": "1b070bd590335229b301eb84be0e42ba2f71f1e3af48ebaedda2200e9dec568e",
   "releaseAcceptancePassed": false,
-  "historicalProof": "Provenance/History/pre-lifecycle-20261007-reproduction-proof.json",
-  "prototypePatchSHA256": "cb9d2e4d0e4916b47d135400111cc91a8691aa0cc13179180a501d6ebb5469aa",
-  "zeroContextPatchPreservesExactTestedSources": true,
-  "independentGenerationsCompared": 2,
-  "nativeSnapshotCallbacksPromoteWeakPlayer": false
+  "historicalProof": "Provenance/History/reproduction-stock-callbacks-20261003.json",
+  "prototypePatchSHA256": "efceaa696151e8584ee9d2c44b9fc1425a44cde6f1dafc256372221879d885eb",
+  "zeroContextPatchPreservesExactTestedSources": true
 }

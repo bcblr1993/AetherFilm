@@ -1,12 +1,26 @@
-> 当前发布门禁（2026-10-07）：[CI37606217593](https://github.com/bcblr1993/AetherFilm/actions/runs/37606217593) @ `ddb16f1` 整体失败。Mac实际61通过 / 1原生SIGSEGV失败 / 0跳过，失败为 `testStopAndChangeFilmCancelOldRealSeekCallbacksAndTimers`；UUID匹配的VLCKit故障指令为 `vlc_player_UpdateTimerEvent+140` 的停止事件监听链表读取，空地址8访问，根因未确认。iOS实际69通过 / 1失败 / 1私有NAS条件跳过；暂停片尾跳转第5.24秒仍新增视频、音频与正常时钟，未满足原最后一秒稳定断言。字幕重试和SMB连续跳转本轮通过，不覆盖历史失败。原xcresult、原生崩溃及匹配反汇编保留于 `.build/P0Optimization20261006/ci-subtitle-deadline-*`。
+> 当前源码候选：v0.1.1 / build4，包含快照生命周期修复；以下6b17364 CI为修复前最近一次普通CI失败记录。新提交的普通CI与新安装包验收尚待完成。
+
+> 当前发布门禁（2026-10-07）：提交 `6b17364` 的 [CI37607953659](https://github.com/bcblr1993/AetherFilm/actions/runs/37607953659) 整体失败。Mac实际62通过 / 0失败 / 0跳过，原生崩溃采集0条；iOS实际69通过 / 1失败 / 1私有NAS条件跳过。唯一失败为真实SMB第二轮打开后跳转62秒：首次运行正常时钟在提交后4.65秒到达64.961秒，已经越过原62.2～64秒目标窗口，随后时钟继续推进。不能将本轮解释为固定时钟停滞，也不能记为根因修复。原断言和期限不变；证据为 `.build/P0Optimization20261006/ci-stop-change-phase-{ios-seek,mac}-review.json` 及原xcresult。
+
+Mac本机原生ASAN停止换片20轮专项实际执行14轮：13通过 / 1原生abort失败，exit65。匹配的诊断框架UUID与ASAN已由进程采样证明加载；第14轮调用栈从AetherHandleMediaStopping进入播放器析构、VLCAudio释放、vlc_player_Delete和vlc_join，线程join错误11对应Darwin EDEADLK。停止回调直接读取弱播放器以复制数值快照的路径已识别；该证据不证明旧空timer链表SIGSEGV具有相同根因。新候选将数值快照改为事件处理器持有的独立对象，原生回调不再为快照读取提升弱播放器；固定输入不变，补丁 / 哈希可复现，frozenApproved已设为true，第二次独立生成与已测试源码22文件逐字节一致，两端ASAN测试构建均exit0，实际二进制快照类及独立测试包严格签名已核对；相同Mac原用例20轮ASAN回归实际20通过 / 0失败 / 0跳过，原生崩溃及ASAN错误0条、runtime warnings为空，160份命令阶段附件已核对（总附件200）。该已捕获的停止快照生命周期路径已通过本轮回归；旧空timer链表SIGSEGV相同根因仍未证明。修复候选的完整iOS ASAN播放实际70通过 / 0失败 / 1私有NAS条件跳过，runtime warnings为空、ASAN错误0条，86份附件已导出（`bridge-lifecycle-ios-full-asan-r1`）。完整Mac首轮被原排他会话门禁拦截，exit2、实际0项；确认无冲突后第二轮完整执行62通过 / 0失败 / 0跳过，exit0，runtime warnings为空，ASAN错误与原生崩溃0条，79份附件及清理exit0已核对（`bridge-lifecycle-mac-full-asan-r2`）。生产Native8的Mac / iOS真机 / iOS模拟器三平台消费者编译链接均exit0，ARC、单一artifact、命名空间及最低26版本已核对（`bridge-lifecycle-consumer-verification-r2`）；仅证明编译链接。非诊断完整CI及真机 / 分发门禁仍待完成。证据为 `bridge-lifecycle-mac-stop-asan-r1/` 原xcresult、summary / review及附件。原结果、原生崩溃和failure-review保留于 `native-mac-core-asan-stop-local-r1/`。
+
+
+生产Native8框架对照同样以XCTest建立连接前挂起结束（exit65，实际播放用例0项，594.934秒）；非ASAN、远程Xcode26.5构建、同一6b17364源码。该启动失败并非只发生在ASAN诊断框架下，具体会话原因仍未确认。原xcresult及review保留于 `native-core-stock26-5-control-remote-r1/` 和 `native-core-stock26-5-control-r1-review.json`；不认证播放或崩溃修复。iOS模拟器独立ASAN诊断内核已完成：中断后的原日志到达成功终点且完整归档存在，原退出码未收取；保留原归档后同一独立缓存的增量构建实际exit0。302模块入口与插件归档一致，timer对象含ASAN检查，诊断框架两目标exit0、arm64 / min26 / SDK27通过。独立App进程采样确认实际加载框架UUID DD43B4F0-D74E-3408-A0CD-40E0646BE5D7及ASAN。完整原播放测试实际70通过 / 0失败 / 1私有NAS条件跳过，runtime warnings为空，播放日志ASAN错误0条；SMB两轮20次跳转、停止换片及8份命令阶段附件保留。本轮未复现故障，不认证历史间歇故障根因修复或真机 / 发布验收。证据为 `native-sim-core-asan-playback-r2.xcresult`、对应summary / review及附件。
+
+
+诊断内核和VLCKit框架已实际构建成功，302个模块入口与插件归档一致，故障相关timer目标含ASAN引用。远程进程已确认加载诊断框架和ASAN。首轮XCTest建立连接前挂起，exit65、实际播放用例0项，原结果保留于 `native-core-stop-asan-remote-r1/`。匹配远程Xcode26.5的当前源码测试包已构建成功，215个受保护源码文件与提交快照一致；第二轮也以相同的XCTest建立连接前挂起结束，exit65、实际播放用例0项。原结果保留于 `native-core-stop-asan26-5-remote-r1/`；工具链匹配未解决启动问题，不认证原生崩溃修复或发布验收。独立诊断产物未替换生产依赖。
+
+v0.1.1仍为草稿。现有build3签名包不包含字幕截止时间及快照生命周期修复；新版重新打包、真机播放、完整Mac UI / 听音 / VoiceOver及实际兼容恢复的多轨验收仍未完成。官网新Logo与候选说明已上线，公开下载保持v0.1.0。
+
+> 历史发布门禁（2026-10-07）：[CI37606217593](https://github.com/bcblr1993/AetherFilm/actions/runs/37606217593) @ `ddb16f1` 整体失败。Mac实际61通过 / 1原生SIGSEGV失败 / 0跳过，失败为 `testStopAndChangeFilmCancelOldRealSeekCallbacksAndTimers`；UUID匹配的VLCKit故障指令为 `vlc_player_UpdateTimerEvent+140` 的停止事件监听链表读取，空地址8访问，根因未确认。iOS实际69通过 / 1失败 / 1私有NAS条件跳过；暂停片尾跳转第5.24秒仍新增视频、音频与正常时钟，未满足原最后一秒稳定断言。字幕重试和SMB连续跳转本轮通过，不覆盖历史失败。原xcresult、原生崩溃及匹配反汇编保留于 `.build/P0Optimization20261006/ci-subtitle-deadline-*`。
 
 新增仅测试使用的崩溃前快照：在原StopAndChangeFilm的4个命令阶段保存已有只读观察与原生时钟，避免原生退出绕过tearDown；不保存URL或原始日志，原断言、命令及期限不变。两端测试构建通过，本机StopAndChangeFilm与暂停片尾各3轮，实际6通过 / 0失败 / 0跳过，24份命令前快照已独立导出核对。未复现CI故障，不认证根因修复。证据为 `stop-change-paused-focused-r1.xcresult`、对应summary / review及附件。v0.1.1仍为草稿，build3不含字幕截止修复；新包、真机播放、完整Mac UI / 听音 / VoiceOver与恢复多轨验收仍未完成。
 
-> 当前发布门禁（2026-10-07）：[CI37603567466](https://github.com/bcblr1993/AetherFilm/actions/runs/37603567466) @ `11488e3` 整体失败。Mac实际62通过 / 0失败 / 0跳过；iOS实际68通过 / 2失败 / 1私有NAS条件跳过，失败为真实SMB循环跳转到68秒后正常时钟未恢复，以及缺失字幕未在原7秒期限内报可恢复错误。两端runtime warnings为空。此前7acd6a3通过记录仅覆盖该轮执行，不能覆盖本轮失败。
+> 历史发布门禁（2026-10-07）：[CI37603567466](https://github.com/bcblr1993/AetherFilm/actions/runs/37603567466) @ `11488e3` 整体失败。Mac实际62通过 / 0失败 / 0跳过；iOS实际68通过 / 2失败 / 1私有NAS条件跳过，失败为真实SMB循环跳转到68秒后正常时钟未恢复，以及缺失字幕未在原7秒期限内报可恢复错误。两端runtime warnings为空。此前7acd6a3通过记录仅覆盖该轮执行，不能覆盖本轮失败。
 
 当前修复候选将字幕加载的50次轮询改为原定5秒的真实经过时间预算；新增SMB原生时钟与有界音频数值附件，原断言和期限保持不变。两端测试构建通过；本机专项3个原用例各3轮，实际9通过 / 0失败 / 0跳过。字幕失败后视频继续、重试成功与旧加载器取消均按原用例验证；SMB两轮打开 / 20次跳转 / 关闭停止读取各3轮通过，3份正常时钟和有界音频附件保留。未复现CI的SMB停滞，不认证其根因修复。原始证据为 `.build/P0Optimization20261006/subtitle-deadline-focused-r1.xcresult`、对应summary / review及附件。build3签名包不含这次生产改动，后续需重新打包；v0.1.1仍为草稿。远程iPhone最新检查Developer Mode disabled、tunnel disconnected；真机播放和完整Mac UI / 人工听音 / VoiceOver门禁仍未完成。
 
-> 最新状态（2026-10-07）：代码提交 `7acd6a3` 的 [CI37600863876](https://github.com/bcblr1993/AetherFilm/actions/runs/37600863876) 三任务全部通过。Mac26.6.2独立xcresult为62通过 / 0失败 / 0跳过，iOS27为70通过 / 0失败 / 1私有NAS条件跳过；实际用例身份数分别62 / 71，两端runtime warnings为空，Mac原生崩溃报告0条、清理exit0。新增片尾音频诊断已在iOS附件留存，但未复现此前时钟停滞，本轮通过不认证根因修复。v0.1.1 / build3仍为草稿。
+> 历史通过记录（2026-10-07）：代码提交 `7acd6a3` 的 [CI37600863876](https://github.com/bcblr1993/AetherFilm/actions/runs/37600863876) 三任务全部通过。Mac26.6.2独立xcresult为62通过 / 0失败 / 0跳过，iOS27为70通过 / 0失败 / 1私有NAS条件跳过；实际用例身份数分别62 / 71，两端runtime warnings为空，Mac原生崩溃报告0条、清理exit0。新增片尾音频诊断已在iOS附件留存，但未复现此前时钟停滞，本轮通过不认证根因修复。v0.1.1 / build3仍为草稿。
 本轮诊断压力专项：从干净代码7acd6a3重新构建iOS测试产品，短GOP与长GOP2倍速原片尾用例各20轮，实际40通过 / 0失败 / 0跳过；runtime warnings为空，40份有界音频附件全部保留。未复现旧异常，不认证根因修复；未改断言、时间边界或期限，未把模拟器当真机。原始证据为 `audio-timing-stress-r1.xcresult`、`audio-timing-stress-r1-{summary,review}.json` 及附件。
 
 
@@ -30,7 +44,7 @@ Apple Notarization Accepted and stapled DMG.
 
 ## Current candidate: 2026-10-07 (v0.1.1 / build3)
 
-当前代码CI已通过（iOS70 / Mac62），剩余人工与真机门禁、SMB恢复轨道专项失败及历史初始化 / ASAN20证据见 [TEST_MATRIX.md](TEST_MATRIX.md)。下方保留已完成的候选分发与历史CI证据，不据本轮通过消除旧失败或未测项。
+当前源码 `6b17364` 的完整CI失败（iOS69通过 / 1失败 / 1跳过，Mac62通过）。现有build3分发包不含后续字幕截止时间修复，不能作为当前源码的安装验收证据。当前门禁和诊断限制见文首及 [TEST_MATRIX.md](TEST_MATRIX.md)；下方保留历史候选分发证据。
 
 - 用户选定的3号浅色玻璃A已接入macOS / iOS图标；版本唯一来源为 `Version.xcconfig`，最低系统仍为26.0。
 - 提交 `422ba86` 的CI [37588324314](https://github.com/bcblr1993/AetherFilm/actions/runs/37588324314) 三任务全部成功。独立xcresult为Mac26.6.2播放60通过 / 0失败 / 0跳过，iOS27模拟器播放68通过 / 0失败 / 1私有NAS opt-in跳过；两端runtime warnings均为空。此前37584686443与37586192664的片尾失败、共享认证失败及Mac原生崩溃仍保留，重跑成功不认证根因修复。
