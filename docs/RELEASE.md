@@ -1,3 +1,7 @@
+> 2026-10-08 最新普通 CI 仍未通过：[37651250092](https://github.com/bcblr1993/AetherFilm/actions/runs/37651250092)，源码 `8b8b19e`。Mac 原 62 项全部通过，iOS 为 68 通过 / 2 失败 / 1 私有 NAS 条件跳过，runtime warnings 均为空。失败为 1.5 倍片尾跳转和 SMB 连续跳转；原生首个运行时钟已越过原目标窗口，不能由本地通过推断 CI 问题已修复。原始产物与附件：`.build/P0Optimization20261006/ci-notification-pool-source-order-r1/`。
+>
+> 同源码的两个失败用例本地各重复 5 轮，共 10 次通过，命令 exit0；这是未复现，保留 CI 失败门禁。另已核对 Native8 的 13 份源文件 pin，并准备独立的“取消延后暂停”原生控制候选；隔离控制检查复现原分支会忽略缓冲期间的恢复请求。该候选尚未链接到 App，也未证明时钟越界根因。证据：`ci-failure-reproduction-ios-r1-review.json`、`deferred-pause-cancel-candidate-r1/review.json`。v0.1.1 仍为草稿，真机、完整 UI、听音、VoiceOver、实际兼容恢复与最终安装 / 分发门禁继续保留。
+
 > 2026-10-08 原播放回归与桥接消费者完成：Mac原62项身份匹配并全部通过；iOS原71项身份匹配，70通过 / 0失败 / 1私有NAS条件跳过，exit0，runtime warnings为空。通知池22份源已冻结并再次精确生成；Mac / iPhone / Simulator三个arm64实际消费者编译链接exit0、目标26.0，来源见Provenance/consumer-build-review.json。开发签名iPhone测试构建也成功，但设备实时详情仍为Developer Mode disabled，真机验收未通过。CI / 完整UI / 听音 / VoiceOver / 兼容恢复 / 最终分发等门禁继续保留，发布仍为草稿。
 
 > 2026-10-08 完整远程Mac回归：同一回调顺序 / 通知池源码候选原62项全部通过 / 0失败 / 0跳过，原case身份集合核对通过，原Main Thread Checker日志干净；Xcode27读取原xcresult runtime warnings为空，原生崩溃0 / unreadable0，严格签名复查通过。测试打印 TEST EXECUTE SUCCEEDED；Xcode26报告缺少runtimeWarnings字段使测试结束后的自有报告脚本exit1，原测试命令exit未持久化，保留该报告错误，不重跑或覆盖原结果。自有终态LaunchAgent已bootout0。完整iOS尚在运行，冻结 / 消费者 / 分发门禁未完成。证据：seek-source-order-remote-full-r2/。
