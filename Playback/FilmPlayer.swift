@@ -388,9 +388,12 @@ public final class FilmPlayer: NSObject {
         subtitleErrorMessage = nil
         refreshTracks()
         let token = sessionID
+        // A poll count does not bound elapsed time when the main actor is busy.
+        // Keep the original five-second budget even when individual sleeps resume late.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
         subtitleLoadingTask = Task { [weak self] in
             var addedTrackID: String?
-            for _ in 0..<50 {
+            while ContinuousClock.now < deadline {
                 guard !Task.isCancelled, let self, self.sessionID == token, let engine = self.engine else { return }
                 if addedTrackID == nil {
                     addedTrackID = engine.textTracks.first(where: { !previousTracks.contains($0.trackId) })?.trackId

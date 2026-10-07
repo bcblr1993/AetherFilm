@@ -343,6 +343,21 @@ final class FilmPlaybackTests: XCTestCase {
     }
 
     func testRealSMBStreamRepeatedSeekAndReopenReleasesReads() async throws {
+        let audioTiming = TailAudioTimingEvents(origin: diagnosticOrigin)
+        defer {
+            if let data = audioTiming.data() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Actual SMB repeated seek bounded audio timing"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+            if let data = player.debugLifecycleTraceData() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Actual SMB repeated seek native clock lifecycle including failure"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
         #if DEBUG
         player.debugEnableLifecycleTrace(origin: diagnosticOrigin)
         #endif
@@ -364,6 +379,9 @@ final class FilmPlaybackTests: XCTestCase {
             do {
                 let previousBytes = await provider.bytesRead
                 player.load(url: try await server.start())
+                if let library = player.backendEngineForTesting?.libraryInstance {
+                    library.loggers = (library.loggers ?? []) + [audioTiming]
+                }
                 try await waitUntil("SMB cycle \(cycle): actual video and audio output", timeout: 20) {
                     self.player.position > 0.8 && self.player.displayedVideoFrames > 0 && self.player.playedAudioBuffers > 0
                 }

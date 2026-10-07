@@ -1,3 +1,7 @@
+> 当前发布门禁（2026-10-07）：[CI37603567466](https://github.com/bcblr1993/AetherFilm/actions/runs/37603567466) @ `11488e3` 整体失败。Mac实际62通过 / 0失败 / 0跳过；iOS实际68通过 / 2失败 / 1私有NAS条件跳过，失败为真实SMB循环跳转到68秒后正常时钟未恢复，以及缺失字幕未在原7秒期限内报可恢复错误。两端runtime warnings为空。此前7acd6a3通过记录仅覆盖该轮执行，不能覆盖本轮失败。
+
+当前修复候选将字幕加载的50次轮询改为原定5秒的真实经过时间预算；新增SMB原生时钟与有界音频数值附件，原断言和期限保持不变。两端测试构建通过；本机专项3个原用例各3轮，实际9通过 / 0失败 / 0跳过。字幕失败后视频继续、重试成功与旧加载器取消均按原用例验证；SMB两轮打开 / 20次跳转 / 关闭停止读取各3轮通过，3份正常时钟和有界音频附件保留。未复现CI的SMB停滞，不认证其根因修复。原始证据为 `.build/P0Optimization20261006/subtitle-deadline-focused-r1.xcresult`、对应summary / review及附件。build3签名包不含这次生产改动，后续需重新打包；v0.1.1仍为草稿。远程iPhone最新检查Developer Mode disabled、tunnel disconnected；真机播放和完整Mac UI / 人工听音 / VoiceOver门禁仍未完成。
+
 > 最新状态（2026-10-07）：代码提交 `7acd6a3` 的 [CI37600863876](https://github.com/bcblr1993/AetherFilm/actions/runs/37600863876) 三任务全部通过。Mac26.6.2独立xcresult为62通过 / 0失败 / 0跳过，iOS27为70通过 / 0失败 / 1私有NAS条件跳过；实际用例身份数分别62 / 71，两端runtime warnings为空，Mac原生崩溃报告0条、清理exit0。新增片尾音频诊断已在iOS附件留存，但未复现此前时钟停滞，本轮通过不认证根因修复。v0.1.1 / build3仍为草稿。
 本轮诊断压力专项：从干净代码7acd6a3重新构建iOS测试产品，短GOP与长GOP2倍速原片尾用例各20轮，实际40通过 / 0失败 / 0跳过；runtime warnings为空，40份有界音频附件全部保留。未复现旧异常，不认证根因修复；未改断言、时间边界或期限，未把模拟器当真机。原始证据为 `audio-timing-stress-r1.xcresult`、`audio-timing-stress-r1-{summary,review}.json` 及附件。
 

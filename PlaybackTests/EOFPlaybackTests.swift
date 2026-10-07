@@ -1885,7 +1885,7 @@ final class EOFPlaybackTests: XCTestCase {
         XCTAssertEqual(SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined(),
                        fixtureSHA256)
         player.debugEnableLifecycleTrace(origin: origin)
-        let audioTiming = TailAudioTimingEvents()
+        let audioTiming = TailAudioTimingEvents(origin: origin)
         var observations = [[String: Any]]()
         let target = 11.0
         // Both pinned fixtures end in real audio/video samples at 12.0 seconds.
@@ -2433,13 +2433,18 @@ private struct EOFTailMetadata: Decodable {
 /// Records: elapsed microseconds, event code, value. Module event 1 values:
 /// 1=avsamplebuffer, 2=auhal, 3=audiounit_ios. Events 2/3/4: late/deferred/started.
 /// Missing events do not prove module selection or absence of a timing problem.
-private final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
+final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
     var level: VLCLogLevel = .debug
     private let lock = NSLock()
-    private let origin = ContinuousClock.now
+    private let origin: ContinuousClock.Instant
     private var first: [[Int64]] = []
     private var tail: [[Int64]] = []
     private var total = 0
+
+    init(origin: ContinuousClock.Instant = .now) {
+        self.origin = origin
+        super.init()
+    }
 
     static func parse(_ message: String, source: Int?) -> [Int64]? {
         let modules = ["avsamplebuffer", "auhal", "audiounit_ios"]
