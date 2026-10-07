@@ -2,6 +2,17 @@
 
 # v0.1.0 验收矩阵
 
+## 2026-10-07 SMB恢复后的验收计数修正（PR #1，未发布）
+
+- 文档提交 `fa916e5` 的CI37591286532整体失败：共享 / Mac26任务通过，Mac实际60通过 / 0失败 / 0跳过；iOS实际65通过 / 3失败 / 1私有NAS跳过，无runtime warning。三项失败为2倍速片尾、SMB seek-zero预热、SMB循环跳转；6条断言 / unexpected错误不写成6个失败用例。
+- 循环跳转失败附件中，同一用户播放会话的兼容恢复更换原生引擎。旧引擎跳转前记录至少164个已显示帧；新引擎在原12.2～14秒目标窗口内已有真实正常时钟和最多67个新帧，原测试仍比较旧引擎计数。此次只修正测试的统计归属，不改App计数，不累加旧帧伪装新输出。原12秒期限、target+0.2～target+2边界、20次跳转 / 两次关闭重开均保留；额外要求同媒体且明确兼容恢复、新引擎真实音视频、seek后的配对运行正常时钟。新增控制拒绝无关引擎、旧时钟、目标越界与空音视频。
+- 当前修改的真实SMB专项与新控制用例各执行3次，全部通过、无runtime warning。完整iOS27共70项为 **69通过 / 0失败 / 1私有NAS opt-in跳过**，无runtime warning；独立核对70个实际case身份，前述三项及新控制本轮均通过。自建模拟器已Shutdown。另两项偶发失败的生产根因未认证修复，不由此次测试修正消除历史失败。
+- 当前修改的Mac Debug测试产品已构建，源码 / 传输包SHA256一致、严格签名通过；已在用户批准的远程Mac mini启动完整播放，当前仍在启动阶段，尚未进入用例；系统日志记录XCTestManager通道被拒绝，不能认证播放断言失败或通过。不得将先前Mac60或ASAN专项写成本轮完整通过。
+- 原停止切换用例的App / test AddressSanitizer专项实际20轮均通过，原assertions保持、无runtime warning、ASAN错误0、原生崩溃报告0；ASAN运行时映射已实际核验，临时LaunchAgent清理及运行后严格签名通过。xcresult按1个方法聚合，原日志核对20次实际迭代。捆绑VLC库未以ASAN重建，旧原生崩溃根因仍未认证修复。
+- build3 Mac UI复测exit65，runner启用Automation Mode超时；xcresult记1个runner初始化错误，实际UI用例0项，原始结果保留且临时Agent已清理。iPhone开发者模式仍disabled；真机与完整UI / 听音 / VoiceOver门禁未闭合。GitHub草稿DMG已实际认证下载，SHA256与本地公证包一致、镜像校验通过；这不认证匿名公开下载或安装后播放。
+
+证据：`.build/P0Optimization20261006/` 中 `ci-build3-docs-ios-r1-summary.json`、`ci-build3-docs-ios-smb-replacement-counter-review.json`、`seek-gate-source-review.json`、`seek-gate-focused-r1-outcome.json`、`seek-gate-full-ios-r1-{summary,case-review}.json`、`mac-stop-asan-build3-r2/outcome.json`、`mac-ui-build3-r1/outcome.json`、`draft-download-build3-r1/download-evidence.json`。当前发布仍为草稿，P0未闭合。
+
 ## 2026-10-07 当前build3验收状态
 
 | 门禁 | 当前证据 | 状态 / 限制 |

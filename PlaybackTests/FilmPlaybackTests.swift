@@ -5,6 +5,21 @@ import FilmSources
 import VideoToolbox
 @testable import AetherFilm
 
+/// Raw counters belong to one native engine. Recovery must prove fresh output
+/// on its new engine rather than compare against counters from the old one.
+private enum SMBSeekOutputGate {
+    static func accepts(target: Double, cachedTime: Double, normalTime: Double,
+                        freshRunningClock: Bool, originalEngine: Bool, permittedRecovery: Bool,
+                        displayedBefore: UInt64, playedBefore: UInt64,
+                        displayedNow: UInt64, playedNow: UInt64) -> Bool {
+        guard freshRunningClock, originalEngine || permittedRecovery,
+              cachedTime > target + 0.2, cachedTime < target + 2,
+              normalTime > target + 0.2, normalTime < target + 2 else { return false }
+        return displayedNow > (originalEngine ? displayedBefore : 0)
+            && playedNow > (originalEngine ? playedBefore : 0)
+    }
+}
+
 #if os(macOS)
 import AppKit
 #elseif os(iOS)
@@ -357,13 +372,32 @@ final class FilmPlaybackTests: XCTestCase {
                 XCTAssertTrue(player.isSeekable)
                 player.pause()
                 for target: Double in [62, 3, 55, 8, 68, 2, 45, 12, 60, 4] {
+                    let identity = ObjectIdentifier(try XCTUnwrap(player.backendEngineForTesting))
+                    let mediaURL = try XCTUnwrap(player.backendEngineForTesting?.media?.url)
                     let displayed = player.displayedVideoFrames
+                    let played = player.playedAudioBuffers
                     player.seek(target)
                     player.play()
                     try await waitUntil("SMB cycle \(cycle): seek to \(Int(target)) seconds", traceInitialSeek: true) {
-                        guard let time = self.player.backendTime else { return false }
-                        return time > target + 0.2 && time < target + 2
-                            && self.player.displayedVideoFrames > displayed
+                        guard let engine = self.player.backendEngineForTesting,
+                              let time = self.player.backendTime,
+                              let normal = self.player.backendClockTime,
+                              let trace = TailPhaseTrace.capture(self.player),
+                              let marker = trace.latestSeekMarker(), marker.targetSeconds == target else { return false }
+                        let freshClock = trace.records.contains { record in
+                            guard record.eventCode == 31, record.generation == marker.generation,
+                                  let callback = trace.pairedCallback(for: record, callbackCode: 30),
+                                  callback.sequence > marker.sequence,
+                                  let microseconds = record.timeMicroseconds,
+                                  let date = record.systemDateMicroseconds, date > 0, date != Int64.max else { return false }
+                            return abs(normal - Double(microseconds) / 1_000_000) < 0.000002
+                        }
+                        return SMBSeekOutputGate.accepts(target: target, cachedTime: time, normalTime: normal,
+                            freshRunningClock: freshClock && self.player.backendClockIsRunning,
+                            originalEngine: ObjectIdentifier(engine) == identity,
+                            permittedRecovery: self.player.backendStreamingDemuxWasRetried && engine.media?.url == mediaURL,
+                            displayedBefore: displayed, playedBefore: played,
+                            displayedNow: self.player.displayedVideoFrames, playedNow: self.player.playedAudioBuffers)
                     }
                     player.pause()
                 }
@@ -392,6 +426,25 @@ final class FilmPlaybackTests: XCTestCase {
         }
         await provider.close()
         await attachSMBReadTimeline(provider)
+    }
+
+    func testSMBSeekOutputGateRejectsStaleOutputAcrossEngineRecovery() {
+        func accepts(original: Bool = false, recovery: Bool = true, fresh: Bool = true,
+                     normal: Double = 13.089496, displayed: UInt64 = 41, played: UInt64 = 110) -> Bool {
+            SMBSeekOutputGate.accepts(target: 12, cachedTime: 13.089, normalTime: normal,
+                freshRunningClock: fresh, originalEngine: original, permittedRecovery: recovery,
+                displayedBefore: 164, playedBefore: 637, displayedNow: displayed, playedNow: played)
+        }
+        // Counts and clock taken from the retained CI failure: genuine new
+        // output belongs to the replacement engine, whose counters start at 0.
+        XCTAssertTrue(accepts())
+        XCTAssertFalse(accepts(original: true), "Same-engine output must still exceed its own pre-seek counters.")
+        XCTAssertFalse(accepts(recovery: false), "An unrelated engine must not satisfy the old seek.")
+        XCTAssertFalse(accepts(fresh: false), "A cached target without a fresh running normal callback is insufficient.")
+        XCTAssertFalse(accepts(normal: 14), "Recovery must keep the original upper time bound.")
+        XCTAssertFalse(accepts(displayed: 0), "Old-engine frames cannot stand in for new-engine output.")
+        XCTAssertFalse(accepts(played: 0), "The new engine must produce real audio as well as video.")
+        XCTAssertTrue(accepts(original: true, displayed: 165, played: 638))
     }
 
     private func attachSMBReadTimeline(_ provider: CountingSMBProvider) async {
