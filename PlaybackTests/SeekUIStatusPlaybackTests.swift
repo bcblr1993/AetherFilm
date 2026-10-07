@@ -240,9 +240,11 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     func testStopAndChangeFilmCancelOldRealSeekCallbacksAndTimers() async throws {
         try await loadLongFixture()
+        attachCrashPhase("warm-up-before-stop-seek")
         player.seek(20)
         XCTAssertEqual(player.seekStatus, .seeking)
         record("seek-before-real-stop")
+        attachCrashPhase("submitted-seek-before-stop")
         player.stop()
         XCTAssertNil(player.seekStatus)
         try await assertNoSeekStatus(seconds: 3.4)
@@ -251,9 +253,11 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
         try await loadLongFixture()
         let oldIdentity = ObjectIdentifier(try XCTUnwrap(player.backendEngineForTesting))
+        attachCrashPhase("warm-up-before-change-seek")
         player.seek(30)
         XCTAssertEqual(player.seekStatus, .seeking)
         record("old-session-seek-before-change")
+        attachCrashPhase("submitted-seek-before-film-change")
         player.load(url: try fixture("clip-h264.mp4"))
         XCTAssertNil(player.seekStatus)
         record("real-new-film-load-clears-old-presentation")
@@ -319,6 +323,22 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     private func record(_ phase: String) {
         if let player { observations.append(.capture(player: player, origin: origin, phase: phase)) }
+    }
+
+    // A native process crash bypasses tearDown. Export the existing readonly
+    // observations before the commands under investigation, without URLs or logs.
+    private func attachCrashPhase(_ phase: String) {
+        record(phase)
+        for (label, data) in [
+            ("observations", try? JSONEncoder().encode(observations)),
+            ("native clock", player.debugLifecycleTraceData())
+        ] {
+            guard let data else { continue }
+            let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+            attachment.name = "Actual stop/change \(phase) \(label)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
     }
 
     private func wait(_ label: String, timeout: Double,
