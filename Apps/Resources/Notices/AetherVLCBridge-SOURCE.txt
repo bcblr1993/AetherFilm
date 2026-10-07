@@ -15,6 +15,9 @@ Changes include a separate player/delegate/notification namespace, typed
 stopping snapshots and clock/input callbacks, checked clock interpolation,
 and package-relative header imports. Event-handler-owned primitive snapshots
 allow native callbacks to read snapshot values without promoting the weak player.
+Temporary discontinuity notifications are drained while the original event-handler
+block still owns the player, preserving the original dispatch and asynchronous
+release queue so notification cleanup cannot destroy the engine on its timer callback.
 The derived bridge layer is separate from the modified Native8 libVLC core.
 Its ten local patches and thirteen affected-source hashes are recorded in
 Packages/AetherVLCKit; the current modified binary checksum is in its
