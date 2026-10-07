@@ -1,4 +1,12 @@
-> 最新状态（2026-10-07）：提交 `cb5b038` 的 [CI37598351828](https://github.com/bcblr1993/AetherFilm/actions/runs/37598351828) 已结束，整体失败。共享Python15项及Swift48项通过 / 8项SMB3条件跳过；Mac26.6.2实际61通过 / 0失败 / 0跳过；iOS27实际68通过 / 1失败 / 1私有NAS条件跳过。唯一失败为短GOP2倍速片尾跳转：跳转后有真实新视频与音频输出及EOS，但正常时钟停留11秒，未满足原时钟连续性门禁。两端runtime warning为空，Mac原生崩溃报告0条；旧失败记录保留，草稿未公开。
+> 最新状态（2026-10-07）：代码提交 `7acd6a3` 的 [CI37600863876](https://github.com/bcblr1993/AetherFilm/actions/runs/37600863876) 三任务全部通过。Mac26.6.2独立xcresult为62通过 / 0失败 / 0跳过，iOS27为70通过 / 0失败 / 1私有NAS条件跳过；实际用例身份数分别62 / 71，两端runtime warnings为空，Mac原生崩溃报告0条、清理exit0。新增片尾音频诊断已在iOS附件留存，但未复现此前时钟停滞，本轮通过不认证根因修复。v0.1.1 / build3仍为草稿。
+本轮诊断压力专项：从干净代码7acd6a3重新构建iOS测试产品，短GOP与长GOP2倍速原片尾用例各20轮，实际40通过 / 0失败 / 0跳过；runtime warnings为空，40份有界音频附件全部保留。未复现旧异常，不认证根因修复；未改断言、时间边界或期限，未把模拟器当真机。原始证据为 `audio-timing-stress-r1.xcresult`、`audio-timing-stress-r1-{summary,review}.json` 及附件。
+
+
+官网更新已按用户授权公开上线：`aethernative-site` 提交 `5a097e9`，Cloudflare Pages部署 `eb9ac14c-c27b-44dd-bd89-31042cd5e437` 成功；165项测试通过，336页构建与8990站内链接检查通过。线上浏览器已复核中英文产品页、新Logo与候选FAQ，下载入口保持公开v0.1.0。终端HTTP请求403不替代浏览器已见的上线结果；原失败保留。证据：`.build/P0Optimization20261006/website-logo-live-review.json` 及 `website-logo-live-zh.png`。
+
+双音轨 / 内嵌及外挂字幕合成样片的真实SMB两种跳转路径各10次都保持第二音轨与外挂字幕、正常时钟和新音视频输出，但均未实际进入兼容恢复。要求实际恢复的专项原断言失败（各0通过 / 1失败，runtime warnings为空），不能记为恢复验收通过；候选专项和失败保留于 `recovery-track-acceptance-{candidate.swift,review.json}`。远程iPhone再次确认Developer Mode disabled且连接正常，真机播放仍待用户开启后执行。完整Mac UI、人工听音和VoiceOver也仍待验收。
+
+> 上一轮CI记录（2026-10-07）：提交 `cb5b038` 的 [CI37598351828](https://github.com/bcblr1993/AetherFilm/actions/runs/37598351828) 已结束，整体失败。共享Python15项及Swift48项通过 / 8项SMB3条件跳过；Mac26.6.2实际61通过 / 0失败 / 0跳过；iOS27实际68通过 / 1失败 / 1私有NAS条件跳过。唯一失败为短GOP2倍速片尾跳转：跳转后有真实新视频与音频输出及EOS，但正常时钟停留11秒，未满足原时钟连续性门禁。两端runtime warning为空，Mac原生崩溃报告0条；旧失败记录保留，草稿未公开。
 本轮补充仅测试使用的音频数值诊断：白名单核对真实AVSampleBuffer源码与函数，附件只保留模块枚举、启动延迟数值和相对时间，首32 / 末224有界记录，保留现有logger；不改变生产播放代码、时钟、原断言或期限。本机原短GOP2倍速片尾与隐私 / 有界控制各3轮通过，实际6次执行、runtime warnings为空。3轮均捕获真实AVSampleBuffer启动事件，本机延迟约40～91ms；尚未复现CI约5秒未来时钟，不能认证根因修复。两端测试构建通过，证据为 `.build/P0Optimization20261006/audio-timing-tail-r1-{summary,review}.json` 及附件。继续完整CI取得失败环境证据，草稿保持。
 
 
@@ -14,7 +22,7 @@ Apple Notarization Accepted and stapled DMG.
 
 ## Current candidate: 2026-10-07 (v0.1.1 / build3)
 
-最新CI失败及SMB恢复验收修正、完整iOS70 / Mac61与远程初始化失败、ASAN20与人工门禁见 [TEST_MATRIX.md](TEST_MATRIX.md)。下方保留已完成的候选分发与历史CI证据，不能覆盖最新失败。
+当前代码CI已通过（iOS70 / Mac62），剩余人工与真机门禁、SMB恢复轨道专项失败及历史初始化 / ASAN20证据见 [TEST_MATRIX.md](TEST_MATRIX.md)。下方保留已完成的候选分发与历史CI证据，不据本轮通过消除旧失败或未测项。
 
 - 用户选定的3号浅色玻璃A已接入macOS / iOS图标；版本唯一来源为 `Version.xcconfig`，最低系统仍为26.0。
 - 提交 `422ba86` 的CI [37588324314](https://github.com/bcblr1993/AetherFilm/actions/runs/37588324314) 三任务全部成功。独立xcresult为Mac26.6.2播放60通过 / 0失败 / 0跳过，iOS27模拟器播放68通过 / 0失败 / 1私有NAS opt-in跳过；两端runtime warnings均为空。此前37584686443与37586192664的片尾失败、共享认证失败及Mac原生崩溃仍保留，重跑成功不认证根因修复。
