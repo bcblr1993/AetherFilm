@@ -1,3 +1,7 @@
+> 新音频诊断已验证：普通生产框架的 Mac / iOS build-for-testing 均exit0；两个原已看保留用例及既有隐私 / 有界诊断控制各3轮，原日志实际9次通过，xcresult按唯一用例记3通过 / 0失败 / 0跳过，runtime warnings为空。6份新增数值音频附件实际导出读取；首次原生正常时钟的旧CI证据为seek后5.69秒 / 10.184秒，已排除marker后才派送的旧source回调。本机未复现该CI失败，不认证根因修复。首次调用因误用不存在的venv路径exit127 / 实际0项，原日志保留；改用已存在的P0 venv后完成。证据：`watched-tail-audio-focused-r2-{summary,review}.json`及原xcresult / 附件。
+
+> 当前普通CI门禁：125a2ad 的 [CI37623016669](https://github.com/bcblr1993/AetherFilm/actions/runs/37623016669) 已整体失败。Mac62通过 / 0失败 / 0跳过；iOS69通过 / 1失败 / 1私有NAS条件跳过，实际身份71，两端runtime warnings为空。唯一失败是 `testPriorWatchedStateSurvivesRealTailReadFailure` 在注入读错前未达到原6秒held-tail复合阶段：真实新增画音存在，最终正常时钟10.486秒、原输入约10.392秒，未到片尾门；源仍挂起、validator0、ended0，未由此证明已看状态保存错误或原生音频根因。原断言和期限不变，原xcresult及附件保留于 `ci-lifecycle-build4-ios-r1/`。新诊断仅把已有数值白名单音频时序附到这两个原已看保留用例；当前完整修复和发布门禁仍未完成。build4公证候选保留，尚未公开；后续源码补充了随包来源说明日期，最终分发须重新匹配该资源。
+
 > build4 新候选分发检查通过：DMG 与 App 公证 Accepted，票据、严格签名及 Gatekeeper 通过；只读挂载核对实际0.1.1 / build4、卷名及安装内容，远程 Mac mini 独立安装版本和签名检查通过，实际安装播放仍未验收。普通 CI37623016669 的 Mac62项全部通过，唯一用例身份62，原生崩溃0、runtime warnings为空，79份附件 / 8份停止换片快照实际读取；iOS仍运行。详细证据见 `ci-lifecycle-build4-mac-r1/review.json` 和 `release-build4-dmg-r3-review.json`、`release-build4-remote-install-r1.json`。
 
 > build4 分发进度：125a2ad 的普通 Mac Release 与 iOS 签名归档均构建成功，版本与快照类已核对，未链接 ASAN。CI37623016669 运行中。两次 App 公证 Accepted，DMG 等待出现连接超时；服务实际收到请求且仍 In Progress，不能将超时记为请求失败或完成。旧脚本错误收尾删除了两次精确 DMG，现修正为先保存提交回执、失败时保留精确签名 App / DMG。实际函数的失败控制保留原 exit73、回执和字节，未认证服务公证。新版候选仍在打包，当前无新公开下载。

@@ -456,6 +456,15 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
     private func realTailFailurePreservesWatched(markDuringSession: Bool) async throws {
+        let audioTiming = TailAudioTimingEvents(origin: origin)
+        defer {
+            if let data = audioTiming.data() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Actual watched-retention held tail bounded numeric audio timing"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
         if !markDuringSession {
             await store.markWatched(item)
             let prior = try await persistedProgress()
@@ -475,6 +484,9 @@ final class EOFPlaybackTests: XCTestCase {
                 return failure == nil
             }
             self.player.load(url: session.url)
+            if let library = self.player.backendEngineForTesting?.libraryInstance {
+                library.loggers = (library.loggers ?? []) + [audioTiming]
+            }
             try await self.outputReady("watched retention real held-source initial output")
             if markDuringSession { await self.store.markWatched(self.item) }
             let beforeTail = try await self.persistedProgress()
