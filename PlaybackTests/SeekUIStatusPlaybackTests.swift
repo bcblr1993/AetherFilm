@@ -17,6 +17,7 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
     private var origin = ContinuousClock.now
     private var observations: [SeekUIRuntimeObservation] = []
     private var ended = 0
+    private var audioTiming: TailAudioTimingEvents!
     #if os(macOS)
     private var window: NSWindow!
     private var surface: VLCVideoView!
@@ -30,6 +31,7 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
         origin = .now
         observations = []
         ended = 0
+        audioTiming = TailAudioTimingEvents(origin: origin)
         player = FilmPlayer()
         #if os(macOS)
         window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
@@ -63,6 +65,12 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
     }
 
     override func tearDown() async throws {
+        if let data = audioTiming?.data() {
+            let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+            attachment.name = "Actual local seek and reopen bounded numeric audio timing"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
         record("teardown-before-stop")
         if let data = try? JSONEncoder().encode(observations) {
             let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -276,6 +284,9 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     private func loadLongFixture() async throws {
         player.load(url: try fixture("clip-smb-long.mp4"))
+        if let library = player.backendEngineForTesting?.libraryInstance {
+            library.loggers = (library.loggers ?? []) + [audioTiming!]
+        }
         try await wait("real long local video and audio warm-up", timeout: 12) {
             self.player.duration > 70 && (self.player.backendClockTime ?? 0) > 0.8
                 && self.player.backendClockIsRunning && self.player.displayedVideoFrames > 0
@@ -400,6 +411,8 @@ struct SeekUIRuntimeObservation: Codable {
     let actualClockRunning: Bool
     let displayedVideoFrames: UInt64
     let playedAudioBuffers: UInt64
+    let decodedVideoFrames: UInt64?
+    let decodedAudioBuffers: UInt64?
 
     @MainActor
     static func capture(player: FilmPlayer, origin: ContinuousClock.Instant, phase: String) -> Self {
@@ -420,7 +433,8 @@ struct SeekUIRuntimeObservation: Codable {
                      rawCoreTimeMicroseconds: rawCoreTime,
                      rawCoreTimeMilliseconds: rawCoreTime.map { Double($0) / 1000 },
                      actualClockRunning: player.backendClockIsRunning,
-                     displayedVideoFrames: player.displayedVideoFrames, playedAudioBuffers: player.playedAudioBuffers)
+                     displayedVideoFrames: player.displayedVideoFrames, playedAudioBuffers: player.playedAudioBuffers,
+                     decodedVideoFrames: player.decodedVideoFrames, decodedAudioBuffers: player.decodedAudioBuffers)
     }
 }
 

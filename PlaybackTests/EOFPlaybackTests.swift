@@ -1878,6 +1878,11 @@ final class EOFPlaybackTests: XCTestCase {
         XCTAssertNil(TailAudioTimingEvents.parse("deferring start (12 us) smb://private-user:private-secret/private-film", source: 1))
         XCTAssertNil(TailAudioTimingEvents.parse("deferring start (12 us)", source: 2))
         XCTAssertNil(TailAudioTimingEvents.parse("using audio output module \"private-film\"", source: nil))
+        XCTAssertEqual(TailAudioTimingEvents.parse("Stream buffering done (11333 ms in 42 ms)", source: 2), [5, 11333, 42])
+        XCTAssertEqual(TailAudioTimingEvents.parse("Decoder wait done in 5690 ms", source: 2), [6, 5690])
+        XCTAssertNil(TailAudioTimingEvents.parse("Decoder wait done in 5690 ms smb://private-user:private-secret/private-film", source: 2))
+        XCTAssertNil(TailAudioTimingEvents.parse("Stream buffering done (-1 ms in 42 ms)", source: 2))
+        XCTAssertNil(TailAudioTimingEvents.parse("Decoder wait done in 42 ms", source: 1))
         let logger = TailAudioTimingEvents()
         for _ in 0..<300 { logger.handleMessage("using audio output module \"avsamplebuffer\"", logLevel: .debug, context: nil) }
         logger.handleMessage("private-secret", logLevel: .debug, context: nil)
@@ -2442,8 +2447,9 @@ private struct EOFTailMetadata: Decodable {
 }
 
 /// Test-only whitelist. Never retain native messages, paths or object IDs.
-/// Records: elapsed microseconds, event code, value. Module event 1 values:
+/// Records: elapsed microseconds, event code, numeric values. Module event 1 values:
 /// 1=avsamplebuffer, 2=auhal, 3=audiounit_ios. Events 2/3/4: late/deferred/started.
+/// Events 5/6: actual media/system buffering milliseconds and decoder wait milliseconds.
 /// Missing events do not prove module selection or absence of a timing problem.
 final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
     var level: VLCLogLevel = .debug
@@ -2463,6 +2469,25 @@ final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
         if let index = modules.firstIndex(where: { message == "using audio output module \"\($0)\"" }) {
             return [1, Int64(index + 1)]
         }
+        if source == 2 {
+            let prefix = "Stream buffering done ("
+            if message.hasPrefix(prefix), message.hasSuffix(" ms)") {
+                let values = message.dropFirst(prefix.count).dropLast(4)
+                    .components(separatedBy: " ms in ")
+                guard values.count == 2,
+                      values.allSatisfy({ !$0.isEmpty && $0.utf8.allSatisfy({ (48...57).contains($0) }) }),
+                      let media = Int64(values[0]), let elapsed = Int64(values[1]) else { return nil }
+                return [5, media, elapsed]
+            }
+            let waitPrefix = "Decoder wait done in "
+            if message.hasPrefix(waitPrefix), message.hasSuffix(" ms") {
+                let value = message.dropFirst(waitPrefix.count).dropLast(3)
+                guard !value.isEmpty, value.utf8.allSatisfy({ (48...57).contains($0) }),
+                      let elapsed = Int64(value) else { return nil }
+                return [6, elapsed]
+            }
+            return nil
+        }
         guard source == 1 else { return nil }
         if message == "started" { return [4, 0] }
         for (index, prefix) in ["starting late (", "deferring start ("].enumerated() {
@@ -2479,7 +2504,10 @@ final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
         let avSource = context?.module == "avsamplebuffer"
             || (context?.module == "libvlc"
                 && context?.file?.hasSuffix("/modules/audio_output/apple/avsamplebuffer.m") == true)
-        let source = avSource && context?.function == "-[VLCAVSample whenDataReady]" ? 1 : nil
+        let bufferingSource = context?.function == "EsOutDecodersStopBuffering"
+            && context?.file?.hasSuffix("/src/input/es_out.c") == true
+        let source = avSource && context?.function == "-[VLCAVSample whenDataReady]" ? 1
+            : bufferingSource ? 2 : nil
         guard let event = Self.parse(message, source: source) else { return }
         let duration = origin.duration(to: .now).components
         let elapsed = duration.seconds * 1_000_000 + duration.attoseconds / 1_000_000_000_000
