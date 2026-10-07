@@ -1,6 +1,10 @@
+> 2026-10-08 普通引擎构建记录：Mac 初轮在 contrib 阶段实际退出 1，原因是独立 Cargo 目录缺少 cargo-capi；原日志和 outcome 保留。已核对现有 cargo-c 0.10.9+cargo-0.85.0 及四个工具 SHA，复制到自有缓存后，在相同源码 / 输出目录继续构建并写独立 build-r2.log / outcome-r2.json。私有候选的移动端构建入口增加工具版本 / SHA 预检和自有缓存复制，两个移动端计划再次通过，等待 Mac 终态。该工具修复未修改全局安装或当前公开依赖。
+>
+> 时钟语义进一步核对：timer.c 对失效来源的首条时钟设置 VLC_TICK_MAX，仅禁用插值，不等于 input 进入暂停。候选片尾 5 轮均无实际暂停事件，首条运行时钟约 11.38 秒；CI 片尾的 11.812464 初始化点不能作为延后暂停根因证据。SMB CI 失败另有实际 paused-state 回调，仍需独立定位。证据：候选目录的 first-clock-sentinel-review.json、cargo-capi-tool-copy-review.json 和普通构建原始记录。普通引擎、完整 CI 和最终发布尚未完成。
+
 > 2026-10-08 延后暂停取消候选的实际验证：原生 CLI 使用相同已固定 SHA 的 HTTP 视频、dummy 音频和关闭视频输出，原引擎在缓冲期间的恢复请求之后仍进入暂停（时钟 1 微秒），独立候选持续播放至约 6.6 秒，均 exit0 / 无 ASAN 错误。该结果证明原生控制请求缺口，不证明两项 CI 时钟越界的统一根因，也不替代听音或画面验收。Mac / Simulator 的两份改动组件共四次编译及四个诊断 wrapper 目标成功，最小版本仍为 26.0；其余归档成员逐项字节相同。
 >
-> 当前源码 App 的原引擎对照四用例各 5 轮共 20/20 通过；首轮因 XCTest 优先加载测试产物目录中的旧框架而被明确保留为对照，未计为候选验收。修正两处框架副本后的候选轮实际加载已通过 lsof 路径 / 哈希核对，ASAN 保留，原片尾跳转、SMB 连续跳转、快速暂停恢复及迟到暂停事件各 5 轮共 20/20 通过，exit0、runtime warnings 空、原生崩溃 0 / unreadable 0。未改变原断言和期限。证据：`.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/`。普通引擎构建验证正在准备，原 Native8 发布 pin 和冻结桥接未改；完整普通 CI、实际兼容恢复、设备、UI 和最终分发门禁仍未通过，v0.1.1 保持草稿。
+> 当前源码 App 的原引擎对照四用例各 5 轮共 20/20 通过；首轮因 XCTest 优先加载测试产物目录中的旧框架而被明确保留为对照，未计为候选验收。修正两处框架副本后的候选轮实际加载已通过 lsof 路径 / 哈希核对，ASAN 保留，原片尾跳转、SMB 连续跳转、快速暂停恢复及迟到暂停事件各 5 轮共 20/20 通过，exit0、runtime warnings 空、原生崩溃 0 / unreadable 0。未改变原断言和期限。证据：`.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/`。普通 Mac 引擎已开始独立构建，Simulator / iPhone 的独立源码和 SDK / Rust / 14 份 pin 预检通过并排队串行构建；原 Native8 发布 pin 和冻结桥接未改；完整普通 CI、实际兼容恢复、设备、UI 和最终分发门禁仍未通过，v0.1.1 保持草稿。
 
 > 2026-10-08 最新普通 CI 仍未通过：[37651250092](https://github.com/bcblr1993/AetherFilm/actions/runs/37651250092)，源码 `8b8b19e`。Mac 原 62 项全部通过，iOS 为 68 通过 / 2 失败 / 1 私有 NAS 条件跳过，runtime warnings 均为空。失败为 1.5 倍片尾跳转和 SMB 连续跳转；原生首个运行时钟已越过原目标窗口，不能由本地通过推断 CI 问题已修复。原始产物与附件：`.build/P0Optimization20261006/ci-notification-pool-source-order-r1/`。
 >
