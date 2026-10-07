@@ -1,3 +1,7 @@
+> 2026-10-08 状态复查候选 `4d08bc3` 的远程 Mac 回归已终态 exit65，**0 个实际测试用例执行**。xcresult 报告测试宿主在建立连接前挂起；一秒 775 次进程采样均停于 dyld → `_libsecinit_appsandbox` → XPC IPC。不能将结果中的一项宿主错误计作某个播放测试失败，也不能宣称 62 项已通过；系统容器提示是否为直接原因尚未独立确认，没有确认任何权限提示。原结果 / 日志 / 采样 / 崩溃记录已取回至 `FormalNative9-r1/MacSeekOutputFull-r1-evidence/`，已结束的专用 LaunchAgent 已 bootout。当前修复将交由正式 CI 的干净环境验证。
+>
+> 正式 build6 iOS 失败的时序追加：满足原数值条件的正常点 11.818663 秒在原回调中真实存在，至下一点覆盖的实际窗口约 71.905ms；原 100ms 观察采样在此窗口内为 0 次。记录保留于 `ci-ios-clock-observation-gap-review-r1.json`。未采样瞬间的底层状态没有额外独立观察，故这是观测失败机制证据，不能宣称生产根因修复；原测试和期限保持不变。最新真机只读查询仍为 Developer Mode disabled。
+
 > 2026-10-08 正式 build6 CI `37667574276` 已结束且失败：Mac 61 通过 / 1 失败，iOS 69 通过 / 1 失败 / 1 私人 NAS 条件跳过；两端 runtime warnings 为空。原始 iOS artifact 的 752663 字节及 GitHub SHA256 已核验。Mac 失败为跳转后暂停预览的界面状态未清除：最终真实时钟 / 输入回调抵达时显示帧仍为 42，随后只读观察显示 44 帧，但无后续时钟 / 输入回调触发刷新。候选增加仅在当前跳转期间的 100ms 实际证据复查，全部原完成条件、回调新鲜度、测试断言和期限不变，不因超时完成跳转。两端测试构建通过；iOS 5 个原专项用例各 3 轮共 15 次执行通过、runtime warnings 为空。远程 Mac 完整播放 / SMB 回归已启动，尚待终态核对。
 >
 > iOS 失败为 `testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce`，实际音视频输出及 EOS 存在，但原六秒条件未通过；专项本机通过不证明 CI 问题已修复。原失败、完整附件与时序保留于 `.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/FormalNative9-r1/`，包括 `ci-formal-build6-failures-and-mac-fix-r1.json` 和 `seek-output-monitor-ios-repeat-review-r1.json`。build6 iOS development archive 严格签名及 Native9 UUID 核对通过，不能替代真机验收。build6 签名包对应修复前源码；后续最终包必须重新构建并验收。App v0.1.1 仍为草稿，不宣称发布完成。
