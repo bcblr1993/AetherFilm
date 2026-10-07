@@ -1,12 +1,23 @@
-> v0.1.1 发布推进中：用户于2026-10-06授权发布 NAS 优化版；候选版本0.1.1 / build2，尚未打tag或公开发布。PR #1已推送，CI与当前候选正式分发验收仍需实际完成。
+> v0.1.1 发布推进中：用户授权发布 NAS 优化版，并选定3号浅色玻璃A图标；当前候选0.1.1 / build3。PR #1开放且为draft，GitHub Release仍为草稿，尚未公开发布。当前提交 `422ba86` 的三个CI任务已通过；真机、完整Mac UI、听音与VoiceOver等门禁仍未闭合。
 
-> 2026-10-06 P0 / NAS 优化候选已提交至PR #1，尚未发布。旧 v0.1.0 公开 DMG 的证据不覆盖新改动。真实 NAS 先前跳转失败已有连续通过的单次兼容恢复候选，最终统一源 iOS27 和新建 iOS26.5 模拟器完整回归均68通过 / 0失败 / 1私有NAS跳过，首轮倍速预热失败仍保留，最终 Mac 播放回归被 XCTest 会话连接阻塞，Mac UI 被系统 Automation Mode 认证阻塞，完整物理 iPhone、听音、VoiceOver 和新候选分发验收尚未完成。当前结果见 [TEST_MATRIX.md](TEST_MATRIX.md#2026-10-06-p0-与-nas-浏览优化工作区候选未提交--未发布)。
+> 2026-10-06的P0 / NAS优化阶段记录保留于 [TEST_MATRIX.md](TEST_MATRIX.md)。旧v0.1.0公开DMG的证据不覆盖新改动；最新候选和验收限制见下方 Current candidate，历史失败不因本轮通过而覆盖。
 
 # Release gates
 
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. v0.1.0 macOS release published on GitHub with Developer ID signature,
 Apple Notarization Accepted and stapled DMG.
+
+## Current candidate: 2026-10-07 (v0.1.1 / build3)
+
+- 用户选定的3号浅色玻璃A已接入macOS / iOS图标；版本唯一来源为 `Version.xcconfig`，最低系统仍为26.0。
+- 提交 `422ba86` 的CI [37588324314](https://github.com/bcblr1993/AetherFilm/actions/runs/37588324314) 三任务全部成功。独立xcresult为Mac26.6.2播放60通过 / 0失败 / 0跳过，iOS27模拟器播放68通过 / 0失败 / 1私有NAS opt-in跳过；两端runtime warnings均为空。此前37584686443与37586192664的片尾失败、共享认证失败及Mac原生崩溃仍保留，重跑成功不认证根因修复。
+- 当前DMG `artifacts/AetherFilm-0.1.1-macos-arm64.dmg` SHA256为 `81c762002e3c048fe507afe79429bcf3e396f1255683b529bbc4ead274b80828`。App和DMG公证Accepted、票据验证、严格签名及Gatekeeper通过；只读挂载确认卷名和App / Applications / Notices / 安装说明，远程Mac mini提取的App为build3且签名 / Gatekeeper通过。GitHub草稿资产digest与本地一致；这不等于公开下载或升级验收。
+- iOS签名Release归档为 `build/AetherFilm-iOS-0.1.1-build3.xcarchive`。build3已实际安装并启动于用户批准的远程Mac mini连接的iPhone16ProMax / iOS27.0.1；安装启动不等于播放验收，未公开分发iOS。
+- 真机首轮请求常用容器、4K HEVC及2倍速长GOP片尾三项原用例，命令exit70、实际0项执行，Xcode明确报告Developer Mode disabled。设备当前paired / available但开发者模式仍disabled；保留失败结果，等待用户在设备设置中开启后重跑，未弱化原断言或期限。
+- 当前完整Mac UI、听音、VoiceOver、完整真机及兼容恢复路径的多音轨 / 外挂字幕等仍未闭合。是否先公开macOS并披露风险的范围取舍仍等待用户回复；维持发布草稿。
+
+Evidence: `.build/P0Optimization20261006/` 下 `release-v011-build3-evidence.json`、`release-v011-build3-remote-install.json`、`release-v011-build3-ios-review.json`、`release-v011-build3-device-install.json`、`physical-build3-r1-outcome.json`、`ci-native-diagnostics-{mac,ios}-r1-summary.json`；公证记录 `artifacts/notarization-0.1.1.8k9X7s/`。旧build2候选保留于 `artifacts/candidates-v0.1.1-build2/`。
 
 ## Release published: 2026-10-06 (v0.1.0)
 

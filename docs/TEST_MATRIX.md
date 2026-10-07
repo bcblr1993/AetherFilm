@@ -1,6 +1,22 @@
-> 2026-10-07：用户反馈本机简单测试基本无问题；按基本使用 smoke 反馈记录，未据此认证 VoiceOver、完整设备或全部矩阵。新Logo替换后需重新构建与分发验证。
+> 2026-10-07：用户反馈本机简单测试基本无问题；按基本使用 smoke 反馈记录，未据此认证 VoiceOver、完整设备或全部矩阵。用户选定3号图标后已重新构建build3；公开分发及完整验收仍未完成。
 
 # v0.1.0 验收矩阵
+
+## 2026-10-07 当前build3验收状态
+
+| 门禁 | 当前证据 | 状态 / 限制 |
+| --- | --- | --- |
+| 当前提交CI | `422ba86`，CI37588324314三个任务success；Mac26.6.2为60 / 0 / 0，iOS27模拟器为68 / 0 / 1，runtime warnings均为空 | 本轮通过；旧偶发片尾、认证及Mac崩溃失败保留，根因未认证修复 |
+| 选定图标与版本 | 3号浅色玻璃A；macOS / iOS Release产品均0.1.1 / build3 | 已接入，最低系统26.0保持 |
+| macOS候选分发包 | SHA256 `81c762002e3c048fe507afe79429bcf3e396f1255683b529bbc4ead274b80828`；App / DMG公证Accepted、票据 / 严格签名 / Gatekeeper / 挂载内容通过，远程Mac提取App验证通过 | GitHub草稿digest一致；未公开下载，未认证完整安装后播放 / 升级 |
+| iOS候选 | build3签名Release归档、iPhone16ProMax / iOS27.0.1实际安装与启动成功 | 未认证实际播放，未公开分发 |
+| 真机首轮播放测试 | 三项请求，exit70、实际0项执行；Developer Mode disabled，设备paired / available | 环境阻塞；不是三个用例失败或通过；待用户开启模式后原断言重跑 |
+| 完整UI / 人工验收 | 既有Mac TouchBar审计失败与后续0项启动失败保留；当前完整真机、听音、VoiceOver和恢复路径多音轨 / 外挂字幕未闭合 | 不以用户基本Mac smoke反馈或窄专项替代 |
+| 发布 | PR #1开放draft，v0.1.1 Release为草稿 | 尚未发布；披露风险先发macOS的取舍等待用户回复 |
+
+新崩溃收集器保留经过隐私裁剪的原生栈；本轮通过的Mac CI中报告0、不可读0，不以未出现报告证明旧崩溃根因已修复。证据见 `.build/P0Optimization20261006/ci-native-diagnostics-mac-r1/Mac26Playback/Results-runner/native-crashes.json`。新收集器本地两项专项及原执行器八项单元测试通过；未宣称CI运行了新增两项专项。
+
+本轮构建 / 安装 / 真机环境失败记录见 [RELEASE.md](RELEASE.md#current-candidate-2026-10-07-v011--build3)。下方各阶段失败与通过记录保留，不覆盖其原始适用范围。
 
 ## v0.1.0 正式发布记录（2026-10-06）
 
@@ -9,7 +25,7 @@
 - **发布标签**：GitHub Release `v0.1.0` 已公开发布，附带 DMG、`SHA256SUMS.txt` 与完整发布说明。
 - **iOS 归档状态**：`build/AetherFilm-iOS.xcarchive` 已构建并通过代码签名校验；App Store / TestFlight 审核分发按开发者账号排期推进。
 
-## 2026-10-06 P0 与 NAS 浏览优化（工作区候选，未提交 / 未发布）
+## 2026-10-06 P0 与 NAS 浏览优化（已提交PR #1，未公开发布；以下保留阶段记录）
 
 - NAS 常用目录、恢复上次目录 / 打开行、持久化自动连播开关及真实下一文件名已实现；库格式仍为 schema 1，旧数据默认自动连播开启。移除片源只移除对应浏览状态，不删除原视频。
 - 共享当前套件实际 **48通过 / 0失败 / 8项 SMB3 opt-in 跳过**；真实 SMB AddressSanitizer 集成 **5通过 / 0失败 / 0跳过**，包括20轮读取消 / 关闭 / 重开。旧 native teardown crash 尚未认证修复。
