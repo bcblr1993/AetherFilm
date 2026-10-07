@@ -1,15 +1,15 @@
 {
-  "status": "FROZEN_REVIEWED_NOTIFICATION_POOL_CANDIDATE_CONSUMERS_VERIFIED",
+  "status": "FROZEN_EXACT_TESTED_CALLBACK_SOURCE_RELEASE_ACCEPTANCE_PENDING",
   "fixedWrapperRevision": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "fixedBinaryArchiveSHA256": "f37c8dbdd4427d1a3f5d75dc4b8bd1ae863cef4426f9a405a2fd1c5c9012f1fb",
   "modificationDate": "2026-10-07",
   "capturedPrototypeHashes": {
-    "src/AetherVLCMediaPlayer.m": "181793a9c7f1be2de58bee2012fffcce1aa46fe77ace47dd79c555e30800a495",
+    "src/AetherVLCMediaPlayer.m": "144d3ab23fbf600e07b78f79b14cf616685d9f3714c4d0676be789c9082816d5",
     "include/AetherVLCMediaPlayer.h": "8fdd178681de0729cec7a1a22d2dddb099f9494ec3a6bbcf13e6aff28315e9c3"
   },
-  "prototypePatchSHA256": "c7256684fba32a3c579b0451b166ad88bd5113496798123dff1c992966e1cd62",
+  "prototypePatchSHA256": "cb9d2e4d0e4916b47d135400111cc91a8691aa0cc13179180a501d6ebb5469aa",
   "frozenApproved": true,
-  "patchSource": "Event-handler-owned primitive snapshot plus scoped discontinuity notification pool; remote LLDB proves callback-thread destructor re-enters timer lock",
+  "patchSource": "Reviewed event-handler-owned primitive snapshot; native callback snapshot access does not promote the weak player",
   "inputs": {
     "PinnedInputs/Wrapper/COPYING": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
     "PinnedInputs/PublicC/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
@@ -47,18 +47,16 @@
     "prototype measuredCoreTime getter removed from final public API",
     "typed on_seek callback sequence and immutable target/state snapshots",
     "read-only diagnosticCoreTimeMicroseconds; diagnostic use does not clear seek status",
-    "primitive snapshots owned by the event handler; native callbacks never promote the weak player for snapshot access",
-    "discontinuity notifications drained inside the original event-handler block while the player is still owned; original event dispatch and releaseQueue unchanged"
+    "primitive snapshots owned by the event handler; native callbacks never promote the weak player for snapshot access"
   ],
   "fixedBinaryArchiveURL": "https://download.videolan.org/cocoapods/unstable/VLCKit-4.0-20260929-1631.zip",
-  "candidateSourceOrigin": "Fixed PinnedInputs plus reviewed primitive-snapshot and discontinuity-notification-pool patch. Remote macOS 27 LLDB evidence is recorded in docs/TEST_MATRIX.md.",
+  "candidateSourceOrigin": "Exact source reproduced from the macOS / iOS Simulator / physical iPhone native3 seek-status candidate; see docs/TEST_MATRIX.md.",
   "priorOwnershipApproval": "Root explicitly authorized formal package integration after the five-platform consumer matrix; playback owner froze these m/h bytes and the three callback interfaces",
-  "ownershipApproval": "Root freezes the user-authorized notification-pool source after exact 22-source reproduction, original remote Mac stop/change 20/20 and seek-zero 20/20 plus privacy controls, complete remote Mac 62/0/0 and iOS 70/0/1 (private NAS conditional skip), all with original assertions/deadlines. Formal consumers, CI, physical device, manual acceptance and distribution remain open. Final macOS/iPhone/simulator ARM64 callback consumers compiled and linked at deployment target26.0; recorded consumer proof preserves exact generated source hashes.",
+  "ownershipApproval": "Root froze the user-authorized lifecycle fix after original Mac ASAN stop/change 20/0/0, full Mac ASAN 62/0/0 and full iOS ASAN 70/0/1. Public callback API and fixed inputs are unchanged. Non-diagnostic CI, physical device and distribution gates remain open.",
   "fixedBinaryMeaning": "Historical official archive and public-header baseline only; current locally rebuilt native4 binary and native modifications are recorded separately. No unchanged-core claim.",
   "patchContextLines": 0,
-  "previousLifecycleOwnershipApproval": "Root froze the user-authorized lifecycle fix after original Mac ASAN stop/change 20/0/0, full Mac ASAN 62/0/0 and full iOS ASAN 70/0/1. Public callback API and fixed inputs are unchanged. Non-diagnostic CI, physical device and distribution gates remain open.",
   "generatedFiles": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "859ac222a9e7c6ee4dbfd1fc985c4de94ec852cdf07a45c103143517e878fbe1",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "26ffdcbf9a97d498374c267b2c925cf0e9aab3ac2fe3df6f3a3659b844a09d90",
     "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "251e6da8801e57b8335cfb9735923528a0a533885b1092a984189cdfb1bea2ba",
     "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "9a0e2371fb6ac251e3357aadbe92608734c36979953b88460d2ca575101c9d6f",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",

@@ -2,7 +2,7 @@
   "frozenApproved": true,
   "sameGeneratedSources": 22,
   "generatedSourceSHA256": {
-    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "859ac222a9e7c6ee4dbfd1fc985c4de94ec852cdf07a45c103143517e878fbe1",
+    "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "26ffdcbf9a97d498374c267b2c925cf0e9aab3ac2fe3df6f3a3659b844a09d90",
     "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "251e6da8801e57b8335cfb9735923528a0a533885b1092a984189cdfb1bea2ba",
     "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "9a0e2371fb6ac251e3357aadbe92608734c36979953b88460d2ca575101c9d6f",
     "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
@@ -25,7 +25,18 @@
     "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
     "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "dd342637bdc88421f05ada411991f9c1439e47d339fbf2ffb14093812a541125"
   },
-  "productionPlaybackAcceptancePending": true,
-  "scope": "Two independent deterministic generations and installed candidate bytes; original callback dispatch and release queue unchanged.",
-  "freezeEvidence": "2026-10-08 original Mac62/0/0, iOS70/0/1 and focused remote20/20; physical/manual/distribution incomplete"
+  "exactCapturedPrototypeVerifiedBeforeImportsAndBanner": true,
+  "reproductionCommand": "python3 Tools/generate_package_sources.py --require-frozen --output NEW_DIRECTORY",
+  "finalTypedStoppingSnapshotPresent": true,
+  "finalTypedSeekStateSnapshotsPresent": true,
+  "prototypeGetterAbsent": true,
+  "diagnosticGetterDoesNotClearSeekStatus": true,
+  "formalPackageReproducesSources": true,
+  "sourceInventorySHA256": "e28a8dfd6dfd62f5f20a71974411c956d358fa62f2356868a645d4974bd25ac9",
+  "releaseAcceptancePassed": false,
+  "historicalProof": "Provenance/History/pre-lifecycle-20261007-reproduction-proof.json",
+  "prototypePatchSHA256": "cb9d2e4d0e4916b47d135400111cc91a8691aa0cc13179180a501d6ebb5469aa",
+  "zeroContextPatchPreservesExactTestedSources": true,
+  "independentGenerationsCompared": 2,
+  "nativeSnapshotCallbacksPromoteWeakPlayer": false
 }

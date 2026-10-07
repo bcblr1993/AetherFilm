@@ -1562,8 +1562,31 @@ final class EOFPlaybackTests: XCTestCase {
                 uiObservations.append(.capture(player: player, origin: origin, phase: "matched-start2-real-output-loop"))
                 if player.seekStatus == nil {
                     let actualEngine = try XCTUnwrap(player.backendEngineForTesting)
-                    XCTAssertGreaterThan(actualEngine.seekCallbackSequence, uiCallbackBaseline)
-                    XCTAssertFalse(actualEngine.isSeeking)
+                    let callbackSequence = actualEngine.seekCallbackSequence
+                    XCTAssertGreaterThan(callbackSequence, uiCallbackBaseline)
+                    // Assert the same single real getter read, retaining its exact
+                    // value when a later observation has already changed again.
+                    let assertedSeeking = actualEngine.isSeeking
+                    XCTAssertFalse(assertedSeeking)
+                    if assertedSeeking {
+                        let assertion: [String: Any] = [
+                            "assertedSeeking": assertedSeeking,
+                            "nativeSeekSequenceBefore": callbackSequence,
+                            "nativeSeekSequenceAfter": actualEngine.seekCallbackSequence,
+                            "presentationStillCleared": player.seekStatus == nil,
+                        ]
+                        let attachment = XCTAttachment(data: try JSONSerialization.data(withJSONObject: assertion, options: [.sortedKeys]),
+                                                       uniformTypeIdentifier: "public.json")
+                        attachment.name = "Actual failing seek getter truth and callback identity"
+                        attachment.lifetime = .keepAlways
+                        add(attachment)
+                        if let data = player.debugLifecycleTraceData() {
+                            let trace = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                            trace.name = "Actual failing seek getter callback delivery trace"
+                            trace.lifetime = .keepAlways
+                            add(trace)
+                        }
+                    }
                     XCTAssertNotNil(matchedRunning)
                     XCTAssertFalse(matchedInputs.isEmpty)
                     XCTAssertTrue(player.displayedVideoFrames > displayed || player.playedAudioBuffers > played)

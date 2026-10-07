@@ -3,9 +3,7 @@ import Observation
 import FilmDomain
 import VLCKit
 import AetherVLCBridge
-#if DEBUG
 import Synchronization
-#endif
 #if os(iOS)
 import AVFAudio
 #endif
@@ -55,6 +53,7 @@ public final class FilmPlayer: NSObject {
         let target: Double
         let began: ContinuousClock.Instant
         let callbackBaseline: UInt64
+        let eventBaseline: UInt64
         let videoBaseline: UInt64
         let audioBaseline: UInt64
         var maximumRate: Double
@@ -78,6 +77,8 @@ public final class FilmPlayer: NSObject {
     @ObservationIgnored private var streamingSeekMonitor: Task<Void, Never>?
     @ObservationIgnored private var lastClockPointArrival: ContinuousClock.Instant?
     var backendStreamingDemuxWasRetried: Bool { streamingDemuxRetried }
+    @ObservationIgnored private var measuredInputSequence: UInt64 = 0
+    @ObservationIgnored private var measuredClockSequence: UInt64 = 0
     @ObservationIgnored private var measuredInputTime: Double?
     @ObservationIgnored private var seekEvidenceTarget: Double?
     @ObservationIgnored private var seekOutputBaseline: UInt64 = 0
@@ -190,7 +191,7 @@ public final class FilmPlayer: NSObject {
                                          generation: Int? = nil, sourceSequence: Int? = nil,
                                          state: Int? = nil, time: Int64? = nil,
                                          systemDate: Int64? = nil, target: Double? = nil,
-                                         accepted: Bool? = nil,
+                                         nativeSeekSequence: UInt64? = nil, accepted: Bool? = nil,
                                          displayed: UInt64? = nil, played: UInt64? = nil) {
         guard let debugLifecycleTrace else { return }
         #if os(iOS)
@@ -200,7 +201,7 @@ public final class FilmPlayer: NSObject {
         #endif
         debugLifecycleTrace.record(event, generation: generation ?? debugTraceGeneration,
                                     sourceSequence: sourceSequence, state: state, time: time,
-                                    systemDate: systemDate, target: target,
+                                    systemDate: systemDate, target: target, nativeSeekSequence: nativeSeekSequence,
                                     modelPlaying: isPlaying, wantsToPlay: wantsToPlay,
                                     audioPending: preparingAudio, accepted: accepted,
                                     displayed: displayed, played: played)
@@ -737,6 +738,7 @@ public final class FilmPlayer: NSObject {
         let requestID = UUID()
         seekPresentation = SeekPresentation(id: requestID, target: target, began: .now,
             callbackBaseline: engine.seekCallbackSequence,
+            eventBaseline: events?.latestCallbackSequence ?? 0,
             videoBaseline: displayedVideoFrames, audioBaseline: playedAudioBuffers,
             maximumRate: Double(rate), hasPlayed: wantsToPlay || engine.state == .playing)
         streamingSeekEvidence = nil
@@ -768,6 +770,13 @@ public final class FilmPlayer: NSObject {
     }
 
     private func clearSeekPresentation() {
+        #if DEBUG
+        if let presentation = seekPresentation {
+            debugRecordLifecycle(.seekPresentationCleared, target: presentation.target,
+                                 nativeSeekSequence: presentation.callbackSequence,
+                                 accepted: presentation.requestEnded)
+        }
+        #endif
         seekStatusDelay?.cancel()
         seekStatusDelay = nil
         seekPresentation = nil
@@ -830,7 +839,11 @@ public final class FilmPlayer: NSObject {
         let upper = min(duration + 1, presentation.target + advance + 1)
         guard clock >= lower, clock <= upper, input >= lower, input <= upper else { return }
         if wantsToPlay {
-            guard backendClockIsRunning,
+            // Input may arrive after a running clock. Keep the seek visible
+            // until a later native clock covers that fresh source input.
+            guard measuredInputSequence > presentation.eventBaseline,
+                  measuredClockSequence >= measuredInputSequence,
+                  backendClockIsRunning,
                   displayedVideoFrames > presentation.videoBaseline || playedAudioBuffers > presentation.audioBaseline else { return }
         } else {
             // Paused seeks can output a preview frame with INT64_MAX as date.
@@ -1020,8 +1033,11 @@ public final class FilmPlayer: NSObject {
         evaluateCompletion()
     }
 
-    fileprivate func receiveClockPoint(_ time: Int64, position: Double, systemDate: Int64, token: UUID) {
+    fileprivate func receiveClockPoint(_ time: Int64, position: Double, systemDate: Int64, arrival: UInt64, token: UUID) {
         guard token == sessionID, engine != nil, time >= 0 else { return }
+        guard arrival > (seekPresentation?.eventBaseline ?? 0),
+              measuredClockTime == nil || arrival > measuredClockSequence else { return }
+        measuredClockSequence = arrival
         measuredClockTime = Double(time) / 1_000_000
         measuredClockSystemDate = systemDate
         lastClockPointArrival = .now
@@ -1034,8 +1050,11 @@ public final class FilmPlayer: NSObject {
         if didBackendStop { evaluateCompletion() }
     }
 
-    fileprivate func receiveInputTime(_ time: Int64, position: Double, token: UUID) {
+    fileprivate func receiveInputTime(_ time: Int64, position: Double, arrival: UInt64, token: UUID) {
         guard token == sessionID, engine != nil, time >= 0 else { return }
+        guard arrival > (seekPresentation?.eventBaseline ?? 0),
+              measuredInputTime == nil || arrival > measuredInputSequence else { return }
+        measuredInputSequence = arrival
         measuredInputTime = Double(time) / 1_000_000
         if retryUnpacedStreamingSeekIfNeeded() { return }
         refreshSeekPresentation()
@@ -1251,6 +1270,7 @@ nonisolated final class PlaybackLifecycleTrace: Sendable {
         case callbackStopping = 50, deliveryStopping
         case callbackTime = 60, callbackBuffering, callbackLength
         case progressCheckpoint = 70
+        case callbackSeeking = 80, deliverySeeking, appliedSeeking, seekPresentationCleared
     }
 
     struct Record: Encodable, Sendable {
@@ -1264,6 +1284,7 @@ nonisolated final class PlaybackLifecycleTrace: Sendable {
         let systemDateMicroseconds: Int64?
         let clockRunning: Bool?
         let targetSeconds: Double?
+        let nativeSeekSequence: UInt64?
         let modelPlaying: Bool?
         let wantsToPlay: Bool?
         let audioPending: Bool?
@@ -1299,7 +1320,8 @@ nonisolated final class PlaybackLifecycleTrace: Sendable {
     @discardableResult
     func record(_ event: Event, generation: Int, sourceSequence: Int? = nil,
                 state: Int? = nil, time: Int64? = nil, systemDate: Int64? = nil,
-                target: Double? = nil, modelPlaying: Bool? = nil, wantsToPlay: Bool? = nil,
+                target: Double? = nil, nativeSeekSequence: UInt64? = nil,
+                modelPlaying: Bool? = nil, wantsToPlay: Bool? = nil,
                 audioPending: Bool? = nil, accepted: Bool? = nil,
                 displayed: UInt64? = nil, played: UInt64? = nil) -> Int {
         let elapsed = origin.duration(to: .now).components
@@ -1311,7 +1333,8 @@ nonisolated final class PlaybackLifecycleTrace: Sendable {
                 eventCode: event.rawValue, generation: generation, sourceSequence: sourceSequence,
                 state: state, timeMicroseconds: time, systemDateMicroseconds: systemDate,
                 clockRunning: systemDate.map { $0 > 0 && $0 != Int64.max },
-                targetSeconds: target, modelPlaying: modelPlaying, wantsToPlay: wantsToPlay,
+                targetSeconds: target, nativeSeekSequence: nativeSeekSequence,
+                modelPlaying: modelPlaying, wantsToPlay: wantsToPlay,
                 audioPending: audioPending, accepted: accepted,
                 displayedVideoFrames: displayed, playedAudioBuffers: played)
             value.cursor = (value.cursor + 1) % capacity
@@ -1340,6 +1363,8 @@ nonisolated final class PlaybackLifecycleTrace: Sendable {
 private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
     private weak var owner: FilmPlayer?
     private let sessionID: UUID
+    private let callbackOrder = Mutex<UInt64>(0)
+    var latestCallbackSequence: UInt64 { callbackOrder.withLock { $0 } }
 
     @MainActor init(owner: FilmPlayer, sessionID: UUID) {
         self.owner = owner
@@ -1398,8 +1423,17 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
         let token = sessionID
         #if DEBUG
         let generation = traceGeneration
-        let occurrence = lifecycleTrace?.record(.callbackClock, generation: generation, time: time, systemDate: systemDate)
+        var occurrence: Int?
         #endif
+        // Serialize the source order and its diagnostic record together; actor
+        // delivery can be reordered independently of native callback arrival.
+        let arrival = callbackOrder.withLock { value in
+            value += 1
+            #if DEBUG
+            occurrence = lifecycleTrace?.record(.callbackClock, generation: generation, time: time, systemDate: systemDate)
+            #endif
+            return value
+        }
         Task { @MainActor [weak owner] in
             #if DEBUG
             // Existing statistics are read after the C callback has returned,
@@ -1409,7 +1443,7 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
             owner?.debugRecordLifecycle(.deliveryClock, generation: generation, sourceSequence: occurrence,
                 time: time, systemDate: systemDate, displayed: displayed, played: played)
             #endif
-            owner?.receiveClockPoint(time, position: position, systemDate: systemDate, token: token)
+            owner?.receiveClockPoint(time, position: position, systemDate: systemDate, arrival: arrival, token: token)
         }
     }
 
@@ -1417,20 +1451,42 @@ private final class PlayerEvents: NSObject, AetherVLCMediaPlayerDelegate {
         let token = sessionID
         #if DEBUG
         let generation = traceGeneration
-        let occurrence = lifecycleTrace?.record(.callbackInput, generation: generation, time: time)
+        var occurrence: Int?
         #endif
+        // Serialize the source order and its diagnostic record together; actor
+        // delivery can be reordered independently of native callback arrival.
+        let arrival = callbackOrder.withLock { value in
+            value += 1
+            #if DEBUG
+            occurrence = lifecycleTrace?.record(.callbackInput, generation: generation, time: time)
+            #endif
+            return value
+        }
         Task { @MainActor [weak owner] in
             #if DEBUG
             owner?.debugRecordLifecycle(.deliveryInput, generation: generation, sourceSequence: occurrence, time: time)
             #endif
-            owner?.receiveInputTime(time, position: position, token: token)
+            owner?.receiveInputTime(time, position: position, arrival: arrival, token: token)
         }
     }
 
     func mediaPlayerSeekingChanged(_ seeking: Bool, targetTime: Int64, sequence: UInt64) {
         let token = sessionID
+        #if DEBUG
+        let generation = traceGeneration
+        let occurrence = lifecycleTrace?.record(.callbackSeeking, generation: generation,
+            state: seeking ? 1 : 0, time: targetTime, nativeSeekSequence: sequence)
+        #endif
         Task { @MainActor [weak owner] in
+            #if DEBUG
+            owner?.debugRecordLifecycle(.deliverySeeking, generation: generation, sourceSequence: occurrence,
+                state: seeking ? 1 : 0, time: targetTime, nativeSeekSequence: sequence)
+            #endif
             owner?.receiveSeeking(seeking, targetTime: targetTime, sequence: sequence, token: token)
+            #if DEBUG
+            owner?.debugRecordLifecycle(.appliedSeeking, generation: generation, sourceSequence: occurrence,
+                state: seeking ? 1 : 0, time: targetTime, nativeSeekSequence: sequence)
+            #endif
         }
     }
 

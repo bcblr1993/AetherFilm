@@ -263,8 +263,13 @@ static void HandleWatchTimeDiscontinuity(void *opaque, int64_t system_date_us)
     @autoreleasepool {
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         [eventsHandler handleEvent:^(id _Nonnull object) {
-            AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
-            [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
+            // Drain notifications while handleEvent still owns the player.
+            // Otherwise an autoreleased notification can release the last player
+            // on this timer callback and re-enter unwatch_time's timer lock.
+            @autoreleasepool {
+                AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+                [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
+            }
         }];
     }
 }

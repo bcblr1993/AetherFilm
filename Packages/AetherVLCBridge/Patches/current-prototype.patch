@@ -91,33 +91,43 @@
 @@ -166,0 +249,2 @@
 +            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerClockTime:position:systemDate:)])
 +                [mediaPlayer.delegate mediaPlayerClockTime:newValue.ts_us position:newValue.position systemDate:newValue.system_date_us];
-@@ -193,0 +278,5 @@
+@@ -176,2 +260,7 @@
+-            AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+-            [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
++            // Drain notifications while handleEvent still owns the player.
++            // Otherwise an autoreleased notification can release the last player
++            // on this timer callback and re-enter unwatch_time's timer lock.
++            @autoreleasepool {
++                AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
++                [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
++            }
+@@ -193,0 +283,5 @@
 +        int64_t targetTime = isSeeking ? newTimePoint.ts_us : -1;
 +        // Capture only immutable callback identity under our existing lock.
 +        // No libVLC call or delegate delivery occurs while the lock is held.
 +        uint64_t sequence = [AetherSnapshotForHandler(eventsHandler)
 +            aetherRecordSeeking:isSeeking targetTime:&targetTime];
-@@ -203,0 +293,2 @@
+@@ -203,0 +298,2 @@
 +            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSeekingChanged:targetTime:sequence:)])
 +                [mediaPlayer.delegate mediaPlayerSeekingChanged:isSeeking targetTime:targetTime sequence:sequence];
-@@ -238,0 +330,3 @@
+@@ -238,0 +335,3 @@
 +        // Capture the error before any configured event dispatch can reorder it.
 +        if (newState == VLCMediaPlayerStateError)
 +            [AetherSnapshotForHandler(eventsHandler) aetherRecordError];
-@@ -636,0 +731,5 @@
+@@ -636,0 +736,5 @@
 +static_assert(AetherVLCMediaStoppingReasonError == (NSInteger)libvlc_stopping_reason_error
 +           && AetherVLCMediaStoppingReasonEndOfStream == (NSInteger)libvlc_stopping_reason_eos
 +           && AetherVLCMediaStoppingReasonUser == (NSInteger)libvlc_stopping_reason_user,
 +              "Stopping reasons must match the fixed public libVLC ABI");
 +
-@@ -642,0 +742,6 @@
+@@ -642,0 +747,6 @@
 +        int64_t inputTime = -1;
 +        BOOL hadError = NO;
 +        AetherVLCEventSnapshot *snapshot = AetherSnapshotForHandler(eventsHandler);
 +        [snapshot aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
 +        // The immutable values are captured in the original libVLC callback.
 +        // No delegate or libVLC operation is called while our lock is held.
-@@ -645,2 +750,15 @@
+@@ -645,2 +755,15 @@
 -            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:)])
 -                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason];
 +            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:inputTime:hadError:)])
@@ -135,26 +145,26 @@
 +            AetherVLCMediaPlayer *player = object;
 +            if ([player.delegate respondsToSelector:@selector(mediaPlayerInputTime:position:)])
 +                [player.delegate mediaPlayerInputTime:time position:position];
-@@ -651,0 +770 @@
+@@ -651,0 +775 @@
 +    .on_position_changed = AetherHandleInputPosition,
-@@ -698,0 +818,5 @@
+@@ -698,0 +823,5 @@
 +- (uint64_t)seekCallbackSequence
 +{
 +    return [_aetherSnapshot seekCallbackSequence];
 +}
 +
-@@ -707,0 +832 @@
+@@ -707,0 +837 @@
 +        _aetherSnapshot = [[AetherVLCEventSnapshot alloc] init];
-@@ -712,0 +838,2 @@
+@@ -712,0 +843,2 @@
 +        objc_setAssociatedObject(_eventsHandler, &AetherVLCEventSnapshotKey,
 +                                 _aetherSnapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-@@ -1102,0 +1230,5 @@
+@@ -1102,0 +1235,5 @@
 +}
 +
 +- (int64_t)diagnosticCoreTimeMicroseconds
 +{
 +    return libvlc_media_player_get_time(_playerInstance);
-@@ -1497,4 +1629,11 @@
+@@ -1497,4 +1634,11 @@
 -        libvlc_media_player_time_point_interpolate(&_lastTimePoint,
 -                                                   system_now_us,
 -                                                   &_lastInterpolatedTime,
