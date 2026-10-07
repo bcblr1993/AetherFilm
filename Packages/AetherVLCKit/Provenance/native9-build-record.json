@@ -1,0 +1,705 @@
+{
+  "scope": "ACTUAL_ORDINARY_NATIVE9_THREE_PLATFORM_CORE_AND_WRAPPER_WITH_SOURCE_RECONSTRUCTION_NOT_FULL_PORTABLE_BUILD_OR_APP_RELEASE",
+  "nativeGeneration": 9,
+  "records": {
+    "normal-native9-source-pins-postbuild-r1.json": {
+      "allThreeSourceTreesMatch14Pins": true,
+      "sourceTrees": [
+        {
+          "sourceRoot": "NormalMacSource-r1",
+          "verifiedPins": {
+            "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+            "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+            "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+            "src/input/input.c": "e0b30d59f603054712f1110900c7d9079bb08d96139824cfdb63494e81eeb5a3",
+            "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+            "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+            "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+            "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+            "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+            "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+            "modules/audio_output/apple/avsamplebuffer.m": "a7603472effc9c35356d6e18e7f6a84cf32f67306ada5634f8f8a8066eaf1354",
+            "modules/audio_output/apple/coreaudio_common.c": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25",
+            "src/input/es_out.c": "f582ed0ac889584d8171ce43731cab6faf78af829cc1d15b3ea9c36d3196b183",
+            "lib/media_player.c": "7263aa1cd6cccb146bdc2325e7de9a82136fd4ca15db4b1e6a7b0a6a88d239b3"
+          }
+        },
+        {
+          "sourceRoot": "NormalSimulatorSource-r1",
+          "verifiedPins": {
+            "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+            "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+            "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+            "src/input/input.c": "e0b30d59f603054712f1110900c7d9079bb08d96139824cfdb63494e81eeb5a3",
+            "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+            "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+            "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+            "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+            "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+            "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+            "modules/audio_output/apple/avsamplebuffer.m": "a7603472effc9c35356d6e18e7f6a84cf32f67306ada5634f8f8a8066eaf1354",
+            "modules/audio_output/apple/coreaudio_common.c": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25",
+            "src/input/es_out.c": "f582ed0ac889584d8171ce43731cab6faf78af829cc1d15b3ea9c36d3196b183",
+            "lib/media_player.c": "7263aa1cd6cccb146bdc2325e7de9a82136fd4ca15db4b1e6a7b0a6a88d239b3"
+          }
+        },
+        {
+          "sourceRoot": "NormalDeviceSource-r1",
+          "verifiedPins": {
+            "modules/video_output/apple/VLCSampleBufferDisplay.m": "e170f92cdbe851b9a6d2041b8836dce77c6f1cff2526ab09325b1466a0ffc787",
+            "contrib/src/gsm/rules.mak": "740c5ce9729c69b4240fdc3c972ed989282406da133165b94ae7762896d62365",
+            "src/video_output/video_output.c": "cb00a96793fe5af96ed9447e80d5f5cf7d642c63880464715337462e2c8457ce",
+            "src/input/input.c": "e0b30d59f603054712f1110900c7d9079bb08d96139824cfdb63494e81eeb5a3",
+            "src/input/decoder.c": "13410b9823713712366586abecd7f6b3dbeffb8930fb6dc800f1de40f746a801",
+            "modules/stream_filter/prefetch.c": "af1338ec84e407095f24e8687237af179820f5470a559f4455c406d8d9e49b00",
+            "src/network/stream.c": "287db00f75421c624a8814251b36774d137e278452b1030e5b7295e2291396a3",
+            "modules/access/http/file.c": "74f2b62f2e287c0ce4bd9aab98c19bf573d7c9621583ef6e8cbe629c882ff6f7",
+            "modules/access/http/access.c": "53dd4db69590557b65c43bb876cac1fb8d9090dad75d126d0ae7d5b9649dcfb6",
+            "src/audio_output/dec.c": "b3e80750a8ef7e4662e8e577bea72a7c44746cbcf1208152d53cd978d9eb71de",
+            "modules/audio_output/apple/avsamplebuffer.m": "a7603472effc9c35356d6e18e7f6a84cf32f67306ada5634f8f8a8066eaf1354",
+            "modules/audio_output/apple/coreaudio_common.c": "b26ac306628d31c14426732c130fe19286e0ff9612719f6e82d7feddb8de7e25",
+            "src/input/es_out.c": "f582ed0ac889584d8171ce43731cab6faf78af829cc1d15b3ea9c36d3196b183",
+            "lib/media_player.c": "7263aa1cd6cccb146bdc2325e7de9a82136fd4ca15db4b1e6a7b0a6a88d239b3"
+          }
+        }
+      ],
+      "fullPortableRebuildExecuted": false
+    },
+    "native9-archive-reconstruction-r1.json": {
+      "archiveSHA256": "448c7842896f9881592ae1c0fd0f4893f4d2848764fc492ebe0b1d494f3589a0",
+      "allElevenPatchesAppliedWithFuzzZero": true,
+      "allFourteenPinsMatch": true,
+      "patches": [
+        {
+          "patch": "Patches/native-aperture.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'modules/video_output/apple/VLCSampleBufferDisplay.m'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/gsm-deployment.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'contrib/src/gsm/rules.mak'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/paused-preview-core.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'src/video_output/video_output.c'\npatching file 'src/input/input.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/decoder-flush-preview.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'src/input/decoder.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/held-io-recovery.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'modules/stream_filter/prefetch.c'\npatching file 'src/network/stream.c'\npatching file 'modules/access/http/file.c'\npatching file 'modules/access/http/access.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/audio-output-domain.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'src/audio_output/dec.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/output-clock-cadence.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'modules/audio_output/apple/avsamplebuffer.m'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/coreaudio-cadence.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'modules/audio_output/apple/coreaudio_common.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/media-preroll-rate.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'src/input/es_out.c'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/avsamplebuffer-drain.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'modules/audio_output/apple/avsamplebuffer.m'\n",
+          "stderr": ""
+        },
+        {
+          "patch": "Patches/deferred-pause-cancel.patch",
+          "exitCode": 0,
+          "stdout": "patching file 'lib/media_player.c'\npatching file 'src/input/input.c'\n",
+          "stderr": ""
+        }
+      ],
+      "builtSourceComparisons": [
+        {
+          "source": "NormalMacSource-r1",
+          "comparedArchiveFiles": 5675,
+          "missing": [],
+          "differences": []
+        },
+        {
+          "source": "NormalSimulatorSource-r1",
+          "comparedArchiveFiles": 5675,
+          "missing": [],
+          "differences": []
+        },
+        {
+          "source": "NormalDeviceSource-r1",
+          "comparedArchiveFiles": 5675,
+          "missing": [],
+          "differences": []
+        }
+      ],
+      "fullPortableBuildExecuted": false,
+      "releaseAccepted": false
+    },
+    "complete-source-materials-r1-review.json": {
+      "baseAssetSHA256": "350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72",
+      "baseAssetBytes": 665341487,
+      "completeExtraction": true,
+      "verificationExitCode": 0,
+      "command": [
+        "python3",
+        "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/ProductionSourcePackage-r1/Tools/verify_source_materials.py",
+        "--materials",
+        "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/VerifiedSourceMaterials-r1",
+        "--lua-source",
+        "${REPOSITORY}/.build/P0Optimization20261006/native-source/contrib/tarballs/lua-5.4.4.tar.gz"
+      ],
+      "verificationOutput": "{\"sourceArchives\": 3, \"contribArchivesAndSidecars\": 68, \"luaVerified\": true, \"smallLocalInputs\": 14, \"compilerExecuted\": false, \"releaseAccepted\": false}\n",
+      "initialPartialMaterialsVerificationFailed": true,
+      "initialFailureReason": "Selected partial working directory lacked vlckit-source.tar.gz; original size and SHA pins retained",
+      "originalMaterialsUntouched": true,
+      "releaseAccepted": false
+    },
+    "native9-wrapper-archive-reconstruction-r1.json": {
+      "wrapperArchiveMatchesPin": true,
+      "records": [
+        {
+          "platform": "mac",
+          "patchExitCode": 0,
+          "patchLog": "patching file 'VLCKit.xcodeproj/project.pbxproj'\n",
+          "comparedArchiveFiles": 727,
+          "missing": [],
+          "differences": []
+        },
+        {
+          "platform": "sim",
+          "patchExitCode": 0,
+          "patchLog": "patching file 'VLCKit.xcodeproj/project.pbxproj'\n",
+          "comparedArchiveFiles": 727,
+          "missing": [],
+          "differences": []
+        },
+        {
+          "platform": "device",
+          "patchExitCode": 0,
+          "patchLog": "patching file 'VLCKit.xcodeproj/project.pbxproj'\n",
+          "comparedArchiveFiles": 727,
+          "missing": [],
+          "differences": [
+            "VLCKit.xcodeproj/project.pbxproj"
+          ]
+        }
+      ],
+      "releaseAccepted": false
+    },
+    "normal-device-fresh-wrapper-review-r3.json": {
+      "freshPinnedWrapperRecipeActualBuildExitCodes": [
+        0,
+        0
+      ],
+      "definedGlobalLibVLCExports": 315,
+      "definedModulesIncludingCore": 303,
+      "codeSectionsExactToR1": true,
+      "sourceProjectMatchesFixedArchivePlusDevicePatch": true,
+      "missingGeneratedPluginHeadersFixedFromActualDeviceCore": true,
+      "r2FailurePreserved": true,
+      "symbolInspectionCorrection": "Initial all-defined libvlc prefix count included private local names; authoritative public check uses global defined names, module check uses all defined names",
+      "frameworkSHA256": "dfd55528a09c278f2d678f0b57d8210d5d941d8582ed5c9faf370f447e423a36",
+      "buildVersion": ".build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildProducts/Release/VLCKit.framework/VLCKit:\nLoad command 10\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOS\n    minos 26.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n",
+      "ASANUndefinedSymbolsPresent": false,
+      "newDeviceConsumerStillRequired": true,
+      "releaseAccepted": false
+    },
+    "normal-device-fresh-wrapper-outcomes-r3.json": [
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperSource-r2/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphoneos27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildCaches/precompiled",
+          "build"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperSource-r2/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphoneos27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalDeviceWrapperBuild-r2/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework Metal",
+          "build"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "normal-native9-public-compatibility-r2.json": {
+      "slices": [
+        {
+          "platform": "mac",
+          "publicHeadersExactToPublishedNative8": true,
+          "publicHeaderCount": 48,
+          "baselineAppleDoubleMetadataSidecarCount": 49,
+          "sidecarMagicVerified": true,
+          "publicLibVLCExportsExactToPublishedNative8": true,
+          "publicExportCount": 315
+        },
+        {
+          "platform": "sim",
+          "publicHeadersExactToPublishedNative8": true,
+          "publicHeaderCount": 43,
+          "baselineAppleDoubleMetadataSidecarCount": 44,
+          "sidecarMagicVerified": true,
+          "publicLibVLCExportsExactToPublishedNative8": true,
+          "publicExportCount": 315
+        },
+        {
+          "platform": "device",
+          "publicHeadersExactToPublishedNative8": true,
+          "publicHeaderCount": 43,
+          "baselineAppleDoubleMetadataSidecarCount": 44,
+          "sidecarMagicVerified": true,
+          "publicLibVLCExportsExactToPublishedNative8": true,
+          "publicExportCount": 315
+        }
+      ],
+      "runtimeCompatibilityNotImplied": true,
+      "releaseAccepted": false
+    },
+    "normal-mac-wrapper-outcomes.json": [
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperSource-r1/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "macosx27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "MACOSX_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildCaches/precompiled",
+          "build"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperSource-r1/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "macosx27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "MACOSX_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalMacWrapperBuild-r1/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework IOKit -framework SystemConfiguration",
+          "build"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "normal-sim-wrapper-outcomes.json": [
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperSource-r1/VLCKit.xcodeproj",
+          "-target",
+          "Static libVLC",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphonesimulator27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildCaches/precompiled",
+          "build"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": [
+          "/usr/bin/xcodebuild",
+          "-project",
+          "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperSource-r1/VLCKit.xcodeproj",
+          "-target",
+          "VLCKit",
+          "-configuration",
+          "Release",
+          "-sdk",
+          "iphonesimulator27.0",
+          "-jobs",
+          "4",
+          "ARCHS=arm64",
+          "ONLY_ACTIVE_ARCH=NO",
+          "IPHONEOS_DEPLOYMENT_TARGET=26.0",
+          "CODE_SIGNING_ALLOWED=NO",
+          "CODE_SIGNING_REQUIRED=NO",
+          "ENABLE_BITCODE=NO",
+          "ENABLE_ADDRESS_SANITIZER=NO",
+          "DEBUG_INFORMATION_FORMAT=dwarf",
+          "AETHERFILM_CORE_ARCHIVE=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorCore-r1/static-lib/libvlc-full-static.a",
+          "SYMROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildProducts",
+          "OBJROOT=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildIntermediates",
+          "CONFIGURATION_BUILD_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildProducts/Release",
+          "CLANG_MODULE_CACHE_PATH=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildCaches/clang-modules",
+          "SHARED_PRECOMPS_DIR=${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/NormalSimulatorWrapperBuild-r1/BuildCaches/precompiled",
+          "OTHER_LDFLAGS=-ObjC -framework Metal",
+          "build"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "normal-mac-linked-framework-review.json": {
+      "wrapperTargetsExitCodes": [
+        0,
+        0
+      ],
+      "linkedFrameworkNMExitCode": 0,
+      "actualDefinedModuleEntriesMatchGeneratedPluginsAndCore": true,
+      "pluginCount": 302,
+      "builtInCoreEntryCount": 1,
+      "allDefinedModuleNamesMatchDiagnosticBaseline": true,
+      "publicLibVLCExportNamesMatchDiagnosticBaseline": true,
+      "publicLibVLCExportCount": 315,
+      "ASANRuntimeReferencePresent": false,
+      "ASANUndefinedSymbolsPresent": false,
+      "minimum": 26.0,
+      "frameworkSHA256": "c1edc04c069603834f857e229b8e74bd741e858d5e1eacea7b4095491f1ae3e3",
+      "standaloneArchiveAppleNMFailedOnRustMetadata": true,
+      "standaloneArchiveInspectionNotClaimedPassed": true,
+      "moduleInspectionCorrection": "302 generated plugin entries plus separate core entry; entries are local t in linked Mach-O. Public libVLC globals compared independently.",
+      "actualLinkedMachOInspectionPassed": true,
+      "ordinaryAppAndCIStillPending": true,
+      "releaseAccepted": false
+    },
+    "normal-sim-linked-framework-review.json": {
+      "platform": "sim",
+      "wrapperTargetExitCodes": [
+        0,
+        0
+      ],
+      "linkedMachONMExitCode": 0,
+      "pluginPlusCoreEntryCount": 303,
+      "definedModuleEntriesMatchGeneratedListAndCore": true,
+      "publicLibVLCExportCount": 315,
+      "ASANRuntimeOrSymbolsPresent": false,
+      "minimum": 26.0,
+      "frameworkSHA256": "7978672a8313962e7fbda8394b4d9748ad289bd09a0b80faacd19ccd5a25e75d",
+      "AppAndPhysicalAcceptance": false,
+      "releaseAccepted": false
+    },
+    "normal-device-linked-framework-review.json": {
+      "platform": "device",
+      "wrapperTargetExitCodes": [
+        0,
+        0
+      ],
+      "linkedMachONMExitCode": 0,
+      "pluginPlusCoreEntryCount": 303,
+      "definedModuleEntriesMatchGeneratedListAndCore": true,
+      "publicLibVLCExportCount": 315,
+      "ASANRuntimeOrSymbolsPresent": false,
+      "minimum": 26.0,
+      "frameworkSHA256": "65d365f3896c99f90b74ec66b8dea784f504abcfd5041b1c70f4da5ad4f2a2f2",
+      "AppAndPhysicalAcceptance": false,
+      "releaseAccepted": false
+    },
+    "native9-private-archive-r3.json": {
+      "archive": "VLCKit-AetherFilm-native9-arm64-candidate-r3.xcframework.zip",
+      "bytes": 68757639,
+      "sha256": "7b78c7284ee08aa499d72d37884a956404aa2b345ac31b4d4cd64dac70325f9f",
+      "slices": [
+        {
+          "identifier": "macos-arm64",
+          "binarySHA256": "c1edc04c069603834f857e229b8e74bd741e858d5e1eacea7b4095491f1ae3e3",
+          "versionHeaderSHA256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+          "extractedBytesMatch": true
+        },
+        {
+          "identifier": "ios-arm64-simulator",
+          "binarySHA256": "7978672a8313962e7fbda8394b4d9748ad289bd09a0b80faacd19ccd5a25e75d",
+          "versionHeaderSHA256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+          "extractedBytesMatch": true
+        },
+        {
+          "identifier": "ios-arm64",
+          "binarySHA256": "dfd55528a09c278f2d678f0b57d8210d5d941d8582ed5c9faf370f447e423a36",
+          "versionHeaderSHA256": "39e504b138aaf2401da4b87d534c2850557064b88cc876da4a84ca08872427b7",
+          "extractedBytesMatch": true
+        }
+      ],
+      "priorArchivesPreserved": true,
+      "native9LocalFrozenConsumers": [
+        0,
+        0,
+        0
+      ],
+      "publicDistributionVerified": false,
+      "formalRemoteConsumerCIExecuted": false,
+      "releaseAccepted": false
+    },
+    "mac-core-outcome": {
+      "exitCode": 0,
+      "archivePresent": true,
+      "compilerCommandCompleted": true,
+      "resumedAfterVerifiedMissingCargoCapiFailure": true,
+      "usedSameOwnedSourceAndCache": true,
+      "minimum": 26.0,
+      "releaseAccepted": false
+    },
+    "sim-core-outcome": {
+      "exitCode": 0,
+      "stopReason": null,
+      "archivePresent": true,
+      "compilerCommandCompleted": true,
+      "archivePlatformModuleAndLicenseReviewRequired": true,
+      "wrapperAppAndReleaseAccepted": false
+    },
+    "device-core-outcome": {
+      "exitCode": 0,
+      "stopReason": null,
+      "archivePresent": true,
+      "compilerCommandCompleted": true,
+      "archivePlatformModuleAndLicenseReviewRequired": true,
+      "wrapperAppAndReleaseAccepted": false
+    },
+    "finalFrozenConsumerProof": {
+      "frozenApproved": true,
+      "finalCallbacksCompiled": true,
+      "builds": [
+        {
+          "platform": "macos-arm64",
+          "command": [
+            "swift",
+            "build",
+            "--package-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/ConsumerPackage",
+            "--scratch-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-macos-arm64",
+            "--triple",
+            "arm64-apple-macos26.0",
+            "--sdk",
+            "${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk",
+            "--product",
+            "ContractConsumer",
+            "-j",
+            "2",
+            "-v"
+          ],
+          "startedAt": "2026-10-07T18:21:56.468081+00:00",
+          "exitCode": 0,
+          "finishedAt": "2026-10-07T18:22:07.489747+00:00",
+          "product": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-macos-arm64/out/Products/Debug/ContractConsumer",
+          "SHA256": "05cbb558ae433d533b92e4202d87287b9b558259713c3dba86bbe014d9f51829",
+          "UUID": "UUID: 52B98BA3-653E-3D23-AF59-0BDF774A4860 (arm64) ${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-macos-arm64/out/Products/Debug/ContractConsumer",
+          "buildVersion": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-macos-arm64/out/Products/Debug/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform MACOS\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+          "automaticObjectiveCARC": true,
+          "artifactCount": 1,
+          "ownedClassDefined": true,
+          "stockPlayerClassDefined": false
+        },
+        {
+          "platform": "ios-arm64",
+          "command": [
+            "swift",
+            "build",
+            "--package-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/ConsumerPackage",
+            "--scratch-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-ios-arm64",
+            "--triple",
+            "arm64-apple-ios26.0",
+            "--sdk",
+            "${DEVELOPER_DIR}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.0.sdk",
+            "--product",
+            "ContractConsumer",
+            "-j",
+            "2",
+            "-v"
+          ],
+          "startedAt": "2026-10-07T18:22:07.576425+00:00",
+          "exitCode": 0,
+          "finishedAt": "2026-10-07T18:22:14.773241+00:00",
+          "product": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-ios-arm64/out/Products/Debug-iphoneos/ContractConsumer",
+          "SHA256": "14ccd246396b8b478c805292513508798e98aec8b0dd3413dd783e0d210588c2",
+          "UUID": "UUID: 5B18C4D1-1758-3AB2-839C-077C2E01BC6C (arm64) ${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-ios-arm64/out/Products/Debug-iphoneos/ContractConsumer",
+          "buildVersion": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-ios-arm64/out/Products/Debug-iphoneos/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOS\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+          "automaticObjectiveCARC": true,
+          "artifactCount": 1,
+          "ownedClassDefined": true,
+          "stockPlayerClassDefined": false
+        },
+        {
+          "platform": "sim-arm64",
+          "command": [
+            "swift",
+            "build",
+            "--package-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/ConsumerPackage",
+            "--scratch-path",
+            "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-sim-arm64",
+            "--triple",
+            "arm64-apple-ios26.0-simulator",
+            "--sdk",
+            "${DEVELOPER_DIR}/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk",
+            "--product",
+            "ContractConsumer",
+            "-j",
+            "2",
+            "-v"
+          ],
+          "startedAt": "2026-10-07T18:22:14.856483+00:00",
+          "exitCode": 0,
+          "finishedAt": "2026-10-07T18:22:22.468659+00:00",
+          "product": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-sim-arm64/out/Products/Debug-iphonesimulator/ContractConsumer",
+          "SHA256": "2909760fe29296975fe66c8d585890509a834b35dad886744f35bd018f9def9c",
+          "UUID": "UUID: 2D9C042E-E8F4-3EAE-95BF-2BA7995DCDCC (arm64) ${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-sim-arm64/out/Products/Debug-iphonesimulator/ContractConsumer",
+          "buildVersion": "${REPOSITORY}/.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/Native9FrozenConsumers-r3/Build-sim-arm64/out/Products/Debug-iphonesimulator/ContractConsumer:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 26.0\n      sdk 26.0\n   ntools 1\n     tool LD\n  version 27037.1",
+          "automaticObjectiveCARC": true,
+          "artifactCount": 1,
+          "ownedClassDefined": true,
+          "stockPlayerClassDefined": false
+        }
+      ],
+      "diagnosticManifestDiff": "bridge-manifest-local.diff",
+      "implementationFilesUnchanged": {
+        "Sources/AetherVLCBridge/AetherVLCMediaPlayer.m": "859ac222a9e7c6ee4dbfd1fc985c4de94ec852cdf07a45c103143517e878fbe1",
+        "Sources/AetherVLCBridge/Private/AetherVLCMediaPlayer+Internal.h": "251e6da8801e57b8335cfb9735923528a0a533885b1092a984189cdfb1bea2ba",
+        "Sources/AetherVLCBridge/Private/AetherVLCPrefix.h": "9a0e2371fb6ac251e3357aadbe92608734c36979953b88460d2ca575101c9d6f",
+        "Sources/AetherVLCBridge/Private/VLCEventsHandler.h": "a384b03201995cf0121080706aba1b8ea98463858235906cf85248390384f16d",
+        "Sources/AetherVLCBridge/Private/VLCHelperCode.h": "fe9f0f37b4ddf80c8eee153738d617671f4fb294185ea243946d63392cd57af1",
+        "Sources/AetherVLCBridge/Private/VLCLibVLCBridging.h": "9a6cefa27caddd76bbc08172afc8105521f1991b0496f5a5bc88a0deeb6f4e19",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc.h": "1dcbb888c2c8d7ea2f5d403b17bcd6e7fc0607d82236d7481be9c5b980125a4e",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_dialog.h": "b3035a0fddc6668f22ef2c85ad91ef6cf13256376c8bc6ead66f8cca30d5b023",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_downloader.h": "26012a4f7882e996eef9c3505b3061d0980d1d1b482c635308295e249b20d854",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media.h": "2926e1e9638dd2181fbde2a0502732fd1750c538531f8a14afb26e474e381bb9",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media_discoverer.h": "27c2b3ceee220f6fcc462af4282738d58959b938cf2781d64adb712ef99ef24b",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media_list.h": "7ae58342fc18fbc408d9905d88a770234d1a4eee7e68d4babe3cfc224dd6472a",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media_list_player.h": "6e855c0597bb2d4ca5d078a3710ee0b81e4bc0af3a2724fca0e5ec588d0ae5f5",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media_player.h": "c6f0cce4fa3f5dfab004b5ec1658a210fe61addfbab958f6af1d6e4f49817f5b",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_media_track.h": "fc5796fe979a4f8e0799b75ade1705dbc3b407fc05b8d4f58bc419f9701c89a8",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_parser.h": "7fd91fa3f999eae8381b5e681c11153810bbce2eeeb1cd477fd656740cf72380",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_picture.h": "8256cb655a9e782b0ae6ce7207b1076a388a5339b0e416f8768b98697c181171",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_renderer_discoverer.h": "d0cde7132f642bb1860f4750f70a62466717311f97652d14bfebaf870f7ce402",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_version.h": "5b12f6b6796b7c172d736d5cd6c03d1b2f1dc4e75c8c58aad757eb7cfa1e1122",
+        "Sources/AetherVLCBridge/Vendor/vlc/libvlc_video.h": "e4b13715164349813606d8c2993f2c256e076ae35e6a955f1d8c8145ca0b6a32",
+        "Sources/AetherVLCBridge/Vendor/vlc/vlc.h": "3907a5505fea1eaa5850c6caaa815fb16cdb68d984f3fbcbe788c01e6dff548f",
+        "Sources/AetherVLCBridge/include/AetherVLCMediaPlayer.h": "dd342637bdc88421f05ada411991f9c1439e47d339fbf2ffb14093812a541125"
+      },
+      "formalFilesWritten": false,
+      "formalProjectGenerated": false,
+      "appsOrSimulatorsLaunched": false,
+      "note": "This is an explicitly modified local dependency-manifest build, not a fully unmodified remote production build."
+    }
+  },
+  "oldDeviceTemplateReplacedByFreshPinnedDeviceRecipe": true,
+  "fullPortableRebuildExecuted": false,
+  "formalRemoteCIExecuted": false,
+  "releaseAccepted": false
+}

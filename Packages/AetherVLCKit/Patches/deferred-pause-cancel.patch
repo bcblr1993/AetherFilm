@@ -1,0 +1,25 @@
+--- a/lib/media_player.c
++++ b/lib/media_player.c
+@@ -1061,8 +1061,9 @@
+     int ret = vlc_player_Start(player);
+     if (ret == VLC_SUCCESS)
+     {
+-        if (vlc_player_IsPaused(player))
+-            vlc_player_Resume(player);
++        /* A pause can still be queued or deferred while the player reports
++         * PLAYING. Submit the latest intent in input-control order. */
++        vlc_player_Resume(player);
+     }
+ 
+     vlc_player_Unlock(player);
+--- a/src/input/input.c
++++ b/src/input/input.c
+@@ -2172,7 +2172,7 @@
+             switch( param.val.i_int )
+             {
+                 case PLAYING_S:
+-                    if( priv->i_state == PAUSE_S )
++                    if( priv->i_state == PAUSE_S || priv->b_pause_after_buffering )
+                     {
+                         ResetFramePrevious( p_input );
+                         priv->next_frame_need_data = false;

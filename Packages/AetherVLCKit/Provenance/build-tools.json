@@ -1,0 +1,22 @@
+{
+  "version": "cargo-c 0.10.9+cargo-0.85.0",
+  "tools": [
+    {
+      "name": "cargo-capi",
+      "sha256": "bbcf6c4ccae4a22ef261a70affa9a40e708a37c901f0246c7fd87f35068960f3"
+    },
+    {
+      "name": "cargo-cbuild",
+      "sha256": "abc2442f872114adc68bfcfe193a70982f539eea6b60f9c7eb02eac4940483b2"
+    },
+    {
+      "name": "cargo-cinstall",
+      "sha256": "71dae5f8c51f07124c112145f89deaeb811678b901e2e1a7f1d6d7bcd6532d8e"
+    },
+    {
+      "name": "cargo-ctest",
+      "sha256": "eec98a0a79fc52e3f1aec723110b0f56b482a7ce414d1c2da17a290074a5d233"
+    }
+  ],
+  "scope": "pinned existing build tools only; not included in distribution"
+}
