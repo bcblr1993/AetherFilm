@@ -220,6 +220,19 @@ final class AetherFilmUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [hidden], timeout: 8), .completed,
                        "Playing video should hide idle controls automatically.")
         capture("Playback with controls hidden")
+        #if os(macOS)
+        app.typeKey(XCUIKeyboardKey.space, modifierFlags: [])
+        XCTAssertTrue(waitForValueContaining("已暂停", in: controls, timeout: 5),
+                      "Space must pause playback while its overlay is hidden.")
+        let pausedTime = playbackTimeText(element("player.time"))
+        let advancedWhilePaused = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            self.playbackTimeText(self.element("player.time")) != pausedTime
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [advancedWhilePaused], timeout: 3), .timedOut,
+                       "The actual displayed time must remain stable after keyboard pause.")
+        app.typeKey(XCUIKeyboardKey.space, modifierFlags: [])
+        XCTAssertTrue(waitForValueContaining("正在播放", in: controls, timeout: 5))
+        #endif
         showPlayerControls()
         XCTAssertTrue(controls.isHittable)
         activate(controls)

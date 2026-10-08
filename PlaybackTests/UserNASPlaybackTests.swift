@@ -4,8 +4,12 @@ import FilmSources
 import VLCKit
 import CryptoKit
 @testable import AetherFilm
-#if os(iOS)
+#if os(macOS)
+import AppKit
+import Network
+#elseif os(iOS)
 import UIKit
+#endif
 
 /// Explicit opt-in, read-only acceptance against user-supplied media. No paths,
 /// credentials, artwork, subtitles or frames are attached to the test result.
@@ -37,8 +41,31 @@ import UIKit
         let connection = SMBConnection(name: "Private acceptance source", host: configuration.host, share: configuration.share)
         let credentials = SMBCredentials(username: configuration.username, password: configuration.password)
         let provider = SMBProvider()
+        #if os(macOS)
+        let previous = NSApp.keyWindow
+        let window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
+                              styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        let surface = VLCVideoView(frame: NSRect(x: 0, y: 0, width: 640, height: 360))
+        surface.backColor = .black
+        window.contentView = surface
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        XCTAssertTrue(window.isVisible && surface.window === window,
+                      "Private NAS playback requires an attached visible drawable.")
+        defer { window.close(); previous?.makeKeyAndOrderFront(nil) }
+        #endif
         let parent = configuration.path.split(separator: "/").dropLast().joined(separator: "/")
-        let entries = try await provider.listDirectory(connection, credentials: credentials, path: parent)
+        let entries: [MediaItem]
+        do {
+            entries = try await provider.listDirectory(connection, credentials: credentials, path: parent)
+        } catch {
+            #if os(macOS)
+            await diagnoseTCP(connection)
+            #endif
+            await provider.close()
+            throw error
+        }
         XCTAssertTrue(entries.contains { $0.path == configuration.path && $0.isVideo })
         let size = try await provider.fileSize(connection, credentials: credentials, path: configuration.path)
         XCTAssertEqual(size, configuration.size)
@@ -55,6 +82,7 @@ import UIKit
                 path: configuration.path, range: expected.offset..<(expected.offset + expected.count))
             XCTAssertTrue(digest(bytes) == expected.sha256, "Production provider must match independently read bytes.")
         }
+        #if os(iOS)
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         let scene = try XCTUnwrap(scenes.first { $0.activationState == .foregroundActive } ?? scenes.first)
         let previous = scene.windows.first { $0.isKeyWindow }
@@ -65,6 +93,7 @@ import UIKit
         surface.backgroundColor = .black
         window.rootViewController?.view.addSubview(surface)
         window.makeKeyAndVisible()
+        #endif
         let player = FilmPlayer()
         let stream = SMBStreamingServer(provider: provider, connection: connection, credentials: credentials,
                                        path: configuration.path, size: size)
@@ -72,7 +101,9 @@ import UIKit
         await stream.debugEnableTrace()
         defer {
             player.stop(); player.detachDrawable(surface)
+            #if os(iOS)
             window.isHidden = true; previous?.makeKeyAndVisible()
+            #endif
         }
         do {
             var playbackURL = try await stream.start()
@@ -147,7 +178,54 @@ import UIKit
     private func digest(_ bytes: Data) -> String {
         SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
     }
+
+    #if os(macOS)
+    private func diagnoseTCP(_ connection: SMBConnection) async {
+        guard let port = NWEndpoint.Port(rawValue: UInt16(clamping: connection.port)) else { return }
+        let probe = NWConnection(host: NWEndpoint.Host(connection.host), port: port, using: .tcp)
+        let queue = DispatchQueue(label: "AetherFilm.PrivateNAS.ConnectionProbe")
+        let gate = TCPProbeCompletion()
+        await withCheckedContinuation { continuation in
+            probe.stateUpdateHandler = { state in
+                switch state {
+                case .ready: gate.finish(0, probe: probe, continuation: continuation)
+                case .waiting:
+                    print("NAS numeric TCP localNetworkDenied=\(probe.currentPath?.unsatisfiedReason == .localNetworkDenied)")
+                case .failed(let error):
+                    let code: Int
+                    if case .posix(let value) = error { code = Int(value.rawValue) }
+                    else { code = -1 }
+                    gate.finish(code, probe: probe, continuation: continuation)
+                default: break
+                }
+            }
+            probe.start(queue: queue)
+            queue.asyncAfter(deadline: .now() + 3) {
+                gate.finish(-2, probe: probe, continuation: continuation)
+            }
+        }
+    }
+    #endif
 }
+
+#if os(macOS)
+/// Failure-only diagnostics never print a host, file path or server error text.
+private final class TCPProbeCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var finished = false
+    func finish(_ code: Int, probe: NWConnection, continuation: CheckedContinuation<Void, Never>) {
+        let first = lock.withLock {
+            guard !finished else { return false }
+            finished = true
+            return true
+        }
+        guard first else { return }
+        print("NAS numeric TCP diagnostic code=\(code)")
+        probe.cancel()
+        continuation.resume()
+    }
+}
+#endif
 
 private final class SafeOutputEvents: NSObject, VLCLogging, @unchecked Sendable {
     var level: VLCLogLevel = .debug
@@ -177,5 +255,3 @@ private final class SafeOutputEvents: NSObject, VLCLogging, @unchecked Sendable 
     }
     func snapshot() -> String { lock.withLock { "counts=\(counts) deltasMicroseconds=\(deltas) clockEvents=\(clockEvents)" } }
 }
-
-#endif

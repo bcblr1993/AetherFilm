@@ -74,10 +74,7 @@ struct PlayerScreen: View {
                     .accessibilityAction(named: "显示播放控制") { revealControls() }
                     .simultaneousGesture(scrubbingGesture(width: geometry.size.width))
                 VStack {
-                    if showsControls {
-                        header
-                            .transition(.opacity)
-                    }
+                    playbackControls { header }
                     Spacer()
                     if let error = openingError ?? store.playbackErrorMessage ?? player.errorMessage {
                         VStack(spacing: 14) {
@@ -102,10 +99,7 @@ struct PlayerScreen: View {
                             .accessibilityIdentifier("player.loading")
                         Spacer()
                     }
-                    if showsControls {
-                        controls
-                            .transition(.opacity)
-                    }
+                    playbackControls { controls }
                 }
                 .padding(16)
             }
@@ -163,6 +157,20 @@ struct PlayerScreen: View {
     }
 
     private var showsControls: Bool { controlsVisible || player.seekStatus != nil }
+
+    @ViewBuilder
+    private func playbackControls<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        #if os(macOS)
+        // Keep native keyboard shortcuts registered while the overlay fades.
+        // Hidden controls must not receive pointer or VoiceOver interaction.
+        content()
+            .opacity(showsControls ? 1 : 0)
+            .allowsHitTesting(showsControls)
+            .accessibilityHidden(!showsControls)
+        #else
+        if showsControls { content().transition(.opacity) }
+        #endif
+    }
 
     private var header: some View {
         HStack(spacing: 12) {

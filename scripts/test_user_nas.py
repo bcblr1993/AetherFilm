@@ -76,6 +76,7 @@ def main():
     parser.add_argument("--destination", required=True)
     parser.add_argument("--result", required=True, type=Path)
     parser.add_argument("--selection", choices=("largest", "smallest", "middle"), default="largest")
+    parser.add_argument("--platform", choices=("iOS", "macOS"), default="iOS")
     args = parser.parse_args()
     if args.result.exists():
         parser.error("Use a fresh result path; existing results are preserved.")
@@ -108,13 +109,14 @@ def main():
 
     original = args.xctestrun.resolve()
     configuration = plistlib.loads(original.read_bytes())
+    target_name = "AetherFilmPlaybackTests-" + args.platform
     targets = [target for group in configuration.get("TestConfigurations", [])
                for target in group.get("TestTargets", [])
-               if target.get("BlueprintName") == "AetherFilmPlaybackTests-iOS"]
-    if not targets and "AetherFilmPlaybackTests-iOS" in configuration:
-        targets = [configuration["AetherFilmPlaybackTests-iOS"]]
+               if target.get("BlueprintName") == target_name]
+    if not targets and target_name in configuration:
+        targets = [configuration[target_name]]
     if not targets:
-        parser.error("The iOS playback target is absent from this build.")
+        parser.error("The requested playback target is absent from this build.")
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.daemon_threads = True
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -132,7 +134,7 @@ def main():
         return subprocess.run([
             "xcodebuild", "test-without-building", "-xctestrun", str(copy),
             "-destination", args.destination, "-resultBundlePath", str(args.result),
-            "-only-testing:AetherFilmPlaybackTests-iOS/UserNASPlaybackTests",
+            "-only-testing:" + target_name + "/UserNASPlaybackTests",
             "-parallel-testing-enabled", "NO", "-collect-test-diagnostics", "never",
         ], check=False).returncode
     finally:

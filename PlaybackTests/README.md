@@ -57,3 +57,5 @@ it for the SMB case alone. Example after `build-for-testing`:
 Use the actual built `.xctestrun` filename and a fresh result path. Install
 only the test requirements through the repository fixture setup instructions;
 the test launcher binds to loopback and shuts down with the command.
+
+For explicit read-only acceptance against a private NAS, use `scripts/test_user_nas.py` with the built playback `.xctestrun`, destination and a fresh result path. The launcher prompts for the host, username and password; credentials stay in memory behind a loopback bootstrap endpoint. Add `--platform macOS --destination "platform=macOS,arch=arm64"` for Mac acceptance; iOS remains the default. Run Mac playback in an isolated graphical test environment, and clean all owned VM files, containers, processes, mounts and Dock entries after copying evidence to the host. Neither generated fixtures nor this numeric output check replace listening, VoiceOver or installed-release acceptance.

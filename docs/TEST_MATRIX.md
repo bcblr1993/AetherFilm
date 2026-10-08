@@ -631,3 +631,42 @@ Root在本任务自有窗口和隔离SMB样片运行全部Mac34，实际34通过
 字幕R4只读诊断保留原播放器 / Surface、固定框架与样片，不调用公开engine snapshot。H.264正常第一条、正常下一条、实际seek回第一条三个自有窗口原PNG由Root逐张复核，均无可辨识中文。对应原始raw clock2.025209 / 6.035876 / 4.010354秒、每阶段公开选轨1 / delay0 / fontScale1、真实VT avc1 hardware=1与实际画音输出；三个窗口捕获成功和功能阶段通过均不等于字幕视觉通过。六个阶段logger点均无已知error100；早先快照后记录的滤镜错误不能套到本轮正常画面。证据 `.build/SubtitleTemporalProbeEvidence/Results-tm2ajnj5/{execution-review.json,root-glyph-review.json}`。三格式字幕最终视觉仍是失败gate，后续GL计数准备尚不作修复或发布证据。
 
 当前仍未发布。最终源码 / 二进制绑定、新签名与公证包、VM安装 / 首启 / 播放、真机安装 / 实播、TestFlight及公开入口继续按各自验收记录推进。
+## 2026-10-08 Mac 优先验收与虚拟机清理
+
+用户要求暂缓 iPhone 验收，先完成 Mac；真机未测项保留，不计作通过。正式候选仍为 `775bb26` / v0.1.1 build7。
+
+本轮 Tart `macos27`（macOS 27.0 / 26A428，192.168.64.21）初始没有 `/Applications/AetherFilm.app` 和对应容器，Gatekeeper 为 assessments enabled。实际传入 DMG SHA256 `3ca92ab14cf428444fd04d8b228c403ffb497fce8012024c59d3bef67a624817`，只读挂载后安装到 Applications；严格签名和 Gatekeeper 执行评估通过，公证来源为 Notarized Developer ID。正式应用 PID705 成功进入影片列表，版本 / 构建读回为 0.1.1 / 7，没有批准旧数据访问提示。
+
+通过正式文件打开入口导入 H.264 MP4 与中文空格路径 `片段 01.mp4`。正常视频画面、片尾 0:12、重新播放后的新画面、返回列表的已看标记及中文影片画面时间17.542秒均有 UI 观察；这只证明上述范围，不认证声音、暂停 / 跳转、重启恢复、字幕、真实 NAS、VoiceOver、完整 UI 或旧数据升级。重新播放期间曾观察到暂时的等待片源提示，未对其持续时间作独立测量。完整旧 Mac UI 的失败和跳过不因本轮局部观察而关闭。
+
+按用户要求，本轮证据保留在宿主 `.build/build7-vm-*.png` 和 `FormalNative9-r1/build7-vm-cleanup-review-20261008.json`。先卸载本轮 DMG，核对并结束自己的 PID705，再注销并删除新安装 App、本轮 staging / DMG / 两份样片、新容器和本轮新建的 Application Scripts 目录。清理 exit0；四个路径均不存在，应用进程和本轮挂载均不存在，Library 中没有匹配 AetherFilm 的路径。虚拟机中的每轮测试文件必须在证据取回后清理并复核，后续验收遵守此规则。
+
+第二轮 `MacControls-20261008-r1` 使用相同正式 build7，严格签名及 Gatekeeper 通过，新增自有180秒 H.264 样片。实际窗口持续显示不同时间 / 帧；第一次空格输入后的两次截图仍在推进，不能记为暂停通过。随后通过界面按钮在2:55切为播放三角图标，尚未取得第二次稳定画面时 CUA 超时；SSH 同时失联，`tart list` 权威状态为 stopped。停止原因未查明，不能将其推断为 App 崩溃，也不能认证暂停保持、跳转、全屏或重启恢复。已恢复 VM 完成清理：App、本轮 DMG / 样片 / staging、容器及 Application Scripts 全部删除，进程 / 挂载 / Library 匹配项为空；Dock 最近项已通过原生菜单移除并截图复核。所有原始证据与本轮清理脚本留在宿主 `.build/MacControlsQA-20261008-r1/`。候选仍未完成全部 Mac 验收。
+
+第三轮 `MacControls-20261008-r2` 实际打开同一正式包和180秒样片，窗口显示0:38及真实新画面；此后操作接口失效，刷新及重置会话均以 timeoutReached 结束，Tart 曾再次处于 stopped。已恢复并执行本轮专用清理脚本，App、样片 / DMG / staging、容器和 Application Scripts 删除，重新 SSH 检查 FILES_CLEAN。电脑操作连接恢复后，已通过原生菜单移除 Dock 最近项；SSH 复核没有 AetherFilm，其他天气和 AetherRoute 项保留。该轮清理已完成，后续界面验收仍待完成。本轮原图和清理脚本位于宿主 `.build/MacControlsQA-20261008-r2/`。
+
+远程 Mac UI 原始失败附件已取回同目录 `Accessibility-r2/`。问题对象为 Disabled TouchBar（没有描述），原始层级的 Application / 主 Window 同样 Disabled，已有媒体库 / 片源组描述仍存在；这不能证明生产控件缺陷，也不能认证可访问性通过。保留原审计、断言和失败，待可正常操作的环境复核。PR1 当前775bb26、三个 CI check 均 SUCCESS，原完整播放证据不替代上述手动 / 升级 / 真实 NAS gate。
+
+第四轮 `MacControls-20261008-r3` 实际播放同一正式包和180秒样片，取得新画面及暂停三角图标；后续刷新时应用窗口消失，SSH 没有应用进程。未确认退出原因，不认证暂停稳定、跳转或全屏。五张原始截图已保留在宿主 `.build/MacControlsQA-20261008-r3/`。随后执行该轮专用清理脚本，App、DMG / 样片 / staging、新容器和 Application Scripts 全部删除；Dock 项通过原生菜单移除。最终扫描 `/Users/chenxu`、`/Applications`、`/tmp` 和 `/private/var/tmp` 没有名称匹配 AetherFilm 的路径，应用进程和相关挂载为空，Dock 中无 AetherFilm；原有天气和 AetherRoute 项保留。清理日志、残留复核和 Dock 截图均已取回宿主。后续每轮必须记录创建项，证据取回后清理，并在残留核对通过后才开始下一轮；异常退出也执行同样收尾。
+
+## 2026-10-08 真实 NAS 的 Mac 入口与首轮失败
+
+私人 NAS 验收用例新增 AppKit 窗口 / VLCVideoView 分支，启动器支持 `--platform macOS`；原 iOS 分支、真实画音输出和跳转断言、30秒期限保留，生产代码未变。Mac 测试构建成功；iOS ARM64 模拟器测试构建成功。首次 generic Simulator 同时尝试 x86_64 而链接失败，保留原日志，不扩展已确认的 ARM64 支持范围。
+
+用户授权的远程 Mac mini 27.0.1 实际可连接 NAS445；独立客户端完成有限目录发现及字节范围读取。隔离 QA 副本保持 App sandbox / 网络权限，生产 SMBProvider 首次目录读取返回 `connectionFailed`：原用例实际1项执行、0通过 / 1失败 / 0跳过，exit65，未进入画面、音频输出或跳转验收。不能据此宣称 NAS 通过，也尚未证明是权限、认证或协议问题。原结果已取回宿主 `.build/MacNASAcceptance-20261008-r1/results-r1.tar.gz`，数值复核为 `review-r1.json`。凭据仅进入内存 bootstrap，不写入参数或结果配置。诊断直接引用依赖遇到编译 / 链接失败，已移出正式测试源并保留草稿；最终正式 Mac 构建通过。远程本轮 QA App、staging、结果副本、脚本及新建容器已清理，未发现本轮进程或 Dock 项。真实 NAS 仍为发布失败门槛。
+
+## 2026-10-08 Mac NAS 连接失败的环境诊断
+
+独立 ARM64 CLI 使用候选中的 AMSMB2 动态框架，以内存输入的凭据成功连接并列目录（32项）；不认证 App、播放或原首轮最大片源。App 内原用例 r2 实际0通过 / 1失败 / 0跳过、exit65，TCP探针三秒期限未就绪。r3 在首次 NAS 访问前建立并激活 Mac 窗口，保持 sandbox、原读取和播放断言；仍为0通过 / 1失败 / 0跳过、exit65，Network.framework 路径实际两次报告 `localNetworkDenied=true`。由此确认该 QA 身份存在系统局域网访问限制，不将原 `connectionFailed` 归因于 SMB 生产协议缺陷；限制解除前仍不能认证 NAS 通过。正式测试只在原连接失败后记录无主机 / 路径 / 错误文本的数值诊断，未放宽原断言或30秒播放期限。Mac 测试构建通过；iOS ARM64 条件诊断分支构建通过。
+
+证据 `.build/MacNASDiagnosis-20261008-r2/{review.json,numeric-result.txt,mac-nas-r2-results.tar.gz}`，原r2 / r3结果均保留。独立 CLI、本轮远程 QA App、容器 / Application Scripts、结果副本及准备脚本已清理；没有本轮进程或 Dock 项。当前 macos27 VM 的 NAS445 实际可达，后续将通过可操作的 VM 图形会话处理局域网授权后验收正式签名包；本次尚未执行该步骤，不替代完整 Mac UI、听音和 VoiceOver门槛。
+
+## 2026-10-08 播放快捷键及本轮 VM 清理
+
+正式 build7 在控制栏自动隐藏后按空格仍继续播放，实际样片时间由67秒推进至91秒；控制栏可见时空格可暂停，全屏及退出全屏期间保持87.583秒 / frame2102。发现隐藏控制栏会移除原生快捷键按钮节点，Mac 分支改为保持节点、隐藏视觉与指针 / VoiceOver访问；iOS 条件显示行为保持原样。Mac及iOS ARM64测试构建通过，新增原有自动隐藏用例中的空格暂停 / 恢复断言；用例尚未执行。当前 Debug VM 副本在控制栏隐藏后空格暂停，22.250秒 / frame534在后续截图保持不变，空格恢复后画面推进至frame540；这只认证该手动操作，不替代完整UI回归或新签名分发包验收。证据保留在宿主 `.build/ShortcutFixVM-20261008-r1/`。
+
+按用户要求，本轮 `ShortcutFix-20261008-r1` 已停止自有App进程、注销并删除测试App，删除测试目录、样片、新建容器及Application Scripts，移除Dock最近App图标。清理日志和截图已保留宿主。最终扫描 `/Users/chenxu`、`/Applications`、`/tmp`、`/private/var/tmp` 中AetherFilm命名文件，以及自有进程、挂载、Dock最近及固定项，`residual-review.log` 为0字节，未发现对应残留。未保存NAS连接或凭据。本轮清理通过；后续即使测试失败或中断，也须完成同样核验后才能开始下一轮。保留原有用户文件和VM配置。
+
+## 2026-10-08 隐藏快捷键自动化回归的环境失败
+
+将本次构建产品复制为独立QA身份，App原有entitlements保留，生产debug.dylib SHA256与宿主构建一致。远程Mac原 `testPlaybackControlsHideAndReappear` 选择运行，runner在启用自动化模式时超时，exit65；原xcresult报告1条runner初始化失败、0通过、0跳过，未执行测试方法及新增暂停断言，不能报告产品用例通过或断言失败。Developer mode已启用，当前 `/dev/console` 所有者为root；已请求用户恢复chenxu桌面登录会话。原始结果与摘要已复制到宿主 `.build/ShortcutRegression-20261008-r1/results.tar.gz`，SHA256为9a101ac15cc7b7adfce40fa46af48a9f1f1f5c69b6f082fc2e43b2642185ec70。本轮远程QA产品、传输归档、准备脚本、结果副本及新建容器已删除，路径 / 进程 / Dock核验通过；原有远程文件不变。

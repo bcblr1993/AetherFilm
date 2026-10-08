@@ -112,20 +112,22 @@ v0.1.1仍为草稿。现有build3签名包不包含字幕截止时间及快照�
 
 # Release gates
 
-## Current release candidate: v0.1.1 / build7 (2026-10-08)
+## Historical packaged candidate: v0.1.1 / build7 (2026-10-08)
+
+The build8 source candidate additionally fixes Mac keyboard shortcuts disappearing when playback controls auto-hide and extends the original UI regression. Both ARM64 test builds of the fix pass. The remote UI runner timed out before executing the new regression; the console owner is currently root and a logged-in user desktop has been requested. Full CI, executed UI regression and a new signed package remain pending. Build7 and its CI evidence below certify only their recorded source, not these later changes.
 
 Build7 includes the seek output-statistics refresh from `4d08bc3`, in addition to Native9, the selected logo3 and the agreed NAS navigation / autoplay improvements. `Version.xcconfig` remains the sole build-version source; minimum macOS / iOS stays26.0. Build6 signed packages are preserved as earlier candidates and do not certify this newer source.
 
 | Gate | Current evidence / remaining work |
 | --- | --- |
-| macOS minimum-system playback | CI37671359403 @6290ffb:62 passed,0 failed,0 skipped; runtime warnings0, native crashes0; raw artifact SHA verified. |
-| iOS full playback / persistence / SMB | Local @4d08bc3:70 passed,1 private-NAS conditional skip; compiled71 identities match, runtime warnings0, native crashes0. Same-source formal CI still running at this snapshot. |
+| macOS minimum-system playback | CI37673580611 for build7 @775bb26:62 passed,0 failed,0 skipped; runtime warnings0, native crashes0/unreadable0; compiled case identities and merge tree verified. |
+| iOS full playback / persistence / SMB | Same build7 CI:70 passed,0 failed,1 private-NAS conditional skip; compiled71 identities match, runtime warnings0. This does not certify the user's NAS. |
 | Source and dependency distribution | Published Native9 binary and corresponding source downloads verified; complete source pins / reconstruction / ordinary wrapper and three-platform consumer evidence retained. |
-| Signing / packaging | Earlier build6 signature, notarization, mounted DMG contents and iOS archive checks passed; build7 release packaging, installed playback / upgrade and public download remain open. |
-| Real environments / manual gates | Physical iPhone Developer Mode disabled; actual compatibility recovery with second audio / external subtitle, full UI, listening and VoiceOver remain unaccepted. Real NAS skip is explicit. |
-| Website / public availability | Logo3 and bilingual product information deployed and verified; public App remainsv0.1.0 andv0.1.1 remains draft. |
+| Signing / packaging | Build7 DMG SHA256 3ca92ab14cf428444fd04d8b228c403ffb497fce8012024c59d3bef67a624817; signature, notarization and enabled Gatekeeper accepted. Clean Tart installation and H.264 playback observed. Old-data upgrade, complete installed playback acceptance and public download remain open. |
+| Real environments / manual gates | User deferred iPhone acceptance and requested Mac first. Actual compatibility recovery with second audio / external subtitle, complete Mac UI, listening, VoiceOver and real user NAS remain unaccepted. The new Mac private-NAS test executed once and failed at the production provider directory read (`connectionFailed`), despite independent bounded reads succeeding. Follow-up App TCP paths explicitly report `localNetworkDenied=true`, while a standalone instance of the same dependency connects and lists successfully; this identifies a QA local-network permission restriction, not a proven production SMB defect. See `.build/MacNASDiagnosis-20261008-r2/review.json`; real NAS playback remains unaccepted. Mac UI has19 pass/1 failure/1 skip; original failure attachments show a disabled app/window and a disabled TouchBar without a description. No audit filtering or failure waiver. |
+| Website / public availability | Logo3 presentation and bilingual product information updated at86b90b7 and verified live; public App remainsv0.1.0 andv0.1.1 remains draft. |
 
-Remote production-ID tests hung in sandbox initialization before executing any cases. A distinct QA copy is now running the original complete suite, with every Mach-O section and all entitlements preserved; this does not certify production-container upgrade acceptance. Original failures and evidence are retained under `.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/FormalNative9-r1/`.
+Remote production-ID tests hung in sandbox initialization before executing any cases. The distinct QA copy's original complete suite has ended, with every Mach-O section and all entitlements preserved; it does not certify production-container upgrade acceptance. Original failures and evidence are retained under `.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/FormalNative9-r1/`. Clean VM manual control runs were interrupted; neither constitutes complete Mac acceptance. Each run's files are removed after evidence is retained on the host; the latest interrupted run's application, fixtures, staging directory, new containers, processes, mounts and Dock entry have been removed and independently checked. Cleanup evidence is retained on the host in `.build/MacControlsQA-20261008-r3/`; playback acceptance remains incomplete.
 
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. v0.1.0 macOS release published on GitHub with Developer ID signature,
