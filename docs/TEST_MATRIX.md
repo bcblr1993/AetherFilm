@@ -690,3 +690,19 @@ Root在本任务自有窗口和隔离SMB样片运行全部Mac34，实际34通过
 同次iOS模拟器原日志中 `testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce` 在等待跳转后实际输出时超时；保留原失败，未放宽用例。本轮按用户要求暂缓iPhone真机，Mac优先。
 
 Mac导入书签改为只读安全范围，原read-only entitlement保留，版本候选提升build9。Mac build-for-testing成功；AppStore原17项实际17通过 / 0失败 / 0跳过，新增只读中文文件导入、去重、持久化重开及preparePlayback读取验证通过。证据为宿主 `.build/Build8InstalledVM-20261008-r1/build9-appstore-summary.json` 及 `Build9AppStore-r2.xcresult`。最初指定不存在的测试target导致exit70、0项执行，原日志保留；更正到实际PlaybackTests target后执行上述17项。容器内测试不替代正式sandbox包经系统选择器选取外部文件、重启及播放验收，根因仍待该验收确认。
+
+## 2026-10-08 build9 正式包安装、导入与续播验收
+
+冻结7236f2d的226个tracked文件逐字节一致，Release构建成功，App / DMG公证Accepted、装订及校验通过。候选DMG SHA256 `bdd9c8fc0669f3ea581d1a061bfb4a42355ffdfcbc257198acc701b491179a93`。macos27 Gatekeeper实际enabled，安装的build9 App为Notarized Developer ID接受，主程序SHA256 `2f9a340113c1faab2238681870cefc63fd4aab81b166e07f18708d62fb9bfbef`。
+
+通过系统NSOpenPanel选取外部 `controls-180s.mp4` 成功，列表1项，40.8MB。实际画面从0秒推进，空格暂停在约13秒 / frame329，稍后仍为同帧，恢复播放并通过进度条跳转到约92秒，随后实际105.083秒 / frame2522。Escape退出播放器，保存位置129.529251秒 / 总长180秒及非空bookmark。正常Quit后确认App进程不存在，重新启动无需再次选择文件，列表保留2:09进度，点击后实际续播画面为162.958秒 / frame3911。导入失败修复通过本轮正式sandbox包实际验收；不宣称听音、VoiceOver、真实NAS或旧版本升级已通过。截图、库副本及日志均位于宿主 `.build/Build9InstalledVM-20261008-r1/`。
+
+本轮未连接NAS或保存凭据。证据已在宿主后停止自有App、注销及删除测试App、DMG、样片、run目录、Mount目录、新建容器和Application Scripts，关闭本轮Finder窗口，移除Dock图标。最终文件 / 进程 / 挂载 / Dock扫描 `residual-review.log` 为0字节，清理通过。原有用户文件及VM配置保留。CI37798020058仍运行，当前包尚未公开发布。
+
+2026-10-09补充：CI37798020058 @7236f2d三任务实际completed success。下载原xcresult后，Mac26.6.2为63通过 / 0失败 / 1私有NAS条件跳过，共64个唯一身份；iOS27为70通过 / 0失败 / 1同一私有NAS条件跳过，共71个唯一身份。Mac runtime warnings为空，native-crashes reports为空 / unreadable0，runner清理exit0。此前iOS长GOP失败本轮未复现，不凭一次通过认证根因修复。完整图形UI、真实NAS、听音 / VoiceOver、旧数据升级及公开分发仍未齐备；iPhone真机按用户要求暂缓。
+
+## 2026-10-09 build9 远程 Aqua UI 初始化诊断与清理
+
+完整Mac UI目标在远程Mac27.0.1的已登录Aqua会话中，通过专用LaunchAgent请求运行；scutil及gui/501均确认会话已登录。独立QA身份保留原App entitlements，生产debug.dylib字节与build9构建一致。runner仍在启用automation mode时超时，测试命令exit65；xcresult中的1项失败是runner初始化错误，实际0个测试方法执行，不计为产品用例失败或通过。TCC原日志明确记录本轮UI runner的Developer Tools preflight被拒绝（authValue0），随后请求automation mode超时；这是权限诊断证据，尚未证明唯一根因，不能继续将root console文件所有者当作未登录桌面的证据。
+
+原结果和系统诊断已复制到宿主 `.build/Build9UIQA-20261009-r1/results.tar.gz`，SHA256 `5049f2b5975ac370ef719cf7f5df097704a3ba0cd65de0c7697166394faf7e8b`。随后bootout专用LaunchAgent，删除本轮QA产品、归档、脚本、日志和结果副本；容器基线保留。`cleanup.log`记录OWNED_PATHS_CLEAN，路径 / 进程 / Dock的`residual-review.log`为0字节。未连接NAS或保存凭据，原有远程文件不变。已请求用户核对远程系统Developer Tools授权；完整UI发布门槛仍未通过。

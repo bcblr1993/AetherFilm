@@ -112,6 +112,18 @@ v0.1.1仍为草稿。现有build3签名包不包含字幕截止时间及快照�
 
 # Release gates
 
+## Current packaged candidate: v0.1.1 / build9 (2026-10-09)
+
+Frozen source `7236f2deaa6e1d06ccab50ffae0b0482fc142620` contains the read-only Mac import bookmark fix and the hidden-controls shortcut fix. All226 tracked files match the source snapshot. Release build, Developer ID signature, App / DMG notarization and stapling succeeded. Candidate DMG SHA256 is `bdd9c8fc0669f3ea581d1a061bfb4a42355ffdfcbc257198acc701b491179a93`; the uniquely named build9 draft asset has the same server digest. The release remains draft; older candidate assets and historical failures are preserved.
+
+CI37798020058 completed successfully in all three jobs. Downloaded original results contain Mac26.6.2:63 passed /0 failed /1 explicit private-NAS skip (64 unique identities), and iOS27:70 passed /0 failed /1 same private-NAS skip (71 unique identities). These skips do not certify real NAS access. Earlier intermittent iOS long-GOP failure was not reproduced and is not claimed resolved.
+
+Tart macos27 has Gatekeeper enabled and accepted the installed formal build9 App as Notarized Developer ID. Actual external-file import, advancing video, stable Space pause after controls hide, resume, progress-bar seek, normal quit and relaunch with persisted file access / continuation were observed. Evidence and cleanup are retained in `.build/Build9InstalledVM-20261008-r1/`; all owned VM files, processes, mounts and Dock items were removed and a fresh residual scan was empty.
+
+The complete Mac UI target was requested through a dedicated LaunchAgent in the remote Mac's logged-in Aqua session. Its runner timed out enabling automation mode (exit65), with zero actual test methods executed. TCC logged a denied Developer Tools preflight for the UI runner; this is a permission diagnostic, not proof of the sole timeout cause. Original result, system log and verified cleanup are retained in `.build/Build9UIQA-20261009-r1/`. Remote test products, scripts, results and LaunchAgent were removed after evidence retrieval; residual review is empty. Do not repeat the earlier assumption that the desktop was not logged in.
+
+Real NAS playback, complete graphical UI, listening / VoiceOver, old-data upgrade and actual compatibility recovery remain unaccepted. Physical iPhone acceptance is deferred by the user. Public release, anonymous final download and the website's new-version download remain pending.
+
 ## Build8 package preparation (2026-10-08)
 
 Frozen source `27824e6be780c855a82a5bb2c59ed91e7d0fb0dd` produced v0.1.1/build8. Release build succeeded; original VLCKit umbrella-header warnings were retained. Developer ID signing, App and DMG notarization, stapling and validation completed. DMG SHA256: `c4c3b15fb271e32f2b67734ba63181ee6c4e87d35dcc37933dfc9e59a13ed473`. Read-only inspection confirmed build8 and the App / Applications link / Notices / installation instructions. Host Gatekeeper is disabled and is not enforcement evidence. Tart macos27 explicitly reported assessments enabled and accepted both App and DMG as Notarized Developer ID; it received identical DMG bytes. This checks distribution assessment, not installed playback or upgrade acceptance. Evidence is under `.build/ReleaseBuild8-20261008-r1/`.
