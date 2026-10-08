@@ -42,6 +42,21 @@ def test_cases(tree):
     return rows
 
 
+def complete_result(summary, cases, expected_cases, raw):
+    """Retain every compiled case; only the explicit private NAS opt-in may skip."""
+    private_nas = "UserNASPlaybackTests/testReadonlyUserNASRangesPlaybackAndSeek()"
+    skipped = [name for name, result in cases if result == "Skipped"]
+    allowed_skip = (skipped == [private_nas]
+                    and "Test skipped - Requires the explicit private NAS acceptance launcher." in raw)
+    return (Counter(name for name, _ in cases) == expected_cases
+            and summary.get("passedTests") == sum(result == "Passed" for _, result in cases)
+            and summary.get("skippedTests") == len(skipped)
+            and summary.get("failedTests") == 0 and summary.get("expectedFailures", 0) == 0
+            and (not skipped or allowed_skip)
+            and all(result == "Passed" or (name == private_nas and result == "Skipped")
+                    for name, result in cases))
+
+
 def owns_console_session(console=None):
     uid, user = os.getuid(), getpass.getuser()
     if uid == 0:
@@ -170,10 +185,7 @@ def main():
         summary = json.loads((own / "summary.json").read_text())
         cases = test_cases(json.loads((own / "tests.json").read_text()))
         raw = "\n".join((own / name).read_text(errors="replace") for name in ("test.log", "stderr.log"))
-        if (summary.get("passedTests") != len(compiled) or summary.get("failedTests") != 0
-                or summary.get("skippedTests") != 0 or summary.get("expectedFailures", 0)
-                or Counter(name for name, _ in cases) != expected_cases
-                or any(value != "Passed" for _, value in cases)
+        if (not complete_result(summary, cases, expected_cases, raw)
                 or any(text in raw for text in ("Main Thread Checker:", "UI API called on a background thread",
                                                 "GL_INVALID_FRAMEBUFFER_OPERATION"))):
             code = code or 1

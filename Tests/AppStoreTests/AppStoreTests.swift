@@ -234,6 +234,28 @@ import FilmSources
         XCTAssertEqual(try Data(contentsOf: file), content)
     }
 
+    #if os(macOS)
+    func testReadonlyLocalImportBookmarkSurvivesReopening() async throws {
+        let file = directory.appendingPathComponent("只读 中文 video.mp4")
+        let content = Data("owned readonly import fixture".utf8)
+        try content.write(to: file)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: file.path)
+        let store = makeStore()
+        await store.importFiles([file])
+        XCTAssertNil(store.errorMessage)
+        XCTAssertNotNil(try XCTUnwrap(store.localItems.first).bookmark)
+        await store.importFiles([file])
+        XCTAssertEqual(store.localItems.count, 1)
+        let reopened = makeStore()
+        await reopened.load()
+        let item = try XCTUnwrap(reopened.localItems.first)
+        let prepared = try await reopened.preparePlayback(item)
+        XCTAssertEqual(try Data(contentsOf: prepared.url), content)
+        XCTAssertEqual(prepared.url.standardizedFileURL, file.standardizedFileURL)
+        XCTAssertEqual(try Data(contentsOf: file), content)
+    }
+    #endif
+
     func testManualNextDoesNotMarkAnUnfinishedVideoWatched() async throws {
         let store = makeStore(); await store.load()
         let first = MediaItem(name: "episode1.mp4", path: "/fixture/episode1.mp4")

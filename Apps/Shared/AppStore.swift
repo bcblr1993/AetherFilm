@@ -225,7 +225,7 @@ enum AppSection: Hashable, Identifiable {
                 guard !snapshot.localItems.contains(where: { $0.id == originalID || $0.path == url.path }) else { continue }
                 var item: MediaItem
                 #if os(macOS)
-                let bookmark = try url.bookmarkData(options: [.withSecurityScope], includingResourceValuesForKeys: nil, relativeTo: nil)
+                let bookmark = try url.bookmarkData(options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
                 item = MediaItem(name: url.lastPathComponent, path: url.path, bookmark: bookmark)
                 #else
                 let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("Imports")

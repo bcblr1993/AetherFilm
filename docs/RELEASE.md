@@ -112,6 +112,12 @@ v0.1.1仍为草稿。现有build3签名包不包含字幕截止时间及快照�
 
 # Release gates
 
+## Build8 package preparation (2026-10-08)
+
+Frozen source `27824e6be780c855a82a5bb2c59ed91e7d0fb0dd` produced v0.1.1/build8. Release build succeeded; original VLCKit umbrella-header warnings were retained. Developer ID signing, App and DMG notarization, stapling and validation completed. DMG SHA256: `c4c3b15fb271e32f2b67734ba63181ee6c4e87d35dcc37933dfc9e59a13ed473`. Read-only inspection confirmed build8 and the App / Applications link / Notices / installation instructions. Host Gatekeeper is disabled and is not enforcement evidence. Tart macos27 explicitly reported assessments enabled and accepted both App and DMG as Notarized Developer ID; it received identical DMG bytes. This checks distribution assessment, not installed playback or upgrade acceptance. Evidence is under `.build/ReleaseBuild8-20261008-r1/`.
+
+The corresponding source archive is verified against all226 tracked files in the frozen commit, SHA256 `12fa336d5c5b40ed814d4f3d8789f7f294e32207dd1a3def74b1a3c442d7c399`. CI37794952534 is still running; shared-tests passed, platform-builds and macos26-playback remain in progress. Executed UI regression, installed playback, real NAS, listening, VoiceOver and the other recorded Mac gates remain open. No new public release or tag was published.
+
 ## Historical packaged candidate: v0.1.1 / build7 (2026-10-08)
 
 The build8 source candidate additionally fixes Mac keyboard shortcuts disappearing when playback controls auto-hide and extends the original UI regression. Both ARM64 test builds of the fix pass. The remote UI runner timed out before executing the new regression; the console owner is currently root and a logged-in user desktop has been requested. Full CI, executed UI regression and a new signed package remain pending. Build7 and its CI evidence below certify only their recorded source, not these later changes.

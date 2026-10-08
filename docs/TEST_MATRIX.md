@@ -670,3 +670,23 @@ Root在本任务自有窗口和隔离SMB样片运行全部Mac34，实际34通过
 ## 2026-10-08 隐藏快捷键自动化回归的环境失败
 
 将本次构建产品复制为独立QA身份，App原有entitlements保留，生产debug.dylib SHA256与宿主构建一致。远程Mac原 `testPlaybackControlsHideAndReappear` 选择运行，runner在启用自动化模式时超时，exit65；原xcresult报告1条runner初始化失败、0通过、0跳过，未执行测试方法及新增暂停断言，不能报告产品用例通过或断言失败。Developer mode已启用，当前 `/dev/console` 所有者为root；已请求用户恢复chenxu桌面登录会话。原始结果与摘要已复制到宿主 `.build/ShortcutRegression-20261008-r1/results.tar.gz`，SHA256为9a101ac15cc7b7adfce40fa46af48a9f1f1f5c69b6f082fc2e43b2642185ec70。本轮远程QA产品、传输归档、准备脚本、结果副本及新建容器已删除，路径 / 进程 / Dock核验通过；原有远程文件不变。
+
+## 2026-10-08 build8 分发检查及 VM 清理
+
+冻结27824e6源生成build8候选，Release构建成功，App及DMG公证均Accepted，票据装订和校验通过。只读挂载核对build8版本、App、Applications链接、Notices及安装说明。宿主Gatekeeper为disabled，不据此认证安全检查启用；macos27实际为enabled，对同SHA256候选的App和DMG均接受Notarized Developer ID。尚未安装App或运行播放，此项不替代安装 / 升级 / UI验收。
+
+本轮 `Build8DistributionInspect-20261008-r1` 仅有自有传输DMG及只读挂载目录，未创建App容器或凭据。检查输出保存在宿主后，挂载已卸载，DMG及目录已删除。宿主 `.build/ReleaseBuild8-20261008-r1/vm-distribution-inspect.log` 含通过和清理记录，`vm-residual-review.log` 为0字节：指定文件范围、自有进程、挂载、Dock最近及固定项均无对应残留。
+
+## 2026-10-08 build8 安装导入失败及 VM 清理
+
+正式签名build8在macos27安装并启动后，通过系统文件选择器导入本轮可读样片失败，界面显示文件权限 / 可用空间错误；未进入播放，不计为安装播放通过。错误截图及安装日志保存在宿主 `.build/Build8InstalledVM-20261008-r1/`。
+
+本轮未连接NAS或保存凭据。已停止自有App进程、注销并删除 `/Applications/AetherFilm.app`，删除 `Build8Installed-20261008-r1` 目录、DMG、样片、Mount目录及新建App容器 / Application Scripts，并关闭本轮Finder窗口、移除Dock最近图标。宿主 `cleanup.log` 逐项核验路径不存在；最终文件范围、自有进程、挂载和Dock检查的 `residual-review.log` 为0字节。本轮清理通过，原有文件与VM配置保留。
+
+## 2026-10-08 build9 只读导入候选及 CI 失败核对
+
+原CI37794952534 @27824e6 的Mac原xcresult为62通过 / 0失败 / 1私有NAS条件跳过，共63项；脚本要求零跳过导致任务失败。当前脚本仍核对全部编译身份和每项状态，仅接受指定私有NAS用例及明确未提供私有验收配置的原因，其他跳过、漏项、失败和runtime warnings继续失败。脚本边界测试16项通过。此修正不代表真实NAS验收通过。
+
+同次iOS模拟器原日志中 `testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce` 在等待跳转后实际输出时超时；保留原失败，未放宽用例。本轮按用户要求暂缓iPhone真机，Mac优先。
+
+Mac导入书签改为只读安全范围，原read-only entitlement保留，版本候选提升build9。Mac build-for-testing成功；AppStore原17项实际17通过 / 0失败 / 0跳过，新增只读中文文件导入、去重、持久化重开及preparePlayback读取验证通过。证据为宿主 `.build/Build8InstalledVM-20261008-r1/build9-appstore-summary.json` 及 `Build9AppStore-r2.xcresult`。最初指定不存在的测试target导致exit70、0项执行，原日志保留；更正到实际PlaybackTests target后执行上述17项。容器内测试不替代正式sandbox包经系统选择器选取外部文件、重启及播放验收，根因仍待该验收确认。
