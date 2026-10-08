@@ -706,3 +706,11 @@ Mac导入书签改为只读安全范围，原read-only entitlement保留，版�
 完整Mac UI目标在远程Mac27.0.1的已登录Aqua会话中，通过专用LaunchAgent请求运行；scutil及gui/501均确认会话已登录。独立QA身份保留原App entitlements，生产debug.dylib字节与build9构建一致。runner仍在启用automation mode时超时，测试命令exit65；xcresult中的1项失败是runner初始化错误，实际0个测试方法执行，不计为产品用例失败或通过。TCC原日志明确记录本轮UI runner的Developer Tools preflight被拒绝（authValue0），随后请求automation mode超时；这是权限诊断证据，尚未证明唯一根因，不能继续将root console文件所有者当作未登录桌面的证据。
 
 原结果和系统诊断已复制到宿主 `.build/Build9UIQA-20261009-r1/results.tar.gz`，SHA256 `5049f2b5975ac370ef719cf7f5df097704a3ba0cd65de0c7697166394faf7e8b`。随后bootout专用LaunchAgent，删除本轮QA产品、归档、脚本、日志和结果副本；容器基线保留。`cleanup.log`记录OWNED_PATHS_CLEAN，路径 / 进程 / Dock的`residual-review.log`为0字节。未连接NAS或保存凭据，原有远程文件不变。已请求用户核对远程系统Developer Tools授权；完整UI发布门槛仍未通过。
+
+## 2026-10-09 公开 v0.1.0 到正式 build9 的实际记录升级
+
+macos27本轮原App / QA目录 / 容器 / Application Scripts均不存在。公开v0.1.0 DMG SHA256 `20b579a6c089828808149f2eb776aa7536d4eb8d7b62859326721e300a02f51f` 与当前GitHub asset digest一致，实际安装版本0.1.0 / build1，严格签名及Gatekeeper接受。通过NSOpenPanel选择外部controls-180s样片后，旧版实际导入失败，截图保留；这不能认证旧外部文件访问权限的升级。
+
+随后在本轮新App容器Documents内创建同SHA256的自有样片，通过本轮QA目录的symlink和NSOpenPanel选择，旧版真实导入1项、播放推进并正常Quit，产生schema1、书签及66.348秒 / 180秒观看记录；没有手工写入库或播放进度。保留整个容器，只替换正式应用为相同已验收SHA的build9。安装期间原library.json SHA保持 `a83bfc9c322d9a1260256531f024a8eab570f439ff735f1f09da366eaa704247`，新App严格签名及Gatekeeper接受。新版本首次启动显示原1项及已看1:06，直接点击后无需重新选文件，实际画面为77.708秒 / frame1865，继续播放后保存90.466秒进度。旧item ID和原bookmark逐项一致。该证据通过真实旧版容器内样片记录迁移及续播；外部bookmark与NAS / Keychain迁移仍未验证，不扩展为全部升级验收。
+
+所有截图、两版库副本、安装日志及review.json保存在宿主 `.build/Build9UpgradeVM-20261009-r1/`。随后停止自有App、注销 / 删除当前App及本轮旧App备份，删除两份DMG、外部样片 / symlink、容器内样片、新容器 / Application Scripts和QA目录，关闭本轮Finder窗口并移除Dock项。最终全范围AetherFilm文件 / 进程 / 挂载 / Dock检查 `residual-review.log` 为0字节；原文件和VM配置保留。本轮未连接NAS或保存凭据。
