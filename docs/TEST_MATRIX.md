@@ -1,3 +1,13 @@
+## 2026-10-09：Mac 回归通过与代码同步收尾
+
+最新原始 CI [37820191528](https://github.com/bcblr1993/AetherFilm/actions/runs/37820191528) @`86f46ee` 整体失败：Mac 62 通过 / 1 失败 / 1 私人 NAS 条件跳过，共享与平台构建任务通过。失败为短 GOP 2 倍速片尾跳转的目标实际输出。原始附件中有效正常时钟和新音视频输出实际存在约 101.5ms，两个测试观察点间隔约 106.0ms，未观察到该阶段。当前候选只将这一步观察间隔从 100ms 改为 10ms，保留原六秒期限、目标窗口、配对回调、输出计数和全部断言；生产代码未改，不能认证全部间歇失败根因已修复。
+
+当前两端 build-for-testing 通过；Python 执行器测试 16 项通过，共享 Swift 与真实 SMB2 fixture 测试通过，SMB3 条件用例未运行。远程 Mac27.0.1 四个短 / 长 GOP、1.5 / 2 倍速原专项各五轮，共 20 次执行全部通过，runtime warnings 空。完整 Mac27.0.1 播放 / 持久化 / 真实 SMB2 回归实际 exit0：63 通过 / 0 失败 / 1 私人 NAS 条件跳过，64 个已编译用例身份由原执行器逐项核对，runtime warnings 空、原生崩溃 0 / unreadable 0、Main Thread Checker 保留。完整回归首轮因独立目录缺少 Git 来源信息在启动前失败、实际零用例；原失败保留，第二轮补齐真实 HEAD 来源和测试候选文件后通过。
+
+iOS27 模拟器专项实际 19 通过 / 1 失败（20 次执行、4 个方法），runtime warnings 空；失败为短 GOP 1.5 倍速。完整无丢失生命周期记录中，seek 后有八个原生输入回调和音视频输出，却没有任何正常时钟回调，随后 EOS；该失败不能由缩短观察间隔修复，原生原因尚未证明。初轮无签名模拟器产品未通过资源签名校验、实际零用例，后续单独签名产品校验通过并执行上述回归，两份原失败保留。按用户要求 Mac 优先、物理 iPhone 延后，本轮不认证 iOS 验收通过。
+
+专项及完整 Mac 的原结果已复制到主机，远程自身 App、容器、脚本、产品、LaunchAgent、结果和归档删除；路径 / 进程 / 挂载 / Dock 残留复核为空。两轮自建模拟器及全部设备数据均已删除。证据保存在主机 `.build/CurrentHeadCI-37820191528/`，包括原 CI、`Remote/summary.json`、`Remote/cleanup.log`、`Remote/residual-review.log`、`Remote/full-r2-summary.json`、`Remote/full-r2-cleanup.log`、`Remote/full-r2-residual-review.log`、`Remote/full-r2-evidence/`、`ios-tail-repeat-r2-{summary,failure-review}.json` 及原 xcresult / 附件。正式 build9 来源仍为 `7236f2d`，本次测试候选不改写其 provenance。完整 UI、真实 NAS、听音 / VoiceOver 与实际兼容恢复仍未闭合，v0.1.1 保持草稿。
+
 > 2026-10-08 状态复查候选 `4d08bc3` 的远程 Mac 回归已终态 exit65，**0 个实际测试用例执行**。xcresult 报告测试宿主在建立连接前挂起；一秒 775 次进程采样均停于 dyld → `_libsecinit_appsandbox` → XPC IPC。不能将结果中的一项宿主错误计作某个播放测试失败，也不能宣称 62 项已通过；系统容器提示是否为直接原因尚未独立确认，没有确认任何权限提示。原结果 / 日志 / 采样 / 崩溃记录已取回至 `FormalNative9-r1/MacSeekOutputFull-r1-evidence/`，已结束的专用 LaunchAgent 已 bootout。当前修复将交由正式 CI 的干净环境验证。
 >
 > 正式 build6 iOS 失败的时序追加：满足原数值条件的正常点 11.818663 秒在原回调中真实存在，至下一点覆盖的实际窗口约 71.905ms；原 100ms 观察采样在此窗口内为 0 次。记录保留于 `ci-ios-clock-observation-gap-review-r1.json`。未采样瞬间的底层状态没有额外独立观察，故这是观测失败机制证据，不能宣称生产根因修复；原测试和期限保持不变。最新真机只读查询仍为 Developer Mode disabled。

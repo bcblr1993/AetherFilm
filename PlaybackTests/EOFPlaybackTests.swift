@@ -2004,7 +2004,10 @@ final class EOFPlaybackTests: XCTestCase {
         XCTAssertNil(player.backendClockTime, "The seek must clear the previous native normal point synchronously.")
         XCTAssertFalse(player.backendClockIsRunning)
         XCTAssertNil(player.backendInputTime)
-        try await wait("active forward tail fresh target actual native output", timeout: 6, failIf: {
+        // A double-speed tail can expose a valid normal/output phase for only ~100ms.
+        // Observe it more often without changing its predicate or the six-second deadline.
+        try await wait("active forward tail fresh target actual native output", timeout: 6,
+                       pollInterval: .milliseconds(10), failIf: {
             observe("awaiting-fresh-target-output")
         }) {
             guard let normal = self.player.backendClockTime,
@@ -2198,12 +2201,13 @@ final class EOFPlaybackTests: XCTestCase {
         }
     }
 
-    private func wait(_ label: String, timeout: Double = 12, failIf: (() throws -> Void)? = nil, condition: () -> Bool) async throws {
+    private func wait(_ label: String, timeout: Double = 12, pollInterval: Duration = .milliseconds(100),
+                      failIf: (() throws -> Void)? = nil, condition: () -> Bool) async throws {
         snapshot(label + " begin")
         let deadline = ContinuousClock.now.advanced(by: .seconds(timeout))
         while !condition() && .now < deadline {
             try failIf?()
-            try await Task.sleep(for: .milliseconds(100))
+            try await Task.sleep(for: pollInterval)
         }
         try failIf?()
         snapshot(label + (condition() ? " ready" : " timeout"))
