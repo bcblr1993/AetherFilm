@@ -72,7 +72,9 @@ def main():
         parser.error("Cannot select an existing iPhone Simulator: " + str(error))
     result.parent.mkdir(parents=True, exist_ok=True)
     print("Playback Simulator: " + device["name"] + " (" + runtime + ")", flush=True)
-    launcher_options = ["--numeric-transport-diagnostics"] if args.numeric_transport_diagnostics else []
+    launcher_options = (["--numeric-transport-diagnostics", "--numeric-transport-output",
+                         str(result.parent / "Logs" / (result.stem + "-smb-timing.json"))]
+                        if args.numeric_transport_diagnostics else [])
     command = [
         sys.executable, str(launcher), *launcher_options, "--bootstrap-only", "--media-folder", str(media), "--",
         sys.executable, str(runner), "--all-playback", "--xctestrun", str(runs[0]),

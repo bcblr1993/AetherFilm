@@ -16,6 +16,20 @@ spec.loader.exec_module(runner)
 
 
 class MacPlaybackRunnerTests(unittest.TestCase):
+    def test_only_documented_private_nas_opt_in_skip_is_accepted(self):
+        private = "UserNASPlaybackTests/testReadonlyUserNASRangesPlaybackAndSeek()"
+        normal = "PlaybackTests/testPlayback()"
+        cases = [(normal, "Passed"), (private, "Skipped")]
+        expected = runner.Counter([normal, private])
+        summary = {"passedTests": 1, "failedTests": 0, "skippedTests": 1}
+        reason = "Test skipped - Requires the explicit private NAS acceptance launcher."
+        self.assertTrue(runner.complete_result(summary, cases, expected, reason))
+        self.assertFalse(runner.complete_result(summary, cases, expected, "different skip reason"))
+        self.assertFalse(runner.complete_result(summary, [(normal, "Skipped"), (private, "Passed")], expected, reason))
+        self.assertFalse(runner.complete_result(summary, [(normal, "Passed")], expected, reason))
+        self.assertFalse(runner.complete_result(summary, [(normal, "Passed"), (private, "Failed")], expected, reason))
+        self.assertFalse(runner.complete_result(dict(summary, passedTests=2), cases, expected, reason))
+
     def test_root_owned_console_accepts_matching_completed_foreground_session(self):
         state = "Name : qa\nUID : 501\nkCGSSessionOnConsoleKey : TRUE\nkCGSessionLoginDoneKey : TRUE\n"
         with patch.object(runner.os, "getuid", return_value=501), \

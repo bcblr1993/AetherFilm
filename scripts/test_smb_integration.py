@@ -25,6 +25,7 @@ playback require their own acceptance tests.
 from __future__ import annotations
 
 import argparse
+from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import ipaddress
@@ -66,6 +67,7 @@ class NumericSMBTiming:
         self.lock = threading.Lock()
         self.connections = {}
         self.events = []
+        self.recent_events = deque(maxlen=448)
         self.total = 0
         self.omitted = 0
 
@@ -76,15 +78,18 @@ class NumericSMBTiming:
                 ordinal = len(self.connections) + 1
                 self.connections[connection] = ordinal
             self.total += 1
-            if len(self.events) == 512:
-                self.omitted += 1
-                return
-            self.events.append({"sequence": self.total, "connection": ordinal or 0,
+            event = {"sequence": self.total, "connection": ordinal or 0,
                                 "command": command, "messageID": message_id, "phase": phase,
                                 "elapsedSeconds": time.monotonic() - self.origin,
-                                "status": status, "durationSeconds": duration})
+                                "status": status, "durationSeconds": duration}
+            if len(self.events) < 64:
+                self.events.append(event)
+            else:
+                if len(self.recent_events) == self.recent_events.maxlen:
+                    self.omitted += 1
+                self.recent_events.append(event)
 
-    def call(self, original, command, connection, server, packet):
+    def call(self, original, command, connection, server, packet, *handler_arguments):
         try:
             value = packet["MessageID"]
             message_id = int(value) if isinstance(value, int) else None
@@ -93,7 +98,7 @@ class NumericSMBTiming:
         began = time.monotonic()
         self.record(connection, command, message_id, 0)
         try:
-            result = original(connection, server, packet)
+            result = original(connection, server, packet, *handler_arguments)
         except BaseException:
             self.record(connection, command, message_id, 2, duration=time.monotonic() - began)
             raise
@@ -104,8 +109,8 @@ class NumericSMBTiming:
     def install_one(self, server, command):
         original = None
 
-        def measured(connection, current_server, packet):
-            return self.call(original, command, connection, current_server, packet)
+        def measured(connection, current_server, packet, *handler_arguments):
+            return self.call(original, command, connection, current_server, packet, *handler_arguments)
 
         original = server.hookSmb2Command(command, measured)
         if original is None:
@@ -113,9 +118,18 @@ class NumericSMBTiming:
 
     def snapshot(self):
         with self.lock:
-            return {"schemaVersion": 1, "commands": list(self.commands), "capacity": 512,
+            return {"schemaVersion": 2, "commands": list(self.commands), "capacity": 512,
+                    "retention": "first64-and-last448",
                     "connectionCapacity": 256, "totalEvents": self.total,
-                    "omittedEvents": self.omitted, "events": list(self.events)}
+                    "omittedEvents": self.omitted, "events": self.events + list(self.recent_events)}
+
+    def save(self, destination):
+        # The owned result directory is selected by the caller. Never replace
+        # an existing file, and retain diagnostics before server cleanup joins.
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with destination.open("x") as output:
+            json.dump(self.snapshot(), output, separators=(",", ":"))
+            output.write("\n")
 
 
 def main() -> int:
@@ -124,8 +138,14 @@ def main() -> int:
     parser.add_argument("--bootstrap-only", action="store_true", help="Keep the password out of the command environment; fetch credentials from the loopback bootstrap URL in memory")
     parser.add_argument("--media-folder", type=Path, help="Copy test video/subtitle fixtures into FILMS/media without modifying their originals")
     parser.add_argument("--numeric-transport-diagnostics", action="store_true", help="Print bounded numeric SMB2 command-handler timings; no credentials, paths or payloads")
+    parser.add_argument("--numeric-transport-output", type=Path, help="Also retain numeric diagnostics in a fresh owned JSON file")
     parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to run, after --")
     arguments = parser.parse_args()
+    if arguments.numeric_transport_output is not None:
+        if not arguments.numeric_transport_diagnostics:
+            parser.error("--numeric-transport-output requires --numeric-transport-diagnostics")
+        if arguments.numeric_transport_output.exists():
+            parser.error("Use a fresh numeric diagnostic output path")
     try:
         listen_address = str(ipaddress.IPv4Address(arguments.listen_address))
         address = ipaddress.IPv4Address(listen_address)
@@ -290,6 +310,11 @@ def main() -> int:
             print("Unable to start the requested test command.", file=sys.stderr)
             return 2
         finally:
+            if timing is not None and arguments.numeric_transport_output is not None:
+                try:
+                    timing.save(arguments.numeric_transport_output)
+                except OSError:
+                    print("Unable to retain numeric SMB diagnostics; original test status and cleanup are preserved.", file=sys.stderr)
             bootstrap.shutdown()
             bootstrap.server_close()
             bootstrap_thread.join(timeout=1)

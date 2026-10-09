@@ -220,6 +220,19 @@ final class AetherFilmUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [hidden], timeout: 8), .completed,
                        "Playing video should hide idle controls automatically.")
         capture("Playback with controls hidden")
+        #if os(macOS)
+        app.typeKey(XCUIKeyboardKey.space, modifierFlags: [])
+        XCTAssertTrue(waitForValueContaining("已暂停", in: controls, timeout: 5),
+                      "Space must pause playback while its overlay is hidden.")
+        let pausedTime = playbackTimeText(element("player.time"))
+        let advancedWhilePaused = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            self.playbackTimeText(self.element("player.time")) != pausedTime
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [advancedWhilePaused], timeout: 3), .timedOut,
+                       "The actual displayed time must remain stable after keyboard pause.")
+        app.typeKey(XCUIKeyboardKey.space, modifierFlags: [])
+        XCTAssertTrue(waitForValueContaining("正在播放", in: controls, timeout: 5))
+        #endif
         showPlayerControls()
         XCTAssertTrue(controls.isHittable)
         activate(controls)
@@ -391,6 +404,65 @@ final class AetherFilmUITests: XCTestCase {
         showPlayerControls()
         activate(element("player.close"))
         XCTAssertTrue(video.waitForExistence(timeout: 5))
+    }
+
+    func testNASFavoriteAndLastDirectoryRemainAvailableAfterSourceSwitch() {
+        launch("--ui-source-fixtures")
+        let prefix = "media.row.33CCCCCC-4444-5555-8888-AAAABBBBCCCC:"
+        XCTAssertTrue(element(prefix + "Movies").waitForExistence(timeout: 15))
+        activate(element(prefix + "Movies"))
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        activate(menuAction("设为常用目录"))
+        selectLocalFiles()
+        XCTAssertTrue(element("library.empty").waitForExistence(timeout: 5))
+        selectSection(sidebar: "sidebar.smb.33CCCCCC-4444-5555-8888-AAAABBBBCCCC",
+                      menu: "source.smb.33CCCCCC-4444-5555-8888-AAAABBBBCCCC")
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        XCTAssertTrue(menuAction("移除常用目录").waitForExistence(timeout: 5))
+        activate(menuAction("共享根目录"))
+        XCTAssertTrue(element(prefix + "Movies").waitForExistence(timeout: 10))
+        activate(element("browser.sourceOptions"))
+        activate(menuAction("Movies"))
+        XCTAssertTrue(element(prefix + "Movies/Empty").waitForExistence(timeout: 10))
+        capture("NAS favorite directory restored")
+    }
+
+    func testAutoplayPreferencePersistsAndShowsNextVideo() {
+        launch("--ui-fixtures")
+        XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))
+        activate(firstMediaRow)
+        showPlayerControls()
+        activate(element("player.options"))
+        let autoplay = element("player.autoNext")
+        XCTAssertTrue(autoplay.waitForExistence(timeout: 5))
+        XCTAssertTrue(element("player.nextTitle").exists)
+        #if os(iOS)
+        let toggle = autoplay.switches.firstMatch.exists ? autoplay.switches.firstMatch : autoplay
+        #else
+        let toggle = autoplay
+        #endif
+        XCTAssertEqual(nativeValueString(toggle.value), "1")
+        activate(toggle)
+        XCTAssertTrue(waitForValueContaining("0", in: toggle, timeout: 5))
+        activate(element("player.options.done"))
+        showPlayerControls()
+        activate(element("player.close"))
+        app.terminate(); app.launch()
+        XCTAssertTrue(firstMediaRow.waitForExistence(timeout: 15))
+        activate(firstMediaRow)
+        showPlayerControls()
+        activate(element("player.options"))
+        let reopened = element("player.autoNext")
+        XCTAssertTrue(reopened.waitForExistence(timeout: 5))
+        #if os(iOS)
+        let reopenedToggle = reopened.switches.firstMatch.exists ? reopened.switches.firstMatch : reopened
+        #else
+        let reopenedToggle = reopened
+        #endif
+        XCTAssertTrue(waitForValueContaining("0", in: reopenedToggle, timeout: 5))
+        capture("Autoplay preference restored")
     }
 
     func testCurrentListFilterShowsNoResults() {

@@ -1,10 +1,9 @@
 {
-  "scope": "SMALL_NATIVE8_CORRESPONDING_SOURCE_CANDIDATE",
+  "scope": "NATIVE9_CORRESPONDING_SOURCE_PENDING_COMPONENT_PUBLICATION_AND_APP_ACCEPTANCE",
   "exclusions": [
-    "Package.swift and Provenance/artifact.json are separately frozen by release integration",
-    "SOURCE_MANIFEST.json excludes its own recursive hash",
-    "Original source/contrib archives, Lua archive, SDKs, build products and user caches are not copied into this package",
-    "Generated .build, .swiftpm and __pycache__ directories are excluded; their existing caches are untouched"
+    "Package.swift and Provenance/artifact.json are separately pinned by release integration",
+    "SOURCE_MANIFEST.json excludes its recursive hash",
+    "Generated builds and caches are excluded"
   ],
   "files": [
     {
@@ -46,6 +45,11 @@
       "path": "Patches/decoder-flush-preview.patch",
       "bytes": 3150,
       "sha256": "d81e1cc7cd9530c65ebb23bf41f948318303d6da6c1103eb43df37c872912754"
+    },
+    {
+      "path": "Patches/deferred-pause-cancel.patch",
+      "bytes": 892,
+      "sha256": "a56b2fceb3ecadaa8c7c83dca621402ea0dae995726db2bcb69188e5e77c1e1c"
     },
     {
       "path": "Patches/gsm-deployment.patch",
@@ -103,9 +107,14 @@
       "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
     },
     {
+      "path": "Provenance/build-tools.json",
+      "bytes": 644,
+      "sha256": "f6180b7616e45a48f1d87d57c5a3164134b9c6675ef154edf0d6654c1e7a54d1"
+    },
+    {
       "path": "Provenance/local-inputs.json",
-      "bytes": 10446,
-      "sha256": "f22df59ce22400ed61b2960bbddb44567ed5eba90ae624b172d765473ee6b76c"
+      "bytes": 12215,
+      "sha256": "45b414c3604d0c7e1692af00ce16947f02229b1758c30cc9917b7403da4c565d"
     },
     {
       "path": "Provenance/material-verification.json",
@@ -148,6 +157,11 @@
       "sha256": "5d784420398c5435cc2405baeafdd7806cc271d0c42d08ecd9a95ec1e06774f5"
     },
     {
+      "path": "Provenance/native8-artifact.json",
+      "bytes": 3860,
+      "sha256": "326e00123e57fa07611b606cfe5676c7896bedeab645845744c144898c473912"
+    },
+    {
       "path": "Provenance/native8-build-record.json",
       "bytes": 88418,
       "sha256": "98b848717203d4eff44dd7ec9549a7453d587a65358ef5a10766a6bae7eda527"
@@ -158,14 +172,24 @@
       "sha256": "b41156395094f4fa990d40448504204c271cc5ce1f08815ce0858e9e2ebfa3b7"
     },
     {
+      "path": "Provenance/native9-build-record.json",
+      "bytes": 37291,
+      "sha256": "af74fa6721ee7a449d617f2771b8ffe0920fda3bc6b47c8f3de976fd73bfaf03"
+    },
+    {
       "path": "Provenance/source-materials.json",
-      "bytes": 17070,
-      "sha256": "b05b3eb2c07c71b083ea52e786db7a60f659f07114fda102ee92ec588724b049"
+      "bytes": 17222,
+      "sha256": "ebd7e72258bd64139fc10cfe8e74b7772f6e95685df1a95715ed0c00e8751a46"
     },
     {
       "path": "README.md",
-      "bytes": 13510,
-      "sha256": "ad277f737672af682a6fc0ef16b1d7aee2a13cef289f64a9c1bbfd0a14bc3ab3"
+      "bytes": 15322,
+      "sha256": "ad1abf6e305d49b75efbe9ae3f8f9c7aae35a2c44eb6e82f16cb797a6664d466"
+    },
+    {
+      "path": "SOURCE_MODIFICATIONS.md",
+      "bytes": 505,
+      "sha256": "3f10f7e8c4ffd669ba2cc72c663ff39d084b280e05f00c6a1f7376bd3e163ace"
     },
     {
       "path": "Tools/assemble_source_extension.py",
@@ -174,18 +198,13 @@
     },
     {
       "path": "Tools/rebuild_core.py",
-      "bytes": 8026,
-      "sha256": "e7bf2238c8d7b687ab4c59f6434be1e8b283621c649e90e376c226b93b88aaad"
+      "bytes": 8733,
+      "sha256": "63e815db255cceb9d38b674e39939c688db465a6a5356f12794453b90393333f"
     },
     {
       "path": "Tools/verify_source_materials.py",
       "bytes": 1679,
       "sha256": "1f879fe4e2822c854600be7af98d99fe89cffd88b2a5b1160f25bb982ed487a7"
     }
-  ],
-  "fileCount": 35,
-  "totalBytes": 502926,
-  "fullPortableRebuildExecuted": false,
-  "finalExtensionAssetAssembled": false,
-  "nativeGeneration": 8
+  ]
 }

@@ -10,9 +10,35 @@ BUILD="$(awk '/^CURRENT_PROJECT_VERSION[[:space:]]*=/{print $3}' Version.xcconfi
 OUT="$ROOT/artifacts"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/aetherfilm-package.XXXXXX")"
 DMG_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/aetherfilm-dmg.XXXXXX")"
-trap 'rm -rf "$STAGE" "$DMG_STAGE"' EXIT
+cleanup_package() {
+  local package_exit=$?
+  if [[ "$package_exit" -ne 0 && -n "${REPORTS:-}" ]]; then
+    # Keep the exact signed bytes after a service failure so notarization can resume.
+    mkdir -p "$REPORTS/failed-candidate"
+    ditto "$STAGE" "$REPORTS/failed-candidate/app-stage" || true
+    ditto "$DMG_STAGE" "$REPORTS/failed-candidate/dmg-stage" || true
+    printf 'Preserved failed candidate: %s\n' "$REPORTS/failed-candidate" >&2
+  fi
+  rm -rf "$STAGE" "$DMG_STAGE"
+  return "$package_exit"
+}
+trap cleanup_package EXIT
 mkdir -p "$OUT"
 REPORTS="$(mktemp -d "$OUT/notarization-$VERSION.XXXXXX")"
+notarize_candidate() {
+  local candidate_path="$1" report_name="$2" submission_id
+  # Store the receipt before waiting; an observation timeout does not cancel submission.
+  xcrun notarytool submit "$candidate_path" --keychain-profile "$NOTARY_PROFILE" \
+    --output-format json > "$REPORTS/$report_name-submission.json"
+  submission_id="$(python3 - "$REPORTS/$report_name-submission.json" <<'PYID'
+import json,sys,uuid
+value=json.load(open(sys.argv[1]))['id']
+print(str(uuid.UUID(value)))
+PYID
+)"
+  xcrun notarytool wait "$submission_id" --keychain-profile "$NOTARY_PROFILE" \
+    --timeout 10m --output-format json > "$REPORTS/$report_name-notarization.json"
+}
 APP="$STAGE/AetherFilm.app"
 ditto "$INPUT" "$APP"
 INFO="$APP/Contents/Info.plist"
@@ -46,7 +72,7 @@ while IFS= read -r -d '' binary; do
 done < <(find "$APP/Contents/Frameworks" -type f -print0)
 ZIP="$STAGE/$BASENAME.zip"
 ditto -c -k --keepParent "$APP" "$ZIP"
-xcrun notarytool submit "$ZIP" --keychain-profile "$NOTARY_PROFILE" --wait --timeout 10m --output-format json > "$REPORTS/app-notarization.json"
+notarize_candidate "$ZIP" app
 python3 - "$REPORTS/app-notarization.json" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1])); print('App notarization:',r.get('status'))
@@ -71,7 +97,7 @@ FINAL_DMG="$OUT/$BASENAME.dmg"
 DMG="$DMG_STAGE/$BASENAME.dmg"
 hdiutil create -volname AetherFilm -srcfolder "$STAGE" -format UDZO "$DMG"
 codesign --timestamp --sign "$SIGNING_IDENTITY" "$DMG"
-xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait --timeout 10m --output-format json > "$REPORTS/dmg-notarization.json"
+notarize_candidate "$DMG" dmg
 python3 - "$REPORTS/dmg-notarization.json" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1])); print('DMG notarization:',r.get('status'))

@@ -48,6 +48,7 @@ def main():
     parser.add_argument("--rust-bin", type=Path, required=True, help="Existing Rust1.96.0 bin directory")
     parser.add_argument("--gmake", type=Path, required=True, help="Existing GNU make executable")
     parser.add_argument("--host-tools-bin", type=Path, required=True, help="Existing pinned VLC extras/tools build/bin")
+    parser.add_argument("--cargo-capi-bin", type=Path, required=True, help="Existing pinned cargo-c 0.10.9 tool directory; copied to owned cache")
     parser.add_argument("--execute", action="store_true", help="Run the build; default only prints the checked plan")
     args = parser.parse_args()
     source, output = args.source.resolve(), args.output.resolve()
@@ -55,11 +56,16 @@ def main():
     require(output.parent.is_dir(), "Create the owned output parent directory first")
     require(output != source and source not in output.parents, "Build output must be outside source")
     inputs = json.loads((PACKAGE / "Provenance/local-inputs.json").read_text())
-    for relative, expected in inputs["native8TouchedSourceSHA256"].items():
+    for relative, expected in inputs["native9TouchedSourceSHA256"].items():
         require(digest(source / relative) == expected, f"Patched source differs: {relative}")
     config = PACKAGE / "Configuration/build26.conf"
     expected_config = next(row for row in inputs["files"] if row["path"] == "Configuration/build26.conf")
     require(digest(config) == expected_config["sha256"], "Build configuration differs")
+    cargo_tools = args.cargo_capi_bin.resolve()
+    tool_pins = json.loads((PACKAGE / "Provenance/build-tools.json").read_text())
+    require(read_command([str(cargo_tools / "cargo-capi"), "--version"]) == tool_pins["version"], "Pinned cargo-c version required")
+    for row in tool_pins["tools"]:
+        require(digest(cargo_tools / row["name"]) == row["sha256"], "Pinned cargo-c tool differs: " + row["name"])
     sdk, rust_target = PLATFORMS[args.platform]
     require(read_command(["xcrun", "--sdk", sdk, "--show-sdk-version"]) == "27.0", "SDK27.0 required")
     require("GNU Make" in read_command([str(args.gmake.resolve()), "--version"]), "GNU make required")
@@ -74,9 +80,9 @@ def main():
     require((host_tools / "meson").is_file(), "Pinned existing Meson host tool required")
     command = ["/bin/bash", str(script), "--arch=arm64", "--sdk=" + sdk,
                "--config=" + str(config), "--disable-debug", "-j4"]
-    plan = {"scope": "PARAMETERIZED_REBUILD_NOT_PREVIOUSLY_EXECUTED", "command": command,
+    plan = {"scope": "PARAMETERIZED_BUILD_PLAN_NOT_EXECUTION", "command": command,
             "cwd": str(output), "platform": args.platform, "sdk": sdk, "minimum": "26.0",
-            "rustTarget": rust_target, "sourceMatchesThirteenNative8TouchedFiles": True,
+            "rustTarget": rust_target, "sourceMatchesFourteenNative9TouchedFiles": True,
             "fullTreeIdentityRequiresVerifiedSourceArchive": True, "releaseAccepted": False}
     if not args.execute:
         print(json.dumps(plan, indent=2))
@@ -86,6 +92,9 @@ def main():
     caches = output / "Caches"
     for name in ["bin", "cargo", "ccache", "pip", "xdg", "clang-modules", "tmp"]:
         (caches / name).mkdir(parents=True)
+    (caches / "cargo/bin").mkdir()
+    for row in tool_pins["tools"]:
+        shutil.copy2(cargo_tools / row["name"], caches / "cargo/bin" / row["name"])
     tmp = str(caches / "tmp") + "/"
     # contrib can invoke meson through env -i; preserve this owned temporary path.
     meson = caches / "bin/meson"

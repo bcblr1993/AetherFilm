@@ -74,10 +74,7 @@ struct PlayerScreen: View {
                     .accessibilityAction(named: "显示播放控制") { revealControls() }
                     .simultaneousGesture(scrubbingGesture(width: geometry.size.width))
                 VStack {
-                    if showsControls {
-                        header
-                            .transition(.opacity)
-                    }
+                    playbackControls { header }
                     Spacer()
                     if let error = openingError ?? store.playbackErrorMessage ?? player.errorMessage {
                         VStack(spacing: 14) {
@@ -102,10 +99,7 @@ struct PlayerScreen: View {
                             .accessibilityIdentifier("player.loading")
                         Spacer()
                     }
-                    if showsControls {
-                        controls
-                            .transition(.opacity)
-                    }
+                    playbackControls { controls }
                 }
                 .padding(16)
             }
@@ -163,6 +157,20 @@ struct PlayerScreen: View {
     }
 
     private var showsControls: Bool { controlsVisible || player.seekStatus != nil }
+
+    @ViewBuilder
+    private func playbackControls<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        #if os(macOS)
+        // Keep native keyboard shortcuts registered while the overlay fades.
+        // Hidden controls must not receive pointer or VoiceOver interaction.
+        content()
+            .opacity(showsControls ? 1 : 0)
+            .allowsHitTesting(showsControls)
+            .accessibilityHidden(!showsControls)
+        #else
+        if showsControls { content().transition(.opacity) }
+        #endif
+    }
 
     private var header: some View {
         HStack(spacing: 12) {
@@ -259,6 +267,21 @@ struct PlayerScreen: View {
     private var playbackOptions: some View {
         NavigationStack {
             Form {
+                Section("连续播放") {
+                    Toggle("自动播放下一条", isOn: Binding(
+                        get: { store.snapshot.automaticallyPlayNext },
+                        set: { enabled in Task { await store.setAutomaticallyPlayNext(enabled) } }))
+                        .accessibilityIdentifier("player.autoNext")
+                    if let next = store.nextItem(after: item) {
+                        LabeledContent("下一条", value: next.title)
+                            .accessibilityIdentifier("player.nextTitle")
+                    } else {
+                        Text("已经是列表最后一条").foregroundStyle(.secondary)
+                    }
+                    Text("按当前列表的文件名顺序播放。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Section("音轨") {
                     ForEach(player.audioTracks) { track in
                         Button { player.selectAudio(track.id) } label: {

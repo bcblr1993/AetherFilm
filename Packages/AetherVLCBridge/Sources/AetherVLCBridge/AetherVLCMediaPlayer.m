@@ -1,4 +1,4 @@
-/* Modified by AetherNative on 2026-10-03.
+/* Modified by AetherNative on 2026-10-07.
  * Changes: player/notification namespace, typed callbacks with fixed stopping snapshots,
  * checked interpolation, seek-state callback snapshots, and target-relative SwiftPM header imports.
  * Original LGPL notices are retained.
@@ -33,6 +33,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
+#import <objc/runtime.h>
 #import <VLCKit/VLCLibrary.h>
 #import "VLCLibVLCBridging.h"
 #import "AetherVLCMediaPlayer.h"
@@ -106,6 +107,86 @@ NSString * AetherVLCMediaPlayerStateToString(VLCMediaPlayerState state)
 static IOPMAssertionID displaySleepAssertion = 0;
 #endif
 
+// Native callbacks read this primitive snapshot without promoting the weak player.
+// Releasing a snapshot on a core thread cannot destroy or join the native player.
+@interface AetherVLCEventSnapshot : NSObject
+{
+    NSLock *_aetherSnapshotLock;
+    int64_t _aetherInputTime;
+    BOOL _aetherHadError;
+    uint64_t _aetherSeekCallbackSequence;
+    int64_t _aetherSeekTargetTime;
+}
+- (void)aetherRecordInputTime:(int64_t)time;
+- (void)aetherRecordError;
+- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
+- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime;
+- (uint64_t)seekCallbackSequence;
+@end
+
+@implementation AetherVLCEventSnapshot
+- (instancetype)init
+{
+    if (self = [super init]) {
+        _aetherSnapshotLock = [[NSLock alloc] init];
+        _aetherSeekTargetTime = -1;
+        _aetherInputTime = -1;
+    }
+    return self;
+}
+
+- (void)aetherRecordInputTime:(int64_t)time
+{
+    [_aetherSnapshotLock lock];
+    _aetherInputTime = time;
+    [_aetherSnapshotLock unlock];
+}
+
+- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime
+{
+    [_aetherSnapshotLock lock];
+    if (seeking) {
+        _aetherSeekCallbackSequence += 1;
+        _aetherSeekTargetTime = *targetTime;
+    }
+    *targetTime = _aetherSeekTargetTime;
+    uint64_t sequence = _aetherSeekCallbackSequence;
+    [_aetherSnapshotLock unlock];
+    return sequence;
+}
+
+- (uint64_t)seekCallbackSequence
+{
+    [_aetherSnapshotLock lock];
+    uint64_t sequence = _aetherSeekCallbackSequence;
+    [_aetherSnapshotLock unlock];
+    return sequence;
+}
+
+- (void)aetherRecordError
+{
+    [_aetherSnapshotLock lock];
+    _aetherHadError = YES;
+    [_aetherSnapshotLock unlock];
+}
+
+- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError
+{
+    [_aetherSnapshotLock lock];
+    *time = _aetherInputTime;
+    *hadError = _aetherHadError;
+    [_aetherSnapshotLock unlock];
+}
+
+@end
+
+static char AetherVLCEventSnapshotKey;
+
+static AetherVLCEventSnapshot *AetherSnapshotForHandler(VLCEventsHandler *handler)
+{
+    return objc_getAssociatedObject(handler, &AetherVLCEventSnapshotKey);
+}
+
 // TODO: Documentation
 @interface AetherVLCMediaPlayer (Private)
 
@@ -123,20 +204,12 @@ static IOPMAssertionID displaySleepAssertion = 0;
 - (void)mediaPlayerTitleListChanged:(NSString *)newTitleList;
 - (void)mediaPlayerCapabilitiesChanged;
 
-- (void)aetherRecordInputTime:(int64_t)time;
-- (void)aetherRecordError;
-- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
-- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime;
 - (void)mediaPlayerSnapshot:(NSString *)fileName;
 @end
 
 @interface AetherVLCMediaPlayer ()
 {
-    NSLock *_aetherSnapshotLock;
-    int64_t _aetherInputTime;
-    BOOL _aetherHadError;
-    uint64_t _aetherSeekCallbackSequence;
-    int64_t _aetherSeekTargetTime;
+    AetherVLCEventSnapshot *_aetherSnapshot;
     VLCLibrary *_privateLibrary;                ///< Internal
     libvlc_media_player_t * _playerInstance;    ///< Internal
     VLCMedia * _media;                          ///< Current media being played
@@ -190,8 +263,13 @@ static void HandleWatchTimeDiscontinuity(void *opaque, int64_t system_date_us)
     @autoreleasepool {
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         [eventsHandler handleEvent:^(id _Nonnull object) {
-            AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
-            [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
+            // Drain notifications while handleEvent still owns the player.
+            // Otherwise an autoreleased notification can release the last player
+            // on this timer callback and re-enter unwatch_time's timer lock.
+            @autoreleasepool {
+                AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+                [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
+            }
         }];
     }
 }
@@ -211,7 +289,7 @@ static void HandleWatchTimeOnSeek(void *opaque,
         int64_t targetTime = isSeeking ? newTimePoint.ts_us : -1;
         // Capture only immutable callback identity under our existing lock.
         // No libVLC call or delegate delivery occurs while the lock is held.
-        uint64_t sequence = [(AetherVLCMediaPlayer *)eventsHandler.object
+        uint64_t sequence = [AetherSnapshotForHandler(eventsHandler)
             aetherRecordSeeking:isSeeking targetTime:&targetTime];
         [eventsHandler handleEvent:^(id _Nonnull object) {
             AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
@@ -262,7 +340,7 @@ static void HandleMediaInstanceStateChanged(void *opaque, libvlc_state_t state)
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         // Capture the error before any configured event dispatch can reorder it.
         if (newState == VLCMediaPlayerStateError)
-            [(AetherVLCMediaPlayer *)eventsHandler.object aetherRecordError];
+            [AetherSnapshotForHandler(eventsHandler) aetherRecordError];
         [eventsHandler handleEvent:^(id _Nonnull object) {
             AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
             [mediaPlayer mediaPlayerStateChanged: newState];
@@ -674,8 +752,8 @@ static void AetherHandleMediaStopping(void *opaque, libvlc_media_t *media,
         VLCEventsHandler *eventsHandler = (__bridge VLCEventsHandler *)opaque;
         int64_t inputTime = -1;
         BOOL hadError = NO;
-        AetherVLCMediaPlayer *source = (AetherVLCMediaPlayer *)eventsHandler.object;
-        [source aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
+        AetherVLCEventSnapshot *snapshot = AetherSnapshotForHandler(eventsHandler);
+        [snapshot aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
         // The immutable values are captured in the original libVLC callback.
         // No delegate or libVLC operation is called while our lock is held.
         [eventsHandler handleEvent:^(id object) {
@@ -690,7 +768,7 @@ static void AetherHandleInputPosition(void *opaque, libvlc_time_t time, double p
 {
     @autoreleasepool {
         VLCEventsHandler *handler = (__bridge VLCEventsHandler *)opaque;
-        [(AetherVLCMediaPlayer *)handler.object aetherRecordInputTime:time];
+        [AetherSnapshotForHandler(handler) aetherRecordInputTime:time];
         [handler handleEvent:^(id object) {
             AetherVLCMediaPlayer *player = object;
             if ([player.delegate respondsToSelector:@selector(mediaPlayerInputTime:position:)])
@@ -748,47 +826,9 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
     return dict[key];
 }
 
-- (void)aetherRecordInputTime:(int64_t)time
-{
-    [_aetherSnapshotLock lock];
-    _aetherInputTime = time;
-    [_aetherSnapshotLock unlock];
-}
-
-- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime
-{
-    [_aetherSnapshotLock lock];
-    if (seeking) {
-        _aetherSeekCallbackSequence += 1;
-        _aetherSeekTargetTime = *targetTime;
-    }
-    *targetTime = _aetherSeekTargetTime;
-    uint64_t sequence = _aetherSeekCallbackSequence;
-    [_aetherSnapshotLock unlock];
-    return sequence;
-}
-
 - (uint64_t)seekCallbackSequence
 {
-    [_aetherSnapshotLock lock];
-    uint64_t sequence = _aetherSeekCallbackSequence;
-    [_aetherSnapshotLock unlock];
-    return sequence;
-}
-
-- (void)aetherRecordError
-{
-    [_aetherSnapshotLock lock];
-    _aetherHadError = YES;
-    [_aetherSnapshotLock unlock];
-}
-
-- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError
-{
-    [_aetherSnapshotLock lock];
-    *time = _aetherInputTime;
-    *hadError = _aetherHadError;
-    [_aetherSnapshotLock unlock];
+    return [_aetherSnapshot seekCallbackSequence];
 }
 
 /* Constructor */
@@ -800,15 +840,14 @@ static const struct libvlc_media_player_cbs VLCMediaPlayerCallbacks = {
 - (instancetype)initCommon
 {
     if (self = [super init]) {
-        _aetherSnapshotLock = [[NSLock alloc] init];
-        _aetherSeekTargetTime = -1;
-        _aetherInputTime = -1;
-        _aetherHadError = NO;
+        _aetherSnapshot = [[AetherVLCEventSnapshot alloc] init];
         _adjustFilter = [VLCAdjustFilter createWithVLCMediaPlayer:(id)self];
         _timeChangeLockQueue = dispatch_queue_create("org.videolan.vlcmediaplayer.timechangelock", DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL);
         _lastTimePoint.ts_us = -1;
         _timeChangeUpdateInterval = 1.0;
         _eventsHandler = [VLCEventsHandler handlerWithObject:self configuration:[VLCLibrary sharedEventsConfiguration]];
+        objc_setAssociatedObject(_eventsHandler, &AetherVLCEventSnapshotKey,
+                                 _aetherSnapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return self;
 }

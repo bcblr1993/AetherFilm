@@ -456,6 +456,15 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
     private func realTailFailurePreservesWatched(markDuringSession: Bool) async throws {
+        let audioTiming = TailAudioTimingEvents(origin: origin)
+        defer {
+            if let data = audioTiming.data() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Actual watched-retention held tail bounded numeric audio timing"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
         if !markDuringSession {
             await store.markWatched(item)
             let prior = try await persistedProgress()
@@ -475,6 +484,9 @@ final class EOFPlaybackTests: XCTestCase {
                 return failure == nil
             }
             self.player.load(url: session.url)
+            if let library = self.player.backendEngineForTesting?.libraryInstance {
+                library.loggers = (library.loggers ?? []) + [audioTiming]
+            }
             try await self.outputReady("watched retention real held-source initial output")
             if markDuringSession { await self.store.markWatched(self.item) }
             let beforeTail = try await self.persistedProgress()
@@ -564,6 +576,17 @@ final class EOFPlaybackTests: XCTestCase {
     }
 
     func testPendingValidatorOldSessionCannotFinishNewFilm() async throws {
+        #if DEBUG
+        player.debugEnableLifecycleTrace(origin: origin)
+        defer {
+            if let data = player.debugLifecycleTraceData() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Old validator and new session actual lifecycle including failure"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+        #endif
         let directory = try XCTUnwrap(Bundle(for: Self.self).resourceURL?.appendingPathComponent("PlaybackFixtures"))
         var validationEntered = false
         var continuation: CheckedContinuation<Bool, Never>?
@@ -1539,8 +1562,31 @@ final class EOFPlaybackTests: XCTestCase {
                 uiObservations.append(.capture(player: player, origin: origin, phase: "matched-start2-real-output-loop"))
                 if player.seekStatus == nil {
                     let actualEngine = try XCTUnwrap(player.backendEngineForTesting)
-                    XCTAssertGreaterThan(actualEngine.seekCallbackSequence, uiCallbackBaseline)
-                    XCTAssertFalse(actualEngine.isSeeking)
+                    let callbackSequence = actualEngine.seekCallbackSequence
+                    XCTAssertGreaterThan(callbackSequence, uiCallbackBaseline)
+                    // Assert the same single real getter read, retaining its exact
+                    // value when a later observation has already changed again.
+                    let assertedSeeking = actualEngine.isSeeking
+                    XCTAssertFalse(assertedSeeking)
+                    if assertedSeeking {
+                        let assertion: [String: Any] = [
+                            "assertedSeeking": assertedSeeking,
+                            "nativeSeekSequenceBefore": callbackSequence,
+                            "nativeSeekSequenceAfter": actualEngine.seekCallbackSequence,
+                            "presentationStillCleared": player.seekStatus == nil,
+                        ]
+                        let attachment = XCTAttachment(data: try JSONSerialization.data(withJSONObject: assertion, options: [.sortedKeys]),
+                                                       uniformTypeIdentifier: "public.json")
+                        attachment.name = "Actual failing seek getter truth and callback identity"
+                        attachment.lifetime = .keepAlways
+                        add(attachment)
+                        if let data = player.debugLifecycleTraceData() {
+                            let trace = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                            trace.name = "Actual failing seek getter callback delivery trace"
+                            trace.lifetime = .keepAlways
+                            add(trace)
+                        }
+                    }
                     XCTAssertNotNil(matchedRunning)
                     XCTAssertFalse(matchedInputs.isEmpty)
                     XCTAssertTrue(player.displayedVideoFrames > displayed || player.playedAudioBuffers > played)
@@ -1848,6 +1894,29 @@ final class EOFPlaybackTests: XCTestCase {
             fixtureName: "clip-tail-long-gop.mp4", fixtureSHA256: "41ba7c5011ee990d43e079d687533d2f01f276112dd9002e8b53346792af858b")
     }
 
+    func testTailAudioTimingDiagnosticsRejectPrivateAndMalformedMessages() throws {
+        XCTAssertEqual(TailAudioTimingEvents.parse("using audio output module \"avsamplebuffer\"", source: nil), [1, 1])
+        XCTAssertEqual(TailAudioTimingEvents.parse("deferring start (4966667 us)", source: 1), [3, 4966667])
+        XCTAssertEqual(TailAudioTimingEvents.parse("starting late (-12 us)", source: 1), [2, -12])
+        XCTAssertNil(TailAudioTimingEvents.parse("deferring start (12 us) smb://private-user:private-secret/private-film", source: 1))
+        XCTAssertNil(TailAudioTimingEvents.parse("deferring start (12 us)", source: 2))
+        XCTAssertNil(TailAudioTimingEvents.parse("using audio output module \"private-film\"", source: nil))
+        XCTAssertEqual(TailAudioTimingEvents.parse("Stream buffering done (11333 ms in 42 ms)", source: 2), [5, 11333, 42])
+        XCTAssertEqual(TailAudioTimingEvents.parse("Decoder wait done in 5690 ms", source: 2), [6, 5690])
+        XCTAssertNil(TailAudioTimingEvents.parse("Decoder wait done in 5690 ms smb://private-user:private-secret/private-film", source: 2))
+        XCTAssertNil(TailAudioTimingEvents.parse("Stream buffering done (-1 ms in 42 ms)", source: 2))
+        XCTAssertNil(TailAudioTimingEvents.parse("Decoder wait done in 42 ms", source: 1))
+        let logger = TailAudioTimingEvents()
+        for _ in 0..<300 { logger.handleMessage("using audio output module \"avsamplebuffer\"", logLevel: .debug, context: nil) }
+        logger.handleMessage("private-secret", logLevel: .debug, context: nil)
+        let data = try XCTUnwrap(logger.data())
+        let document = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(document["totalEvents"] as? Int, 300)
+        XCTAssertEqual(document["omittedEvents"] as? Int, 44)
+        XCTAssertEqual((document["records"] as? [[Int64]])?.count, 256)
+        XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("private"))
+    }
+
     private func assertActiveForwardTailSeekConsumesRealOutputOnce(rate: Float,
         fixtureName: String = "clip-short-gop.mp4",
         fixtureSHA256: String = "33e46b39e57f4e6cd56713f013dc573df8cd3b0d9debda10c4bf2a445c16bd75") async throws {
@@ -1856,6 +1925,7 @@ final class EOFPlaybackTests: XCTestCase {
         XCTAssertEqual(SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined(),
                        fixtureSHA256)
         player.debugEnableLifecycleTrace(origin: origin)
+        let audioTiming = TailAudioTimingEvents(origin: origin)
         var observations = [[String: Any]]()
         let target = 11.0
         // Both pinned fixtures end in real audio/video samples at 12.0 seconds.
@@ -1891,6 +1961,12 @@ final class EOFPlaybackTests: XCTestCase {
             observations.append(sample)
         }
         defer {
+            if let data = audioTiming.data() {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "Active forward tail bounded numeric audio timing"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
             observe("final-before-teardown")
             if let data = player.debugLifecycleTraceData() {
                 let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -1908,6 +1984,9 @@ final class EOFPlaybackTests: XCTestCase {
         player.setRate(rate)
         player.load(url: url, startAt: 0)
         let identity = ObjectIdentifier(try XCTUnwrap(player.backendEngineForTesting))
+        if let library = player.backendEngineForTesting?.libraryInstance {
+            library.loggers = (library.loggers ?? []) + [audioTiming]
+        }
         try await outputReady("active forward tail early actual output")
         XCTAssertTrue(player.isPlaying)
         XCTAssertEqual(player.backendState, "playing")
@@ -1925,13 +2004,15 @@ final class EOFPlaybackTests: XCTestCase {
         XCTAssertNil(player.backendClockTime, "The seek must clear the previous native normal point synchronously.")
         XCTAssertFalse(player.backendClockIsRunning)
         XCTAssertNil(player.backendInputTime)
-        try await wait("active forward tail fresh target actual native output", timeout: 6, failIf: {
+        // A double-speed tail can expose a valid normal/output phase for only ~100ms.
+        // Observe it more often without changing its predicate or the six-second deadline.
+        try await wait("active forward tail fresh target actual native output", timeout: 6,
+                       pollInterval: .milliseconds(10), failIf: {
             observe("awaiting-fresh-target-output")
         }) {
             guard let normal = self.player.backendClockTime,
                   let input = self.player.backendInputTime,
-                  let data = self.player.debugLifecycleTraceData(),
-                  let trace = try? JSONDecoder().decode(TailPhaseTrace.self, from: data),
+                  let trace = TailPhaseTrace.capture(self.player),
                   trace.evictedEvents == 0, let marker = trace.latestSeekMarker(),
                   marker.targetSeconds == target,
                   input >= target - 0.05, input < 12.2 else { return false }
@@ -2120,12 +2201,13 @@ final class EOFPlaybackTests: XCTestCase {
         }
     }
 
-    private func wait(_ label: String, timeout: Double = 12, failIf: (() throws -> Void)? = nil, condition: () -> Bool) async throws {
+    private func wait(_ label: String, timeout: Double = 12, pollInterval: Duration = .milliseconds(100),
+                      failIf: (() throws -> Void)? = nil, condition: () -> Bool) async throws {
         snapshot(label + " begin")
         let deadline = ContinuousClock.now.advanced(by: .seconds(timeout))
         while !condition() && .now < deadline {
             try failIf?()
-            try await Task.sleep(for: .milliseconds(100))
+            try await Task.sleep(for: pollInterval)
         }
         try failIf?()
         snapshot(label + (condition() ? " ready" : " timeout"))
@@ -2389,4 +2471,88 @@ private struct EOFTailMetadata: Decodable {
     let tailHoldAt: Int64
     let lastVideoPTSBeforeTail: Double
     let firstHeldPTS: Double
+}
+
+/// Test-only whitelist. Never retain native messages, paths or object IDs.
+/// Records: elapsed microseconds, event code, numeric values. Module event 1 values:
+/// 1=avsamplebuffer, 2=auhal, 3=audiounit_ios. Events 2/3/4: late/deferred/started.
+/// Events 5/6: actual media/system buffering milliseconds and decoder wait milliseconds.
+/// Missing events do not prove module selection or absence of a timing problem.
+final class TailAudioTimingEvents: NSObject, VLCLogging, @unchecked Sendable {
+    var level: VLCLogLevel = .debug
+    private let lock = NSLock()
+    private let origin: ContinuousClock.Instant
+    private var first: [[Int64]] = []
+    private var tail: [[Int64]] = []
+    private var total = 0
+
+    init(origin: ContinuousClock.Instant = .now) {
+        self.origin = origin
+        super.init()
+    }
+
+    static func parse(_ message: String, source: Int?) -> [Int64]? {
+        let modules = ["avsamplebuffer", "auhal", "audiounit_ios"]
+        if let index = modules.firstIndex(where: { message == "using audio output module \"\($0)\"" }) {
+            return [1, Int64(index + 1)]
+        }
+        if source == 2 {
+            let prefix = "Stream buffering done ("
+            if message.hasPrefix(prefix), message.hasSuffix(" ms)") {
+                let values = message.dropFirst(prefix.count).dropLast(4)
+                    .components(separatedBy: " ms in ")
+                guard values.count == 2,
+                      values.allSatisfy({ !$0.isEmpty && $0.utf8.allSatisfy({ (48...57).contains($0) }) }),
+                      let media = Int64(values[0]), let elapsed = Int64(values[1]) else { return nil }
+                return [5, media, elapsed]
+            }
+            let waitPrefix = "Decoder wait done in "
+            if message.hasPrefix(waitPrefix), message.hasSuffix(" ms") {
+                let value = message.dropFirst(waitPrefix.count).dropLast(3)
+                guard !value.isEmpty, value.utf8.allSatisfy({ (48...57).contains($0) }),
+                      let elapsed = Int64(value) else { return nil }
+                return [6, elapsed]
+            }
+            return nil
+        }
+        guard source == 1 else { return nil }
+        if message == "started" { return [4, 0] }
+        for (index, prefix) in ["starting late (", "deferring start ("].enumerated() {
+            guard message.hasPrefix(prefix), message.hasSuffix(" us)") else { continue }
+            let number = message.dropFirst(prefix.count).dropLast(4)
+            guard !number.isEmpty, number.utf8.allSatisfy({ (48...57).contains($0) || $0 == 45 }),
+                  let value = Int64(number) else { return nil }
+            return [Int64(index + 2), value]
+        }
+        return nil
+    }
+
+    func handleMessage(_ message: String, logLevel: VLCLogLevel, context: VLCLogContext?) {
+        let avSource = context?.module == "avsamplebuffer"
+            || (context?.module == "libvlc"
+                && context?.file?.hasSuffix("/modules/audio_output/apple/avsamplebuffer.m") == true)
+        let bufferingSource = context?.function == "EsOutDecodersStopBuffering"
+            && context?.file?.hasSuffix("/src/input/es_out.c") == true
+        let source = avSource && context?.function == "-[VLCAVSample whenDataReady]" ? 1
+            : bufferingSource ? 2 : nil
+        guard let event = Self.parse(message, source: source) else { return }
+        let duration = origin.duration(to: .now).components
+        let elapsed = duration.seconds * 1_000_000 + duration.attoseconds / 1_000_000_000_000
+        lock.withLock {
+            total += 1
+            let record = [elapsed] + event
+            if first.count < 32 { first.append(record) }
+            else {
+                if tail.count == 224 { tail.removeFirst() }
+                tail.append(record)
+            }
+        }
+    }
+
+    func data() -> Data? {
+        lock.withLock {
+            try? JSONSerialization.data(withJSONObject: ["schema": 1, "totalEvents": total,
+                "omittedEvents": total - first.count - tail.count, "records": first + tail], options: [.sortedKeys])
+        }
+    }
 }

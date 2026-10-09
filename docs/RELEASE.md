@@ -1,8 +1,170 @@
+> 2026-10-08 状态复查候选 `4d08bc3` 的远程 Mac 回归已终态 exit65，**0 个实际测试用例执行**。xcresult 报告测试宿主在建立连接前挂起；一秒 775 次进程采样均停于 dyld → `_libsecinit_appsandbox` → XPC IPC。不能将结果中的一项宿主错误计作某个播放测试失败，也不能宣称 62 项已通过；系统容器提示是否为直接原因尚未独立确认，没有确认任何权限提示。原结果 / 日志 / 采样 / 崩溃记录已取回至 `FormalNative9-r1/MacSeekOutputFull-r1-evidence/`，已结束的专用 LaunchAgent 已 bootout。当前修复将交由正式 CI 的干净环境验证。
+>
+> 正式 build6 iOS 失败的时序追加：满足原数值条件的正常点 11.818663 秒在原回调中真实存在，至下一点覆盖的实际窗口约 71.905ms；原 100ms 观察采样在此窗口内为 0 次。记录保留于 `ci-ios-clock-observation-gap-review-r1.json`。未采样瞬间的底层状态没有额外独立观察，故这是观测失败机制证据，不能宣称生产根因修复；原测试和期限保持不变。最新真机只读查询仍为 Developer Mode disabled。
+
+> 2026-10-08 正式 build6 CI `37667574276` 已结束且失败：Mac 61 通过 / 1 失败，iOS 69 通过 / 1 失败 / 1 私人 NAS 条件跳过；两端 runtime warnings 为空。原始 iOS artifact 的 752663 字节及 GitHub SHA256 已核验。Mac 失败为跳转后暂停预览的界面状态未清除：最终真实时钟 / 输入回调抵达时显示帧仍为 42，随后只读观察显示 44 帧，但无后续时钟 / 输入回调触发刷新。候选增加仅在当前跳转期间的 100ms 实际证据复查，全部原完成条件、回调新鲜度、测试断言和期限不变，不因超时完成跳转。两端测试构建通过；iOS 5 个原专项用例各 3 轮共 15 次执行通过、runtime warnings 为空。远程 Mac 完整播放 / SMB 回归已启动，尚待终态核对。
+>
+> iOS 失败为 `testActiveDoubleSpeedLongGOPForwardTailSeekConsumesRealOutputOnce`，实际音视频输出及 EOS 存在，但原六秒条件未通过；专项本机通过不证明 CI 问题已修复。原失败、完整附件与时序保留于 `.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/FormalNative9-r1/`，包括 `ci-formal-build6-failures-and-mac-fix-r1.json` 和 `seek-output-monitor-ios-repeat-review-r1.json`。build6 iOS development archive 严格签名及 Native9 UUID 核对通过，不能替代真机验收。build6 签名包对应修复前源码；后续最终包必须重新构建并验收。App v0.1.1 仍为草稿，不宣称发布完成。
+
+> 2026-10-08 正式接入 Native9 / v0.1.1 build6：固定两文件控制修正、11 个补丁 / 14 份源码 pin、cargo-c 工具 pin、完整构建和源码追溯记录、生成版本头和正式 Device 工程结果已纳入仓库，Native8 历史 pin / artifact 记录保留。源包首轮因 App 内桥接修改日期仍为 2026-10-03 而被标记失败；原包保留未发布，修正为已冻结源的 2026-10-07 后，在干净提交 `a73effb1784f88d205e1ae6c44138667e6c46b98` 重新生成，226 个 tracked 文件逐字节匹配，Lua payload SHA 验证通过。
+>
+> [Native9 组件预发布](https://github.com/bcblr1993/AetherFilm/releases/tag/vlckit-8f5ce02-aether-20261008-native9) 已发布，仅供组件 / 正式依赖验证，不是 App v0.1.1 发布。服务器 asset digest 与本地一致，二进制和对应源码均经匿名 curl 实际 HTTP200 完整下载核对大小 / SHA：二进制 `d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493`，源码 `018c891f19c52cb4a9ca8d191e05f53f09a4c7c2b100dc9d2be534581954f538`。证据：候选目录 `FormalNative9-r1/` 的发布回执、source-extension-verified.json、component-public-assets-api-review.json、component-anonymous-download-review.json。公开 App 仍为 v0.1.0；完整正式 CI、真机 / 手动、兼容恢复、正式 build6 签名安装升级和 App 分发仍待闭合。
+
+> 2026-10-08 源码材料与工程追溯追加：固定 665341487 字节基础资产 SHA `350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72` 验证通过，另建完整解压目录后，三份源码归档、68 个 contrib 归档 / 旁文件、Lua 及 14 个小型本地输入逐项验证通过。初次误选部分工作目录导致缺少 wrapper 归档的失败保留，没有改变 pin。固定 VLC 归档重新解出并应用全部 11 个补丁（fuzz=0）后，5675 个归档源码文件与 Mac / Simulator / Device 实际构建源码逐项相同；该证明不等于全新无缓存便携构建。证据：`complete-source-materials-r1-review.json`、`native9-archive-reconstruction-r1.json`。
+>
+> 固定 wrapper 归档加正式平台补丁后，Mac / Simulator 的 727 个文件逐项匹配实际构建源码；旧 Device 模板的工程文件仍选 Simulator 的内部头阶段。已从固定归档和正式 Device 补丁重新构建该工程，补齐对应核心生成的公开及插件头文件，原缺失插件头导致的 exit65 保留；续轮两个 wrapper 目标均 exit0，315 个全局公开导出 / 303 个全部模块入口、最低 iOS26.0、无 ASAN 均验证，二进制代码段与前候选一致。第三轮 XCFramework 重新组装 / 压缩 / 解压核对通过，冻结桥接三个实际 ARM64 消费者全部编译链接 exit0。证据：`native9-wrapper-archive-reconstruction-r1.json`、`normal-device-fresh-wrapper-review-r3.json`、`native9-private-archive-r3.json`、`Native9FrozenConsumers-r3/consumer-proof.json`。正式依赖接入、普通完整 CI、App 真机 / 手动验收及最终分发仍未完成。
+
+> 2026-10-08 普通候选第二轮已完成：macOS 恢复播放时同步最新意图与当前底层状态，处理取消尚未生效的暂停、因而不会再产生 playing 回调的情况。两端普通测试构建 exit0；远程 Mac 完整 62/0/0、iOS 完整 70/0/1（唯一跳过为私人 NAS 启动器），已编译用例身份逐项匹配原 xcresult，runtime warnings 均空、原生崩溃 0 / unreadable 0。实际加载普通 Native9 候选，Mac Main Thread Checker 保留；上一轮快速暂停恢复的失败与原断言 / 期限保持。证据：候选目录的 `mac-ordinary-full-r2-review.json`、`ios-ordinary-full-r2-review.json`、两端运行时映射、原日志和原生崩溃记录。
+>
+> 打包检查发现初轮 wrapper 模板中的 `libvlc_version.h` 缺少实际核心生成的 ABI 宏；原包保留，第二轮使用各平台核心生成的头文件重新组装，三个二进制字节保持原样。全部公开头文件（Mac 48、iOS 43）及每平台 315 个公开 libVLC 导出名称与 Native8 基线一致；AppleDouble 旁文件通过 magic 分类，仅作为文件元数据，不计作 C 头文件。冻结桥接 22 份生成源码 / 23 份固定输入及原 patch 校验通过，实际 macOS / iPhone / Simulator ARM64 回调消费者均编译链接 exit0，最低系统 26.0、ARC、单一二进制组件与自有播放器类均验证。该证据是明确本地依赖镜像验证，不等于未经修改的正式远程消费或完整 CI。证据：`normal-native9-generated-version-header-packaging-r2.json`、`normal-native9-public-compatibility-r2.json`、`Native9FrozenConsumers-r2/consumer-proof.json`。当前正式依赖仍 Native8；完整普通 CI、实际兼容恢复、设备 / 手动验收与分发仍未闭合，v0.1.1 继续为草稿。
+
+> 2026-10-08 普通 Native9 私有候选：Mac / Simulator / Device 三份完整核心和六个 wrapper 目标均实际 exit0，三个最终 ARM64 框架最低系统为 26.0，无 ASAN 运行库依赖。三 slice XCFramework 已组装、压缩并重新解压核对二进制 SHA，私有 zip SHA256 为 `05ded3d3244e3d9530d3287c8d2377fc477598c322dd2346d3338ae2ed08e0ce`。38 份私有源码扩展文件逐项大小 / SHA 核对通过；该扩展仍依赖固定的基础源码材料，不是完整便携重建认证，当前公开依赖仍为 Native8。
+>
+> 当前源码的普通 iOS 完整回归实际 exit0：70 通过 / 0 失败 / 1 私人 NAS 条件跳过；全部 71 个已编译用例身份与 xcresult 一致，runtime warnings 空，原生崩溃 0 / unreadable 0。已确认运行时加载普通候选框架、未加载 ASAN，原断言与期限保持。远程 Mac 独立 QA App 保留 sandbox / Main Thread Checker 和原 App、测试代码段，完整 62 用例已启动，实际进程加载候选且 Main Thread Checker 存在；其终态为 exit65、61 通过 / 1 失败 / 0 跳过，runtime warnings 空，失败为快速暂停恢复：底层持续输出和推进时间，应用 isPlaying 却未恢复；原失败保留，已补充 macOS play() 的当前状态同步，新一轮两端普通测试构建正在运行，尚未认证该修正。完整普通 CI、实际兼容恢复、物理设备、UI / 听音 / VoiceOver、正式安装升级和公开分发尚未闭合，v0.1.1 仍为草稿。
+>
+> 证据：`.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/` 中 `ios-ordinary-full-r1-review.json`、运行时映射、各平台 linked-framework review、`native9-private-archive-r1.json`、`native9-private-archive-extraction-r1.json`、`native9-private-source-extension-r1.json`；远程 `/Users/chenxu/AetherFilmQA/Native9Ordinary-20261008-r1/` 的原日志与运行时映射。
+
+> 2026-10-08 普通 Mac 核心恢复构建 exit0，完整静态归档已生成；Simulator 核心也 exit0，Device 核心已接续。普通 Mac 两个 wrapper 目标编译链接均 exit0，实际最终 Mach-O 的 302 个插件入口加独立 core 入口与基线一致，315 个公开 libVLC 导出名称与基线一致，最低 macOS 26.0，无 ASAN 符号或运行库引用。原静态归档的 Apple nm 检查因无法解析部分 Rust LLVM 元数据失败，未声明该检查通过；最终链接产品采用全体已定义符号检查（插件是局部 t 符号）及独立公开 libVLC 导出检查。证据：候选目录的 normal-mac-linked-framework-review.json、普通构建日志及 outcome。普通 App 播放 / 完整 CI / 设备 / 分发仍未通过，v0.1.1 继续为草稿。
+
+> 2026-10-08 普通引擎构建记录：Mac 初轮在 contrib 阶段实际退出 1，原因是独立 Cargo 目录缺少 cargo-capi；原日志和 outcome 保留。已核对现有 cargo-c 0.10.9+cargo-0.85.0 及四个工具 SHA，复制到自有缓存后，在相同源码 / 输出目录继续构建并写独立 build-r2.log / outcome-r2.json。私有候选的移动端构建入口增加工具版本 / SHA 预检和自有缓存复制，两个移动端计划再次通过，等待 Mac 终态。该工具修复未修改全局安装或当前公开依赖。
+>
+> 时钟语义进一步核对：timer.c 对失效来源的首条时钟设置 VLC_TICK_MAX，仅禁用插值，不等于 input 进入暂停。候选片尾 5 轮均无实际暂停事件，首条运行时钟约 11.38 秒；CI 片尾的 11.812464 初始化点不能作为延后暂停根因证据。SMB CI 失败另有实际 paused-state 回调，仍需独立定位。证据：候选目录的 first-clock-sentinel-review.json、cargo-capi-tool-copy-review.json 和普通构建原始记录。普通引擎、完整 CI 和最终发布尚未完成。
+
+> 2026-10-08 延后暂停取消候选的实际验证：原生 CLI 使用相同已固定 SHA 的 HTTP 视频、dummy 音频和关闭视频输出，原引擎在缓冲期间的恢复请求之后仍进入暂停（时钟 1 微秒），独立候选持续播放至约 6.6 秒，均 exit0 / 无 ASAN 错误。该结果证明原生控制请求缺口，不证明两项 CI 时钟越界的统一根因，也不替代听音或画面验收。Mac / Simulator 的两份改动组件共四次编译及四个诊断 wrapper 目标成功，最小版本仍为 26.0；其余归档成员逐项字节相同。
+>
+> 当前源码 App 的原引擎对照四用例各 5 轮共 20/20 通过；首轮因 XCTest 优先加载测试产物目录中的旧框架而被明确保留为对照，未计为候选验收。修正两处框架副本后的候选轮实际加载已通过 lsof 路径 / 哈希核对，ASAN 保留，原片尾跳转、SMB 连续跳转、快速暂停恢复及迟到暂停事件各 5 轮共 20/20 通过，exit0、runtime warnings 空、原生崩溃 0 / unreadable 0。未改变原断言和期限。证据：`.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/`。普通 Mac 引擎已开始独立构建，Simulator / iPhone 的独立源码和 SDK / Rust / 14 份 pin 预检通过并排队串行构建；原 Native8 发布 pin 和冻结桥接未改；完整普通 CI、实际兼容恢复、设备、UI 和最终分发门禁仍未通过，v0.1.1 保持草稿。
+
+> 2026-10-08 最新普通 CI 仍未通过：[37651250092](https://github.com/bcblr1993/AetherFilm/actions/runs/37651250092)，源码 `8b8b19e`。Mac 原 62 项全部通过，iOS 为 68 通过 / 2 失败 / 1 私有 NAS 条件跳过，runtime warnings 均为空。失败为 1.5 倍片尾跳转和 SMB 连续跳转；原生首个运行时钟已越过原目标窗口，不能由本地通过推断 CI 问题已修复。原始产物与附件：`.build/P0Optimization20261006/ci-notification-pool-source-order-r1/`。
+>
+> 同源码的两个失败用例本地各重复 5 轮，共 10 次通过，命令 exit0；这是未复现，保留 CI 失败门禁。另已核对 Native8 的 13 份源文件 pin，并准备独立的“取消延后暂停”原生控制候选；隔离控制检查复现原分支会忽略缓冲期间的恢复请求。该候选尚未链接到 App，也未证明时钟越界根因。证据：`ci-failure-reproduction-ios-r1-review.json`、`deferred-pause-cancel-candidate-r1/review.json`。v0.1.1 仍为草稿，真机、完整 UI、听音、VoiceOver、实际兼容恢复与最终安装 / 分发门禁继续保留。
+
+> 2026-10-08 原播放回归与桥接消费者完成：Mac原62项身份匹配并全部通过；iOS原71项身份匹配，70通过 / 0失败 / 1私有NAS条件跳过，exit0，runtime warnings为空。通知池22份源已冻结并再次精确生成；Mac / iPhone / Simulator三个arm64实际消费者编译链接exit0、目标26.0，来源见Provenance/consumer-build-review.json。开发签名iPhone测试构建也成功，但设备实时详情仍为Developer Mode disabled，真机验收未通过。CI / 完整UI / 听音 / VoiceOver / 兼容恢复 / 最终分发等门禁继续保留，发布仍为草稿。
+
+> 2026-10-08 完整远程Mac回归：同一回调顺序 / 通知池源码候选原62项全部通过 / 0失败 / 0跳过，原case身份集合核对通过，原Main Thread Checker日志干净；Xcode27读取原xcresult runtime warnings为空，原生崩溃0 / unreadable0，严格签名复查通过。测试打印 TEST EXECUTE SUCCEEDED；Xcode26报告缺少runtimeWarnings字段使测试结束后的自有报告脚本exit1，原测试命令exit未持久化，保留该报告错误，不重跑或覆盖原结果。自有终态LaunchAgent已bootout0。完整iOS尚在运行，冻结 / 消费者 / 分发门禁未完成。证据：seek-source-order-remote-full-r2/。
+
+> 2026-10-08 回调顺序修复专项：Mac与arm64 iOS测试构建通过。远程Mac保留sandbox / 原Main Thread Checker，原SMB seek-zero20轮及隐私20轮全部通过，exit0，xcresult唯一2通过 / 0失败 / 0跳过、runtime warnings为空；无调试器 / 采样，原断言和期限不变。此前15/20的输入与时钟匹配失败本轮未复现。完整Mac62项正在同一源码隔离产品中执行，完整iOS / 消费者 / 真机与分发门禁尚未完成；发布仍为草稿。证据：seek-source-order-remote-r1/及seek-source-order-{mac,ios}-build-r2.log。
+
+> 2026-10-08 断言解读更正：原 EOFPlaybackTests.swift:1568（新增诊断后1591）实际断言为 matchedInputs 非空，之前将其解释为 isSeeking 瞬变有误。原结果仍为 Mac 61通过 / 1失败；最新远程原 seek-zero 20轮为5通过 / 15失败，隐私20轮通过，isSeeking断言20轮全部通过。第1轮原始时间线显示运行时钟 callback149 / delivery150，输入 callback151 / delivery152，随后提示在153清除；下一个时钟callback154尚未到达，因此输入不能匹配当前运行时钟。证据保留于 seek-callback-truth-remote-r1-attachments/，修复候选补充实际回调顺序，原验收条件与期限保持不变，发布仍为草稿。
+
+> 恢复原检查器后的通知池候选结果：远程macOS27.0.1原停止换片20 / 20通过，隐私控制20 / 20通过，exit0，原xcresult唯一2项通过 / 0失败 / 0跳过、runtime warnings为空；未附加调试器、未采样或放宽原断言 / 期限。完整本机Mac原62项为61通过 / 1失败 / 0跳过，runtime warnings为空、原生崩溃0 / unreadable0、清理exit0；停止换片及第二次预热本轮通过，唯一剩余失败为SMB回零提示清除时当前运行时钟对应的输入证据为空（EOFPlaybackTests.swift:1568；原解读已更正），不认证发布。完整运行开始后曾观察到另一项目模拟器测试进程51318，保留该并发环境限制，不中断其他任务。通知池源候选尚未冻结，三平台消费者 / 完整iOS / 独立SMB状态修复及分发仍待验证。证据：`notification-pool-remote-stop-mtc-r2/`、`notification-pool-full-mac-r2-{summary,review}.json`及原附件。
+
+> 通知池修复候选进度：Mac与arm64 iOS测试构建均通过；iOS generic首轮误选组件不含的x86_64，exit65，失败记录保留，明确arm64后的r2成功。远程候选停止换片20轮与隐私20轮均通过、未附加调试器，但随后核对发现新build-for-testing默认缺少原Main Thread Checker，因此不认证该轮完成原门禁。完整Mac r1也在启动前被原检查器门禁拦截，exit2 / 实际0项；现已按历史原xctestrun恢复检查器注入，不改变代码段、权限、断言或期限。远程RunMTC-r2重新执行原20轮，本机完整Mac r2执行原62项，均仍待结果；frozenApproved保持false。历史a7cecef本机排队对照终态20+20通过，只证明间歇失败本轮未复现，不覆盖远程原第6轮死锁。
+
+> 远程macOS27.0.1的新现场已确认通知释放重入计时锁：原停止换片前5轮通过，第6轮原12秒预热失败，随后tearDown挂起并被原120秒期限终止；20轮隐私控制通过。失败后LLDB读取到完整链：UpdateTimerEvent → HandleWatchTimeDiscontinuity → autoreleasePoolPop → NSConcreteNotification dealloc → 播放器dealloc → unwatch_time → RemoveTimer → vlc_mutex_lock；固定源码确认回调持有timer.lock且RemoveTimer重取该锁。调试器exit0且已detach；未取得对象指针，不推断第二次预热CoreAudio锁的完整关联。新候选仅在原discontinuity handleEvent块内加临时对象释放池，保留原调度与releaseQueue；两个独立生成的22份源码与安装候选一致，新增受控autoreleasing通知实验10组基线 / 10组内层pool均确认预期析构线程。候选尚未完成编译 / 实际播放回归，frozenApproved=false，公开版仍为v0.1.0。证据：`remote-isolated-reopen-lldb-r1/native-deadlock-review.json`、原LLDB / xcresult及`event-notification-autoreleasing-control-r1/`。
+
+> 停止换片重复诊断：原用例要求20轮，实际前8轮通过，第9轮第二次本地预热原12秒期限内画音解码输出为0；其后tearDown的FilmPlayer.stop原生释放挂起，被原120秒执行期限终止。20轮隐私控制通过，原断言与期限不变。样本、反汇编与对象布局确认主线程在.cxx_destruct+164释放偏移144的_audio（VLCAudio），触发原生vlc_player_Delete等待；回调线程在HandleWatchTimeDiscontinuity的通知释放路径等待，具体锁环未证明。固定版事件处理器的Foundation独立控制和Swift通知桥接控制均未复现“通知延迟释放导致回调线程析构”猜测，不据此修改释放语义。下一轮原用例诊断已排队，保持原独占门禁，仅在原预热断言失败后附加LLDB；附加后的运行只作为诊断，不认证普通发布验收。证据：`mac-isolated-reopen-sampled-r1/review.json`、两个`event-notification-*-control-r1/review.json`及`mac-isolated-reopen-lldb-r1/`。v0.1.1仍是草稿。
+
+> 本机macOS27新增对照：原签名测试App及Developer ID测试副本均在系统沙盒初始化、XCTest连接前挂起，exit65 / 实际用例0。元数据和只读远程屏幕确认旧容器签名归属与新版本身份不同，系统显示访问旧版本数据的“仍要打开”许可，已请求用户确认，未批准、未关闭沙盒或修改容器。独立QA标识的测试副本保留原可执行代码段、权限、全部原用例与期限，实际完整运行60通过 / 2失败 / 0跳过，runtime warnings为空。失败为第二次本地预热（解码与画音0、缓冲完成但未记录到解码等待结束），以及SMB回零时跳转提示与底层请求状态不一致。原失败及附件保留；本轮不能由此前CI通过认证发布。证据：`mac-isolated-container-full-r1-{summary,review}.json`、原xcresult / 附件、`sandbox-container-identity-startup-review.json`与两机进程采样。
+
+> 最新完整CI（2026-10-07）：[CI37631587164](https://github.com/bcblr1993/AetherFilm/actions/runs/37631587164) @a7cecef三任务全部通过。原xcresult核对Mac26.6.2为62通过 / 0失败 / 0跳过，原生崩溃0、runtime warnings为空、清理exit0；iOS27 / iPhone Air / 24A434为70通过 / 0失败 / 1私有NAS条件跳过，runtime warnings为空。附件实际导出并核对Mac85份、iOS92份；解码计数与源缓冲 / 解码等待白名单捕获真实数值。此前间歇失败本轮未复现，不据此认证根因修复。当前提交本机完整iOS也为70 / 0 / 1。新build4候选已上传Release草稿独立附件，SHA256为`4d4aa4be824248c08f05104f2a7d53dfaf692c6c029e7f09065f352717385916`，服务器digest与本地一致；旧build3附件保留且明确标识。完整Mac UI、实际兼容恢复多轨、物理iPhone播放、听音 / VoiceOver、安装播放 / 升级及公开分发仍待验收，v0.1.1尚未公开。证据：`ci-buffer-wait-audio-{mac,ios}-r1/`、`buffer-wait-audio-full-ios-r1-review.json`及`release-build4-draft-asset-upload-r1.json`。
+
+> 历史普通CI门禁（6f00ce2）：[CI37625813841](https://github.com/bcblr1993/AetherFilm/actions/runs/37625813841) 整体失败，共享通过；Mac61通过 / 1失败 / 0跳过，原生崩溃0、runtime warnings为空。停止换片用例在第二次本地长视频预热失败，12秒期限结束仍画音输出0、正常时钟1微秒附近，尚未执行第二次换片；未认证该路径根因。iOS68通过 / 2失败 / 1私有NAS跳过，runtime warnings为空，失败为长GOP2倍和1.5倍片尾跳转的新鲜目标输出：首个正常点已越过原目标窗口，音频原始有界附件最大defer约0.562 / 0.875秒，没有复现5秒defer，不能将所有间歇失败归为同因。原xcresult / 附件保留于 `ci-watched-tail-audio-{mac,ios}-r1/`。原断言和期限不变；新候选仅补充解码计数、现有音频时序与源缓冲 / 解码等待的数值白名单，已完成两端测试构建与iOS专项验证；CI仍待执行。
+
+新增源缓冲 / 解码等待诊断已验证：两端普通生产框架测试构建通过；iPhone Air / iOS27.0 / 24A434专项5个原用例各3轮，实际15通过 / 0失败 / 0跳过，runtime warnings为空。12份数值音频附件实际读取，捕获30次源缓冲与30次解码等待，最大解码等待149毫秒，证明严格上下文白名单能够捕获真实原生事件；未复现CI失败，不认证根因修复。原断言、期限和目标窗口不变，不留存原始消息、路径或凭据。证据：`buffer-wait-audio-focused-r1.xcresult`、对应summary / review及附件；安装检查：`release-build4-source6f-remote-install-r1.json`。
+
+本机新建与CI一致的iPhone Air / iOS27.0 / 24A434，原完整播放实际70通过 / 0失败 / 1私有NAS条件跳过，未复现CI失败。匹配6f00ce2的build4来源说明资源已重新构建并签名公证，DMG SHA256 `4d4aa4be824248c08f05104f2a7d53dfaf692c6c029e7f09065f352717385916`，严格签名、票据、Gatekeeper及只读挂载核对通过；iOS新签名归档来源说明字节一致。新精确候选已在远程Mac mini独立目录安装，版本、严格签名、票据与Gatekeeper检查通过；实际安装播放和公开下载仍未验收。Mac直接诊断运行exit65 / 实际0项、XCTest建立连接前挂起370.382秒；规范Aqua首轮exit2 / 实际0项，原排他门禁发现两组实际运行的AetherScreens测试，未绕过或停止其他任务。
+
+> 新音频诊断已验证：普通生产框架的 Mac / iOS build-for-testing 均exit0；两个原已看保留用例及既有隐私 / 有界诊断控制各3轮，原日志实际9次通过，xcresult按唯一用例记3通过 / 0失败 / 0跳过，runtime warnings为空。6份新增数值音频附件实际导出读取；首次原生正常时钟的旧CI证据为seek后5.69秒 / 10.184秒，已排除marker后才派送的旧source回调。本机未复现该CI失败，不认证根因修复。首次调用因误用不存在的venv路径exit127 / 实际0项，原日志保留；改用已存在的P0 venv后完成。证据：`watched-tail-audio-focused-r2-{summary,review}.json`及原xcresult / 附件。
+
+> 当前普通CI门禁：125a2ad 的 [CI37623016669](https://github.com/bcblr1993/AetherFilm/actions/runs/37623016669) 已整体失败。Mac62通过 / 0失败 / 0跳过；iOS69通过 / 1失败 / 1私有NAS条件跳过，实际身份71，两端runtime warnings为空。唯一失败是 `testPriorWatchedStateSurvivesRealTailReadFailure` 在注入读错前未达到原6秒held-tail复合阶段：真实新增画音存在，最终正常时钟10.486秒、原输入约10.392秒，未到片尾门；源仍挂起、validator0、ended0，未由此证明已看状态保存错误或原生音频根因。原断言和期限不变，原xcresult及附件保留于 `ci-lifecycle-build4-ios-r1/`。新诊断仅把已有数值白名单音频时序附到这两个原已看保留用例；当前完整修复和发布门禁仍未完成。build4公证候选保留，尚未公开；后续源码补充了随包来源说明日期，最终分发须重新匹配该资源。
+
+> build4 分发候选已实际完成：Mac App / DMG 公证均 Accepted，票据、严格签名与 Gatekeeper 全部通过。只读挂载确认卷名 AetherFilm、build4 及 App / Applications / Notices / 安装说明；DMG SHA256 `a644996bfc2efc8d8e0e6ce94282aa943294063c39b2242d9a4c5a0b55cb2230`，30,758,771 字节。远程 Mac mini 独立目录安装后版本、票据、严格签名与 Gatekeeper 通过；不认证实际播放。Mac 普通 CI37623016669 原 xcresult 实际62通过 / 0失败 / 0跳过、原生崩溃0、runtime warnings为空，79份附件及8份停止换片命令快照已核对。iOS 普通 CI 仍运行，签名归档不替代真机验收。证据：`release-build4-dmg-r3-review.json`、`release-build4-remote-install-r1.json`、`ci-lifecycle-build4-mac-r1/`。
+
+> build4 分发进度：125a2ad 的普通 Mac Release 与 iOS 签名归档均构建成功，版本与快照类已核对，未链接 ASAN。CI37623016669 运行中。两次 App 公证 Accepted，DMG 等待出现连接超时；服务实际收到请求且仍 In Progress，不能将超时记为请求失败或完成。旧脚本错误收尾删除了两次精确 DMG，现修正为先保存提交回执、失败时保留精确签名 App / DMG。实际函数的失败控制保留原 exit73、回执和字节，未认证服务公证。新版候选仍在打包，当前无新公开下载。
+
+> 当前源码候选：v0.1.1 / build4，包含快照生命周期修复；以下6b17364 CI为修复前最近一次普通CI失败记录。新提交的普通CI与新安装包验收尚待完成。
+
+> 当前发布门禁（2026-10-07）：提交 `6b17364` 的 [CI37607953659](https://github.com/bcblr1993/AetherFilm/actions/runs/37607953659) 整体失败。Mac实际62通过 / 0失败 / 0跳过，原生崩溃采集0条；iOS实际69通过 / 1失败 / 1私有NAS条件跳过。唯一失败为真实SMB第二轮打开后跳转62秒：首次运行正常时钟在提交后4.65秒到达64.961秒，已经越过原62.2～64秒目标窗口，随后时钟继续推进。不能将本轮解释为固定时钟停滞，也不能记为根因修复。原断言和期限不变；证据为 `.build/P0Optimization20261006/ci-stop-change-phase-{ios-seek,mac}-review.json` 及原xcresult。
+
+Mac本机原生ASAN停止换片20轮专项实际执行14轮：13通过 / 1原生abort失败，exit65。匹配的诊断框架UUID与ASAN已由进程采样证明加载；第14轮调用栈从AetherHandleMediaStopping进入播放器析构、VLCAudio释放、vlc_player_Delete和vlc_join，线程join错误11对应Darwin EDEADLK。停止回调直接读取弱播放器以复制数值快照的路径已识别；该证据不证明旧空timer链表SIGSEGV具有相同根因。新候选将数值快照改为事件处理器持有的独立对象，原生回调不再为快照读取提升弱播放器；固定输入不变，补丁 / 哈希可复现，frozenApproved已设为true，第二次独立生成与已测试源码22文件逐字节一致，两端ASAN测试构建均exit0，实际二进制快照类及独立测试包严格签名已核对；相同Mac原用例20轮ASAN回归实际20通过 / 0失败 / 0跳过，原生崩溃及ASAN错误0条、runtime warnings为空，160份命令阶段附件已核对（总附件200）。该已捕获的停止快照生命周期路径已通过本轮回归；旧空timer链表SIGSEGV相同根因仍未证明。修复候选的完整iOS ASAN播放实际70通过 / 0失败 / 1私有NAS条件跳过，runtime warnings为空、ASAN错误0条，86份附件已导出（`bridge-lifecycle-ios-full-asan-r1`）。完整Mac首轮被原排他会话门禁拦截，exit2、实际0项；确认无冲突后第二轮完整执行62通过 / 0失败 / 0跳过，exit0，runtime warnings为空，ASAN错误与原生崩溃0条，79份附件及清理exit0已核对（`bridge-lifecycle-mac-full-asan-r2`）。生产Native8的Mac / iOS真机 / iOS模拟器三平台消费者编译链接均exit0，ARC、单一artifact、命名空间及最低26版本已核对（`bridge-lifecycle-consumer-verification-r2`）；仅证明编译链接。非诊断完整CI及真机 / 分发门禁仍待完成。证据为 `bridge-lifecycle-mac-stop-asan-r1/` 原xcresult、summary / review及附件。原结果、原生崩溃和failure-review保留于 `native-mac-core-asan-stop-local-r1/`。
+
+
+生产Native8框架对照同样以XCTest建立连接前挂起结束（exit65，实际播放用例0项，594.934秒）；非ASAN、远程Xcode26.5构建、同一6b17364源码。该启动失败并非只发生在ASAN诊断框架下，具体会话原因仍未确认。原xcresult及review保留于 `native-core-stock26-5-control-remote-r1/` 和 `native-core-stock26-5-control-r1-review.json`；不认证播放或崩溃修复。iOS模拟器独立ASAN诊断内核已完成：中断后的原日志到达成功终点且完整归档存在，原退出码未收取；保留原归档后同一独立缓存的增量构建实际exit0。302模块入口与插件归档一致，timer对象含ASAN检查，诊断框架两目标exit0、arm64 / min26 / SDK27通过。独立App进程采样确认实际加载框架UUID DD43B4F0-D74E-3408-A0CD-40E0646BE5D7及ASAN。完整原播放测试实际70通过 / 0失败 / 1私有NAS条件跳过，runtime warnings为空，播放日志ASAN错误0条；SMB两轮20次跳转、停止换片及8份命令阶段附件保留。本轮未复现故障，不认证历史间歇故障根因修复或真机 / 发布验收。证据为 `native-sim-core-asan-playback-r2.xcresult`、对应summary / review及附件。
+
+
+诊断内核和VLCKit框架已实际构建成功，302个模块入口与插件归档一致，故障相关timer目标含ASAN引用。远程进程已确认加载诊断框架和ASAN。首轮XCTest建立连接前挂起，exit65、实际播放用例0项，原结果保留于 `native-core-stop-asan-remote-r1/`。匹配远程Xcode26.5的当前源码测试包已构建成功，215个受保护源码文件与提交快照一致；第二轮也以相同的XCTest建立连接前挂起结束，exit65、实际播放用例0项。原结果保留于 `native-core-stop-asan26-5-remote-r1/`；工具链匹配未解决启动问题，不认证原生崩溃修复或发布验收。独立诊断产物未替换生产依赖。
+
+v0.1.1仍为草稿。现有build3签名包不包含字幕截止时间及快照生命周期修复；新版重新打包、真机播放、完整Mac UI / 听音 / VoiceOver及实际兼容恢复的多轨验收仍未完成。官网新Logo与候选说明已上线，公开下载保持v0.1.0。
+
+> 历史发布门禁（2026-10-07）：[CI37606217593](https://github.com/bcblr1993/AetherFilm/actions/runs/37606217593) @ `ddb16f1` 整体失败。Mac实际61通过 / 1原生SIGSEGV失败 / 0跳过，失败为 `testStopAndChangeFilmCancelOldRealSeekCallbacksAndTimers`；UUID匹配的VLCKit故障指令为 `vlc_player_UpdateTimerEvent+140` 的停止事件监听链表读取，空地址8访问，根因未确认。iOS实际69通过 / 1失败 / 1私有NAS条件跳过；暂停片尾跳转第5.24秒仍新增视频、音频与正常时钟，未满足原最后一秒稳定断言。字幕重试和SMB连续跳转本轮通过，不覆盖历史失败。原xcresult、原生崩溃及匹配反汇编保留于 `.build/P0Optimization20261006/ci-subtitle-deadline-*`。
+
+新增仅测试使用的崩溃前快照：在原StopAndChangeFilm的4个命令阶段保存已有只读观察与原生时钟，避免原生退出绕过tearDown；不保存URL或原始日志，原断言、命令及期限不变。两端测试构建通过，本机StopAndChangeFilm与暂停片尾各3轮，实际6通过 / 0失败 / 0跳过，24份命令前快照已独立导出核对。未复现CI故障，不认证根因修复。证据为 `stop-change-paused-focused-r1.xcresult`、对应summary / review及附件。v0.1.1仍为草稿，build3不含字幕截止修复；新包、真机播放、完整Mac UI / 听音 / VoiceOver与恢复多轨验收仍未完成。
+
+> 历史发布门禁（2026-10-07）：[CI37603567466](https://github.com/bcblr1993/AetherFilm/actions/runs/37603567466) @ `11488e3` 整体失败。Mac实际62通过 / 0失败 / 0跳过；iOS实际68通过 / 2失败 / 1私有NAS条件跳过，失败为真实SMB循环跳转到68秒后正常时钟未恢复，以及缺失字幕未在原7秒期限内报可恢复错误。两端runtime warnings为空。此前7acd6a3通过记录仅覆盖该轮执行，不能覆盖本轮失败。
+
+当前修复候选将字幕加载的50次轮询改为原定5秒的真实经过时间预算；新增SMB原生时钟与有界音频数值附件，原断言和期限保持不变。两端测试构建通过；本机专项3个原用例各3轮，实际9通过 / 0失败 / 0跳过。字幕失败后视频继续、重试成功与旧加载器取消均按原用例验证；SMB两轮打开 / 20次跳转 / 关闭停止读取各3轮通过，3份正常时钟和有界音频附件保留。未复现CI的SMB停滞，不认证其根因修复。原始证据为 `.build/P0Optimization20261006/subtitle-deadline-focused-r1.xcresult`、对应summary / review及附件。build3签名包不含这次生产改动，后续需重新打包；v0.1.1仍为草稿。远程iPhone最新检查Developer Mode disabled、tunnel disconnected；真机播放和完整Mac UI / 人工听音 / VoiceOver门禁仍未完成。
+
+> 历史通过记录（2026-10-07）：代码提交 `7acd6a3` 的 [CI37600863876](https://github.com/bcblr1993/AetherFilm/actions/runs/37600863876) 三任务全部通过。Mac26.6.2独立xcresult为62通过 / 0失败 / 0跳过，iOS27为70通过 / 0失败 / 1私有NAS条件跳过；实际用例身份数分别62 / 71，两端runtime warnings为空，Mac原生崩溃报告0条、清理exit0。新增片尾音频诊断已在iOS附件留存，但未复现此前时钟停滞，本轮通过不认证根因修复。v0.1.1 / build3仍为草稿。
+本轮诊断压力专项：从干净代码7acd6a3重新构建iOS测试产品，短GOP与长GOP2倍速原片尾用例各20轮，实际40通过 / 0失败 / 0跳过；runtime warnings为空，40份有界音频附件全部保留。未复现旧异常，不认证根因修复；未改断言、时间边界或期限，未把模拟器当真机。原始证据为 `audio-timing-stress-r1.xcresult`、`audio-timing-stress-r1-{summary,review}.json` 及附件。
+
+
+官网更新已按用户授权公开上线：`aethernative-site` 提交 `5a097e9`，Cloudflare Pages部署 `eb9ac14c-c27b-44dd-bd89-31042cd5e437` 成功；165项测试通过，336页构建与8990站内链接检查通过。线上浏览器已复核中英文产品页、新Logo与候选FAQ，下载入口保持公开v0.1.0。终端HTTP请求403不替代浏览器已见的上线结果；原失败保留。证据：`.build/P0Optimization20261006/website-logo-live-review.json` 及 `website-logo-live-zh.png`。
+
+双音轨 / 内嵌及外挂字幕合成样片的真实SMB两种跳转路径各10次都保持第二音轨与外挂字幕、正常时钟和新音视频输出，但均未实际进入兼容恢复。要求实际恢复的专项原断言失败（各0通过 / 1失败，runtime warnings为空），不能记为恢复验收通过；候选专项和失败保留于 `recovery-track-acceptance-{candidate.swift,review.json}`。远程iPhone再次确认Developer Mode disabled且连接正常，真机播放仍待用户开启后执行。完整Mac UI、人工听音和VoiceOver也仍待验收。
+
+> 上一轮CI记录（2026-10-07）：提交 `cb5b038` 的 [CI37598351828](https://github.com/bcblr1993/AetherFilm/actions/runs/37598351828) 已结束，整体失败。共享Python15项及Swift48项通过 / 8项SMB3条件跳过；Mac26.6.2实际61通过 / 0失败 / 0跳过；iOS27实际68通过 / 1失败 / 1私有NAS条件跳过。唯一失败为短GOP2倍速片尾跳转：跳转后有真实新视频与音频输出及EOS，但正常时钟停留11秒，未满足原时钟连续性门禁。两端runtime warning为空，Mac原生崩溃报告0条；旧失败记录保留，草稿未公开。
+本轮补充仅测试使用的音频数值诊断：白名单核对真实AVSampleBuffer源码与函数，附件只保留模块枚举、启动延迟数值和相对时间，首32 / 末224有界记录，保留现有logger；不改变生产播放代码、时钟、原断言或期限。本机原短GOP2倍速片尾与隐私 / 有界控制各3轮通过，实际6次执行、runtime warnings为空。3轮均捕获真实AVSampleBuffer启动事件，本机延迟约40～91ms；尚未复现CI约5秒未来时钟，不能认证根因修复。两端测试构建通过，证据为 `.build/P0Optimization20261006/audio-timing-tail-r1-{summary,review}.json` 及附件。继续完整CI取得失败环境证据，草稿保持。
+
+
+> 上一轮状态（2026-10-07）：候选 v0.1.1 / build3。提交 5d8b2bc 的 CI37595707384 整体失败：共享通过；Mac26.6.2 实际61通过 / 0失败 / 0跳过；iOS27实际65通过 / 4失败 / 1私有NAS跳过。两端 xcresult runtime warning 为空，Mac原生崩溃采集0条。GitHub Release仍为草稿，未公开发布。
+
+> 2026-10-06的P0 / NAS优化阶段记录保留于 [TEST_MATRIX.md](TEST_MATRIX.md)。旧v0.1.0公开DMG的证据不覆盖新改动；最新候选和验收限制见下方 Current candidate，历史失败不因本轮通过而覆盖。
+
 # Release gates
+
+## Current packaged candidate: v0.1.1 / build9 (2026-10-09)
+
+Frozen source `7236f2deaa6e1d06ccab50ffae0b0482fc142620` contains the read-only Mac import bookmark fix and the hidden-controls shortcut fix. All226 tracked files match the source snapshot. Release build, Developer ID signature, App / DMG notarization and stapling succeeded. Candidate DMG SHA256 is `bdd9c8fc0669f3ea581d1a061bfb4a42355ffdfcbc257198acc701b491179a93`; the uniquely named build9 draft asset has the same server digest. The release remains draft; older candidate assets and historical failures are preserved.
+
+CI37798020058 completed successfully in all three jobs. Downloaded original results contain Mac26.6.2:63 passed /0 failed /1 explicit private-NAS skip (64 unique identities), and iOS27:70 passed /0 failed /1 same private-NAS skip (71 unique identities). These skips do not certify real NAS access. Earlier intermittent iOS long-GOP failure was not reproduced and is not claimed resolved.
+
+Tart macos27 has Gatekeeper enabled and accepted the installed formal build9 App as Notarized Developer ID. Actual external-file import, advancing video, stable Space pause after controls hide, resume, progress-bar seek, normal quit and relaunch with persisted file access / continuation were observed. Evidence and cleanup are retained in `.build/Build9InstalledVM-20261008-r1/`; all owned VM files, processes, mounts and Dock items were removed and a fresh residual scan was empty.
+
+The complete Mac UI target was requested through a dedicated LaunchAgent in the remote Mac's logged-in Aqua session. Its runner timed out enabling automation mode (exit65), with zero actual test methods executed. TCC logged a denied Developer Tools preflight for the UI runner; this is a permission diagnostic, not proof of the sole timeout cause. Original result, system log and verified cleanup are retained in `.build/Build9UIQA-20261009-r1/`. Remote test products, scripts, results and LaunchAgent were removed after evidence retrieval; residual review is empty. Do not repeat the earlier assumption that the desktop was not logged in.
+
+Real NAS playback, complete graphical UI, listening / VoiceOver, old-data upgrade and actual compatibility recovery remain unaccepted. Physical iPhone acceptance is deferred by the user. Public release, anonymous final download and the website's new-version download remain pending.
+
+Upgrade follow-up: the actual public v0.1.0/build1 fails importing the external sample on macos27. A sample created inside this run's new App container was selected through NSOpenPanel, imported and played by the unmodified old App, producing a66.348-second record. Replacing only the App with formal build9 preserves the original library bytes during installation, and the new App displays1:06 and resumes the sample without reselection; the item ID and original bookmark remain identical. This verifies this real old container-local record's migration and continuation, not external-bookmark or NAS / Keychain upgrade acceptance. Evidence is `.build/Build9UpgradeVM-20261009-r1/`; all owned apps, files, containers, mounts, processes and Dock items were cleaned and residual review is empty.
+
+## Build8 package preparation (2026-10-08)
+
+Frozen source `27824e6be780c855a82a5bb2c59ed91e7d0fb0dd` produced v0.1.1/build8. Release build succeeded; original VLCKit umbrella-header warnings were retained. Developer ID signing, App and DMG notarization, stapling and validation completed. DMG SHA256: `c4c3b15fb271e32f2b67734ba63181ee6c4e87d35dcc37933dfc9e59a13ed473`. Read-only inspection confirmed build8 and the App / Applications link / Notices / installation instructions. Host Gatekeeper is disabled and is not enforcement evidence. Tart macos27 explicitly reported assessments enabled and accepted both App and DMG as Notarized Developer ID; it received identical DMG bytes. This checks distribution assessment, not installed playback or upgrade acceptance. Evidence is under `.build/ReleaseBuild8-20261008-r1/`.
+
+The corresponding source archive is verified against all226 tracked files in the frozen commit, SHA256 `12fa336d5c5b40ed814d4f3d8789f7f294e32207dd1a3def74b1a3c442d7c399`. CI37794952534 is still running; shared-tests passed, platform-builds and macos26-playback remain in progress. Executed UI regression, installed playback, real NAS, listening, VoiceOver and the other recorded Mac gates remain open. No new public release or tag was published.
+
+## Historical packaged candidate: v0.1.1 / build7 (2026-10-08)
+
+The build8 source candidate additionally fixes Mac keyboard shortcuts disappearing when playback controls auto-hide and extends the original UI regression. Both ARM64 test builds of the fix pass. The remote UI runner timed out before executing the new regression; the console owner is currently root and a logged-in user desktop has been requested. Full CI, executed UI regression and a new signed package remain pending. Build7 and its CI evidence below certify only their recorded source, not these later changes.
+
+Build7 includes the seek output-statistics refresh from `4d08bc3`, in addition to Native9, the selected logo3 and the agreed NAS navigation / autoplay improvements. `Version.xcconfig` remains the sole build-version source; minimum macOS / iOS stays26.0. Build6 signed packages are preserved as earlier candidates and do not certify this newer source.
+
+| Gate | Current evidence / remaining work |
+| --- | --- |
+| macOS minimum-system playback | CI37673580611 for build7 @775bb26:62 passed,0 failed,0 skipped; runtime warnings0, native crashes0/unreadable0; compiled case identities and merge tree verified. |
+| iOS full playback / persistence / SMB | Same build7 CI:70 passed,0 failed,1 private-NAS conditional skip; compiled71 identities match, runtime warnings0. This does not certify the user's NAS. |
+| Source and dependency distribution | Published Native9 binary and corresponding source downloads verified; complete source pins / reconstruction / ordinary wrapper and three-platform consumer evidence retained. |
+| Signing / packaging | Build7 DMG SHA256 3ca92ab14cf428444fd04d8b228c403ffb497fce8012024c59d3bef67a624817; signature, notarization and enabled Gatekeeper accepted. Clean Tart installation and H.264 playback observed. Old-data upgrade, complete installed playback acceptance and public download remain open. |
+| Real environments / manual gates | User deferred iPhone acceptance and requested Mac first. Actual compatibility recovery with second audio / external subtitle, complete Mac UI, listening, VoiceOver and real user NAS remain unaccepted. The new Mac private-NAS test executed once and failed at the production provider directory read (`connectionFailed`), despite independent bounded reads succeeding. Follow-up App TCP paths explicitly report `localNetworkDenied=true`, while a standalone instance of the same dependency connects and lists successfully; this identifies a QA local-network permission restriction, not a proven production SMB defect. See `.build/MacNASDiagnosis-20261008-r2/review.json`; real NAS playback remains unaccepted. Mac UI has19 pass/1 failure/1 skip; original failure attachments show a disabled app/window and a disabled TouchBar without a description. No audit filtering or failure waiver. |
+| Website / public availability | Logo3 presentation and bilingual product information updated at86b90b7 and verified live; public App remainsv0.1.0 andv0.1.1 remains draft. |
+
+Remote production-ID tests hung in sandbox initialization before executing any cases. The distinct QA copy's original complete suite has ended, with every Mach-O section and all entitlements preserved; it does not certify production-container upgrade acceptance. Original failures and evidence are retained under `.build/P0Optimization20261006/deferred-pause-cancel-candidate-r1/FormalNative9-r1/`. Clean VM manual control runs were interrupted; neither constitutes complete Mac acceptance. Each run's files are removed after evidence is retained on the host; the latest interrupted run's application, fixtures, staging directory, new containers, processes, mounts and Dock entry have been removed and independently checked. Cleanup evidence is retained on the host in `.build/MacControlsQA-20261008-r3/`; playback acceptance remains incomplete.
 
 Target: v0.1.0, macOS-first public distribution; Apple Silicon only and minimum
 macOS / iOS 26.0. v0.1.0 macOS release published on GitHub with Developer ID signature,
 Apple Notarization Accepted and stapled DMG.
+
+## Historical candidate: 2026-10-07 (v0.1.1 / build3)
+
+当前源码 `6b17364` 的完整CI失败（iOS69通过 / 1失败 / 1跳过，Mac62通过）。现有build3分发包不含后续字幕截止时间修复，不能作为当前源码的安装验收证据。当前门禁和诊断限制见文首及 [TEST_MATRIX.md](TEST_MATRIX.md)；下方保留历史候选分发证据。
+
+- 用户选定的3号浅色玻璃A已接入macOS / iOS图标；版本唯一来源为 `Version.xcconfig`，最低系统仍为26.0。
+- 提交 `422ba86` 的CI [37588324314](https://github.com/bcblr1993/AetherFilm/actions/runs/37588324314) 三任务全部成功。独立xcresult为Mac26.6.2播放60通过 / 0失败 / 0跳过，iOS27模拟器播放68通过 / 0失败 / 1私有NAS opt-in跳过；两端runtime warnings均为空。此前37584686443与37586192664的片尾失败、共享认证失败及Mac原生崩溃仍保留，重跑成功不认证根因修复。
+- 当前DMG `artifacts/AetherFilm-0.1.1-macos-arm64.dmg` SHA256为 `81c762002e3c048fe507afe79429bcf3e396f1255683b529bbc4ead274b80828`。App和DMG公证Accepted、票据验证、严格签名及Gatekeeper通过；只读挂载确认卷名和App / Applications / Notices / 安装说明，远程Mac mini提取的App为build3且签名 / Gatekeeper通过。GitHub草稿资产digest与本地一致；这不等于公开下载或升级验收。
+- iOS签名Release归档为 `build/AetherFilm-iOS-0.1.1-build3.xcarchive`。build3已实际安装并启动于用户批准的远程Mac mini连接的iPhone16ProMax / iOS27.0.1；安装启动不等于播放验收，未公开分发iOS。
+- 真机首轮请求常用容器、4K HEVC及2倍速长GOP片尾三项原用例，命令exit70、实际0项执行，Xcode明确报告Developer Mode disabled。设备当前paired / available但开发者模式仍disabled；保留失败结果，等待用户在设备设置中开启后重跑，未弱化原断言或期限。
+- 当前完整Mac UI、听音、VoiceOver、完整真机及兼容恢复路径的多音轨 / 外挂字幕等仍未闭合。是否先公开macOS并披露风险的范围取舍仍等待用户回复；维持发布草稿。
+
+Evidence: `.build/P0Optimization20261006/` 下 `release-v011-build3-evidence.json`、`release-v011-build3-remote-install.json`、`release-v011-build3-ios-review.json`、`release-v011-build3-device-install.json`、`physical-build3-r1-outcome.json`、`ci-native-diagnostics-{mac,ios}-r1-summary.json`；公证记录 `artifacts/notarization-0.1.1.8k9X7s/`。旧build2候选保留于 `artifacts/candidates-v0.1.1-build2/`。
 
 ## Release published: 2026-10-06 (v0.1.0)
 

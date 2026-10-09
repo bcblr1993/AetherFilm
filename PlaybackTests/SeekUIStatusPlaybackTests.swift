@@ -17,6 +17,7 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
     private var origin = ContinuousClock.now
     private var observations: [SeekUIRuntimeObservation] = []
     private var ended = 0
+    private var audioTiming: TailAudioTimingEvents!
     #if os(macOS)
     private var window: NSWindow!
     private var surface: VLCVideoView!
@@ -30,6 +31,7 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
         origin = .now
         observations = []
         ended = 0
+        audioTiming = TailAudioTimingEvents(origin: origin)
         player = FilmPlayer()
         #if os(macOS)
         window = NSWindow(contentRect: NSRect(x: 60, y: 60, width: 640, height: 360),
@@ -63,6 +65,12 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
     }
 
     override func tearDown() async throws {
+        if let data = audioTiming?.data() {
+            let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+            attachment.name = "Actual local seek and reopen bounded numeric audio timing"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
         record("teardown-before-stop")
         if let data = try? JSONEncoder().encode(observations) {
             let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -240,9 +248,11 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     func testStopAndChangeFilmCancelOldRealSeekCallbacksAndTimers() async throws {
         try await loadLongFixture()
+        attachCrashPhase("warm-up-before-stop-seek")
         player.seek(20)
         XCTAssertEqual(player.seekStatus, .seeking)
         record("seek-before-real-stop")
+        attachCrashPhase("submitted-seek-before-stop")
         player.stop()
         XCTAssertNil(player.seekStatus)
         try await assertNoSeekStatus(seconds: 3.4)
@@ -251,9 +261,11 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
         try await loadLongFixture()
         let oldIdentity = ObjectIdentifier(try XCTUnwrap(player.backendEngineForTesting))
+        attachCrashPhase("warm-up-before-change-seek")
         player.seek(30)
         XCTAssertEqual(player.seekStatus, .seeking)
         record("old-session-seek-before-change")
+        attachCrashPhase("submitted-seek-before-film-change")
         player.load(url: try fixture("clip-h264.mp4"))
         XCTAssertNil(player.seekStatus)
         record("real-new-film-load-clears-old-presentation")
@@ -272,6 +284,9 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     private func loadLongFixture() async throws {
         player.load(url: try fixture("clip-smb-long.mp4"))
+        if let library = player.backendEngineForTesting?.libraryInstance {
+            library.loggers = (library.loggers ?? []) + [audioTiming!]
+        }
         try await wait("real long local video and audio warm-up", timeout: 12) {
             self.player.duration > 70 && (self.player.backendClockTime ?? 0) > 0.8
                 && self.player.backendClockIsRunning && self.player.displayedVideoFrames > 0
@@ -319,6 +334,22 @@ final class SeekUIStatusPlaybackTests: XCTestCase {
 
     private func record(_ phase: String) {
         if let player { observations.append(.capture(player: player, origin: origin, phase: phase)) }
+    }
+
+    // A native process crash bypasses tearDown. Export the existing readonly
+    // observations before the commands under investigation, without URLs or logs.
+    private func attachCrashPhase(_ phase: String) {
+        record(phase)
+        for (label, data) in [
+            ("observations", try? JSONEncoder().encode(observations)),
+            ("native clock", player.debugLifecycleTraceData())
+        ] {
+            guard let data else { continue }
+            let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+            attachment.name = "Actual stop/change \(phase) \(label)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
     }
 
     private func wait(_ label: String, timeout: Double,
@@ -380,6 +411,8 @@ struct SeekUIRuntimeObservation: Codable {
     let actualClockRunning: Bool
     let displayedVideoFrames: UInt64
     let playedAudioBuffers: UInt64
+    let decodedVideoFrames: UInt64?
+    let decodedAudioBuffers: UInt64?
 
     @MainActor
     static func capture(player: FilmPlayer, origin: ContinuousClock.Instant, phase: String) -> Self {
@@ -400,7 +433,8 @@ struct SeekUIRuntimeObservation: Codable {
                      rawCoreTimeMicroseconds: rawCoreTime,
                      rawCoreTimeMilliseconds: rawCoreTime.map { Double($0) / 1000 },
                      actualClockRunning: player.backendClockIsRunning,
-                     displayedVideoFrames: player.displayedVideoFrames, playedAudioBuffers: player.playedAudioBuffers)
+                     displayedVideoFrames: player.displayedVideoFrames, playedAudioBuffers: player.playedAudioBuffers,
+                     decodedVideoFrames: player.decodedVideoFrames, decodedAudioBuffers: player.decodedAudioBuffers)
     }
 }
 

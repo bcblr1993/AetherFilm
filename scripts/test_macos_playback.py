@@ -14,6 +14,15 @@ import sys
 import time
 from urllib.parse import urlsplit
 import uuid
+import importlib.util
+
+
+def retain_native_crashes(since, output):
+    specification = importlib.util.spec_from_file_location(
+        "playback_crashes", Path(__file__).with_name("collect_playback_crashes.py"))
+    module = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(module)
+    module.collect(Path.home() / "Library/Logs/DiagnosticReports", since, output)
 
 
 def test_cases(tree):
@@ -31,6 +40,21 @@ def test_cases(tree):
 
     visit(tree)
     return rows
+
+
+def complete_result(summary, cases, expected_cases, raw):
+    """Retain every compiled case; only the explicit private NAS opt-in may skip."""
+    private_nas = "UserNASPlaybackTests/testReadonlyUserNASRangesPlaybackAndSeek()"
+    skipped = [name for name, result in cases if result == "Skipped"]
+    allowed_skip = (skipped == [private_nas]
+                    and "Test skipped - Requires the explicit private NAS acceptance launcher." in raw)
+    return (Counter(name for name, _ in cases) == expected_cases
+            and summary.get("passedTests") == sum(result == "Passed" for _, result in cases)
+            and summary.get("skippedTests") == len(skipped)
+            and summary.get("failedTests") == 0 and summary.get("expectedFailures", 0) == 0
+            and (not skipped or allowed_skip)
+            and all(result == "Passed" or (name == private_nas and result == "Skipped")
+                    for name, result in cases))
 
 
 def owns_console_session(console=None):
@@ -118,6 +142,7 @@ def main():
                "-test-timeouts-enabled", "YES", "-default-test-execution-time-allowance", "120",
                "-maximum-test-execution-time-allowance", "180"]
     status = own / "exit-status.json"
+    crash_evidence_start = time.time()
     child = own / "run.py"
     agent = own / "launchagent.plist"
     label = "com.aethernative.qa.macplayback." + session
@@ -160,16 +185,18 @@ def main():
         summary = json.loads((own / "summary.json").read_text())
         cases = test_cases(json.loads((own / "tests.json").read_text()))
         raw = "\n".join((own / name).read_text(errors="replace") for name in ("test.log", "stderr.log"))
-        if (summary.get("passedTests") != len(compiled) or summary.get("failedTests") != 0
-                or summary.get("skippedTests") != 0 or summary.get("expectedFailures", 0)
-                or Counter(name for name, _ in cases) != expected_cases
-                or any(value != "Passed" for _, value in cases)
+        if (not complete_result(summary, cases, expected_cases, raw)
                 or any(text in raw for text in ("Main Thread Checker:", "UI API called on a background thread",
                                                 "GL_INVALID_FRAMEBUFFER_OPERATION"))):
             code = code or 1
         subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
         return code
     finally:
+        try:
+            retain_native_crashes(crash_evidence_start, own / "native-crashes.json")
+        except Exception:
+            # Do not disclose parser input or prevent removal of the owned agent.
+            print("Native crash evidence collection failed; original test status is retained.", file=sys.stderr)
         try:
             if attempted_bootstrap:
                 cleanup = subprocess.run(["launchctl", "bootout", "gui/" + str(os.getuid()) + "/" + label],

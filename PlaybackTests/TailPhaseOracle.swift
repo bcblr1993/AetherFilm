@@ -1,4 +1,5 @@
 import Foundation
+@testable import AetherFilm
 
 /// The fixture must not deadlock libVLC's file-length probe. Only the exact
 /// final byte of the already size-validated file may bypass the held tail.
@@ -26,6 +27,23 @@ struct TailPhaseTrace: Decodable {
     let evictedEvents: Int
     let totalEvents: Int
     let records: [Record]
+
+    @MainActor static func capture(_ player: FilmPlayer) -> Self? {
+        // Preserve the exact raw records, but avoid a JSON encode/decode on
+        // MainActor for every poll while the one-second tail is playing.
+        guard let snapshot = player.debugLifecycleSnapshot() else { return nil }
+        return from(snapshot)
+    }
+
+    static func from(_ snapshot: PlaybackLifecycleTrace.Snapshot) -> Self {
+        .init(evictedEvents: snapshot.evictedEvents, totalEvents: snapshot.totalEvents,
+                     records: snapshot.records.map {
+            Record(sequence: $0.sequence, eventCode: $0.eventCode, generation: $0.generation,
+                   sourceSequence: $0.sourceSequence, timeMicroseconds: $0.timeMicroseconds,
+                   systemDateMicroseconds: $0.systemDateMicroseconds, targetSeconds: $0.targetSeconds,
+                   displayedVideoFrames: $0.displayedVideoFrames, playedAudioBuffers: $0.playedAudioBuffers)
+        })
+    }
 
     func latestSeekMarker() -> Record? {
         records.last { $0.eventCode == 17 }

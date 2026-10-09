@@ -7,7 +7,7 @@ let package = Package(
     products: [.library(name: "VLCKit", targets: ["VLCKit"])],
     targets: [.binaryTarget(
         name: "VLCKit",
-        url: "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004-native8/VLCKit-AetherFilm-native8-arm64.xcframework.zip",
-        checksum: "1ae7007adbfe8881472682a928caa8cee5011114b4b6d3002a1337c223230260"
+        url: "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261008-native9/VLCKit-AetherFilm-native9-arm64.xcframework.zip",
+        checksum: "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493"
     )]
 )

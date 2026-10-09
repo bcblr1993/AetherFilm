@@ -94,6 +94,42 @@ enum AppSection: Hashable, Identifiable {
     }
     func progress(for item: MediaItem) -> PlaybackProgress? { snapshot.progress[item.id] }
 
+    var favoriteDirectories: [String] {
+        guard let source = selectedConnection else { return [] }
+        return (snapshot.nasBrowse[source.id.uuidString]?.favoritePaths ?? []).filter {
+            (try? SMBPath.isWithin($0, root: source.rootPath)) == true
+        }
+    }
+    var currentDirectoryIsFavorite: Bool { favoriteDirectories.contains(currentPath) }
+    var lastBrowsedItemID: String? {
+        guard let source = selectedConnection,
+              let state = snapshot.nasBrowse[source.id.uuidString], state.lastPath == currentPath else { return nil }
+        return state.lastItemID
+    }
+
+    func toggleFavoriteDirectory() async {
+        guard let source = selectedConnection, !isLoading,
+              (try? SMBPath.isWithin(currentPath, root: source.rootPath)) == true else { return }
+        let key = source.id.uuidString
+        let previous = snapshot.nasBrowse[key]
+        var state = snapshot.nasBrowse[key] ?? NASBrowseState(lastPath: currentPath)
+        if state.favoritePaths.contains(currentPath) { state.favoritePaths.removeAll { $0 == currentPath } }
+        else { state.favoritePaths.append(currentPath) }
+        snapshot.nasBrowse[key] = state
+        do { try await persist() }
+        catch {
+            if snapshot.nasBrowse[key] == state { snapshot.nasBrowse[key] = previous }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func setAutomaticallyPlayNext(_ enabled: Bool) async {
+        let previous = snapshot.automaticallyPlayNext
+        snapshot.automaticallyPlayNext = enabled
+        do { try await persist() }
+        catch { snapshot.automaticallyPlayNext = previous; errorMessage = error.localizedDescription }
+    }
+
     func load() async {
         guard !loaded else { return }
         if let loadingTask { await loadingTask.value; return }
@@ -117,7 +153,11 @@ enum AppSection: Hashable, Identifiable {
         browseGeneration = UUID()
         errorMessage = nil
         directoryItems = []
-        currentPath = selectedConnection?.rootPath ?? ""
+        if let source = selectedConnection {
+            let saved = snapshot.nasBrowse[source.id.uuidString]?.lastPath
+            currentPath = saved.flatMap { (try? SMBPath.isWithin($0, root: source.rootPath)) == true ? $0 : nil }
+                ?? source.rootPath
+        } else { currentPath = "" }
         isLoading = false
         if selectedConnection != nil { await browse(path: currentPath) }
     }
@@ -135,6 +175,12 @@ enum AppSection: Hashable, Identifiable {
             try Task.checkCancellation()
             guard browseGeneration == generation, selectedConnection?.id == connection.id else { return }
             currentPath = canonical; directoryItems = entries
+            let key = connection.id.uuidString
+            var state = snapshot.nasBrowse[key] ?? NASBrowseState(lastPath: canonical)
+            if state.lastPath != canonical { state.lastItemID = nil }
+            state.lastPath = canonical
+            snapshot.nasBrowse[key] = state
+            try await persist()
         } catch is CancellationError { }
         catch { if browseGeneration == generation { errorMessage = error.localizedDescription } }
     }
@@ -179,7 +225,7 @@ enum AppSection: Hashable, Identifiable {
                 guard !snapshot.localItems.contains(where: { $0.id == originalID || $0.path == url.path }) else { continue }
                 var item: MediaItem
                 #if os(macOS)
-                let bookmark = try url.bookmarkData(options: [.withSecurityScope], includingResourceValuesForKeys: nil, relativeTo: nil)
+                let bookmark = try url.bookmarkData(options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
                 item = MediaItem(name: url.lastPathComponent, path: url.path, bookmark: bookmark)
                 #else
                 let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("Imports")
@@ -204,6 +250,13 @@ enum AppSection: Hashable, Identifiable {
         if item.isDirectory { await browse(path: item.path); return }
         queue = MediaFormats.sorted(displayItems.filter(\.isVideo))
         playingItem = item
+        if let source = selectedConnection, item.sourceID == source.id {
+            let key = source.id.uuidString
+            var state = snapshot.nasBrowse[key] ?? NASBrowseState(lastPath: currentPath)
+            state.lastItemID = item.id
+            snapshot.nasBrowse[key] = state
+            do { try await persist() } catch { errorMessage = error.localizedDescription }
+        }
     }
 
     func preparePlayback(_ item: MediaItem) async throws -> PreparedPlayback {
@@ -373,7 +426,7 @@ enum AppSection: Hashable, Identifiable {
         await flushProgress()
         guard await canCompletePlayback(after: item, sessionID: sessionID),
               isCurrentPlayback(item, sessionID: sessionID) else { return }
-        if let next = nextItem(after: item) { playingItem = next }
+        if snapshot.automaticallyPlayNext, let next = nextItem(after: item) { playingItem = next }
     }
 
     private func isCurrentPlayback(_ item: MediaItem, sessionID: UUID) -> Bool {
@@ -414,6 +467,7 @@ enum AppSection: Hashable, Identifiable {
             let before = snapshot
             if playingItem?.sourceID == connection.id { playingItem = nil; await stopStreaming() }
             snapshot.connections.removeAll { $0.id == connection.id }
+            snapshot.nasBrowse.removeValue(forKey: connection.id.uuidString)
             let sourceItemIDs = Set(snapshot.recentItems.filter { $0.sourceID == connection.id }.map(\.id))
             snapshot.recentItems.removeAll { $0.sourceID == connection.id }
             let sourcePrefix = connection.id.uuidString + ":"

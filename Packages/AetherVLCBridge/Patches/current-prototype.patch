@@ -1,69 +1,39 @@
 --- src/AetherVLCMediaPlayer.m
 +++ src/AetherVLCMediaPlayer.m
-@@ -41 +41 @@
+@@ -29,0 +30 @@
++#import <objc/runtime.h>
+@@ -41 +42 @@
 -# import <VLCVideoView.h>
 +#import <VLCKit/VLCVideoView.h>
-@@ -119,0 +120,4 @@
-+- (void)aetherRecordInputTime:(int64_t)time;
-+- (void)aetherRecordError;
-+- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
-+- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime;
-@@ -124,0 +129,5 @@
+@@ -102,0 +104,80 @@
++// Native callbacks read this primitive snapshot without promoting the weak player.
++// Releasing a snapshot on a core thread cannot destroy or join the native player.
++@interface AetherVLCEventSnapshot : NSObject
++{
 +    NSLock *_aetherSnapshotLock;
 +    int64_t _aetherInputTime;
 +    BOOL _aetherHadError;
 +    uint64_t _aetherSeekCallbackSequence;
 +    int64_t _aetherSeekTargetTime;
-@@ -166,0 +176,2 @@
-+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerClockTime:position:systemDate:)])
-+                [mediaPlayer.delegate mediaPlayerClockTime:newValue.ts_us position:newValue.position systemDate:newValue.system_date_us];
-@@ -193,0 +205,5 @@
-+        int64_t targetTime = isSeeking ? newTimePoint.ts_us : -1;
-+        // Capture only immutable callback identity under our existing lock.
-+        // No libVLC call or delegate delivery occurs while the lock is held.
-+        uint64_t sequence = [(AetherVLCMediaPlayer *)eventsHandler.object
-+            aetherRecordSeeking:isSeeking targetTime:&targetTime];
-@@ -203,0 +220,2 @@
-+            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSeekingChanged:targetTime:sequence:)])
-+                [mediaPlayer.delegate mediaPlayerSeekingChanged:isSeeking targetTime:targetTime sequence:sequence];
-@@ -238,0 +257,3 @@
-+        // Capture the error before any configured event dispatch can reorder it.
-+        if (newState == VLCMediaPlayerStateError)
-+            [(AetherVLCMediaPlayer *)eventsHandler.object aetherRecordError];
-@@ -636,0 +658,5 @@
-+static_assert(AetherVLCMediaStoppingReasonError == (NSInteger)libvlc_stopping_reason_error
-+           && AetherVLCMediaStoppingReasonEndOfStream == (NSInteger)libvlc_stopping_reason_eos
-+           && AetherVLCMediaStoppingReasonUser == (NSInteger)libvlc_stopping_reason_user,
-+              "Stopping reasons must match the fixed public libVLC ABI");
++}
++- (void)aetherRecordInputTime:(int64_t)time;
++- (void)aetherRecordError;
++- (void)aetherCopyStoppingInputTime:(int64_t *)time hadError:(BOOL *)hadError;
++- (uint64_t)aetherRecordSeeking:(BOOL)seeking targetTime:(int64_t *)targetTime;
++- (uint64_t)seekCallbackSequence;
++@end
 +
-@@ -642,0 +669,6 @@
-+        int64_t inputTime = -1;
-+        BOOL hadError = NO;
-+        AetherVLCMediaPlayer *source = (AetherVLCMediaPlayer *)eventsHandler.object;
-+        [source aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
-+        // The immutable values are captured in the original libVLC callback.
-+        // No delegate or libVLC operation is called while our lock is held.
-@@ -645,2 +677,15 @@
--            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:)])
--                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason];
-+            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:inputTime:hadError:)])
-+                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason inputTime:inputTime hadError:hadError];
-+        }];
++@implementation AetherVLCEventSnapshot
++- (instancetype)init
++{
++    if (self = [super init]) {
++        _aetherSnapshotLock = [[NSLock alloc] init];
++        _aetherSeekTargetTime = -1;
++        _aetherInputTime = -1;
 +    }
++    return self;
 +}
 +
-+static void AetherHandleInputPosition(void *opaque, libvlc_time_t time, double position)
-+{
-+    @autoreleasepool {
-+        VLCEventsHandler *handler = (__bridge VLCEventsHandler *)opaque;
-+        [(AetherVLCMediaPlayer *)handler.object aetherRecordInputTime:time];
-+        [handler handleEvent:^(id object) {
-+            AetherVLCMediaPlayer *player = object;
-+            if ([player.delegate respondsToSelector:@selector(mediaPlayerInputTime:position:)])
-+                [player.delegate mediaPlayerInputTime:time position:position];
-@@ -651,0 +697 @@
-+    .on_position_changed = AetherHandleInputPosition,
-@@ -698,0 +745,43 @@
 +- (void)aetherRecordInputTime:(int64_t)time
 +{
 +    [_aetherSnapshotLock lock];
@@ -107,18 +77,94 @@
 +    [_aetherSnapshotLock unlock];
 +}
 +
-@@ -707,0 +797,4 @@
-+        _aetherSnapshotLock = [[NSLock alloc] init];
-+        _aetherSeekTargetTime = -1;
-+        _aetherInputTime = -1;
-+        _aetherHadError = NO;
-@@ -1102,0 +1196,5 @@
++@end
++
++static char AetherVLCEventSnapshotKey;
++
++static AetherVLCEventSnapshot *AetherSnapshotForHandler(VLCEventsHandler *handler)
++{
++    return objc_getAssociatedObject(handler, &AetherVLCEventSnapshotKey);
++}
++
+@@ -124,0 +206 @@
++    AetherVLCEventSnapshot *_aetherSnapshot;
+@@ -166,0 +249,2 @@
++            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerClockTime:position:systemDate:)])
++                [mediaPlayer.delegate mediaPlayerClockTime:newValue.ts_us position:newValue.position systemDate:newValue.system_date_us];
+@@ -176,2 +260,7 @@
+-            AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
+-            [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
++            // Drain notifications while handleEvent still owns the player.
++            // Otherwise an autoreleased notification can release the last player
++            // on this timer callback and re-enter unwatch_time's timer lock.
++            @autoreleasepool {
++                AetherVLCMediaPlayer *mediaPlayer = (AetherVLCMediaPlayer *)object;
++                [mediaPlayer mediaPlayerHandleTimeDiscontinuity:system_date_us];
++            }
+@@ -193,0 +283,5 @@
++        int64_t targetTime = isSeeking ? newTimePoint.ts_us : -1;
++        // Capture only immutable callback identity under our existing lock.
++        // No libVLC call or delegate delivery occurs while the lock is held.
++        uint64_t sequence = [AetherSnapshotForHandler(eventsHandler)
++            aetherRecordSeeking:isSeeking targetTime:&targetTime];
+@@ -203,0 +298,2 @@
++            if ([mediaPlayer.delegate respondsToSelector:@selector(mediaPlayerSeekingChanged:targetTime:sequence:)])
++                [mediaPlayer.delegate mediaPlayerSeekingChanged:isSeeking targetTime:targetTime sequence:sequence];
+@@ -238,0 +335,3 @@
++        // Capture the error before any configured event dispatch can reorder it.
++        if (newState == VLCMediaPlayerStateError)
++            [AetherSnapshotForHandler(eventsHandler) aetherRecordError];
+@@ -636,0 +736,5 @@
++static_assert(AetherVLCMediaStoppingReasonError == (NSInteger)libvlc_stopping_reason_error
++           && AetherVLCMediaStoppingReasonEndOfStream == (NSInteger)libvlc_stopping_reason_eos
++           && AetherVLCMediaStoppingReasonUser == (NSInteger)libvlc_stopping_reason_user,
++              "Stopping reasons must match the fixed public libVLC ABI");
++
+@@ -642,0 +747,6 @@
++        int64_t inputTime = -1;
++        BOOL hadError = NO;
++        AetherVLCEventSnapshot *snapshot = AetherSnapshotForHandler(eventsHandler);
++        [snapshot aetherCopyStoppingInputTime:&inputTime hadError:&hadError];
++        // The immutable values are captured in the original libVLC callback.
++        // No delegate or libVLC operation is called while our lock is held.
+@@ -645,2 +755,15 @@
+-            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:)])
+-                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason];
++            if ([player.delegate respondsToSelector:@selector(mediaPlayerStoppingWithReason:inputTime:hadError:)])
++                [player.delegate mediaPlayerStoppingWithReason:(AetherVLCMediaStoppingReason)reason inputTime:inputTime hadError:hadError];
++        }];
++    }
++}
++
++static void AetherHandleInputPosition(void *opaque, libvlc_time_t time, double position)
++{
++    @autoreleasepool {
++        VLCEventsHandler *handler = (__bridge VLCEventsHandler *)opaque;
++        [AetherSnapshotForHandler(handler) aetherRecordInputTime:time];
++        [handler handleEvent:^(id object) {
++            AetherVLCMediaPlayer *player = object;
++            if ([player.delegate respondsToSelector:@selector(mediaPlayerInputTime:position:)])
++                [player.delegate mediaPlayerInputTime:time position:position];
+@@ -651,0 +775 @@
++    .on_position_changed = AetherHandleInputPosition,
+@@ -698,0 +823,5 @@
++- (uint64_t)seekCallbackSequence
++{
++    return [_aetherSnapshot seekCallbackSequence];
++}
++
+@@ -707,0 +837 @@
++        _aetherSnapshot = [[AetherVLCEventSnapshot alloc] init];
+@@ -712,0 +843,2 @@
++        objc_setAssociatedObject(_eventsHandler, &AetherVLCEventSnapshotKey,
++                                 _aetherSnapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+@@ -1102,0 +1235,5 @@
 +}
 +
 +- (int64_t)diagnosticCoreTimeMicroseconds
 +{
 +    return libvlc_media_player_get_time(_playerInstance);
-@@ -1497,4 +1595,11 @@
+@@ -1497,4 +1634,11 @@
 -        libvlc_media_player_time_point_interpolate(&_lastTimePoint,
 -                                                   system_now_us,
 -                                                   &_lastInterpolatedTime,

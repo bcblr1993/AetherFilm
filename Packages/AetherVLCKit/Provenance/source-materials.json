@@ -7,7 +7,8 @@
   "baseAsset": {
     "name": "AetherFilm-v0.1.0-VLCKit-source-materials.tar.gz",
     "sha256": "350d8d23d66aff59d7734e35afe81d92f12e59a30a14b8ec575a76960601ff72",
-    "bytes": 665341487
+    "bytes": 665341487,
+    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004/AetherFilm-v0.1.0-VLCKit-source-materials.tar.gz"
   },
   "sourceArchives": [
     {

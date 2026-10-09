@@ -32,6 +32,57 @@ import FilmSources
         XCTAssertNil(reopened.progress(for: item))
     }
 
+    func testNASDirectoriesAndLastOpenedRowRestoreAndStayInsideRoot() async throws {
+        let source = SMBConnection(name: "Test NAS", host: "fixture.invalid", share: "Videos", rootPath: "Movies")
+        let provider = BrowseStateProvider()
+        let credentials: @MainActor (SMBConnection) throws -> SMBCredentials = { _ in
+            SMBCredentials(username: "fixture", password: "")
+        }
+        let store = makeStore(smb: provider, credentialsReader: credentials)
+        await store.load(); store.snapshot.connections = [source]
+        await store.select(.smb(source.id))
+        await store.browse(path: "Movies/中文 剧集")
+        await store.toggleFavoriteDirectory()
+        let item = try XCTUnwrap(store.displayItems.first)
+        await store.play(item)
+        await store.select(.local)
+        await store.select(.smb(source.id))
+        XCTAssertEqual(store.currentPath, "Movies/中文 剧集")
+        XCTAssertEqual(store.lastBrowsedItemID, item.id)
+        XCTAssertEqual(store.favoriteDirectories, ["Movies/中文 剧集"])
+
+        let reopened = makeStore(smb: provider, credentialsReader: credentials)
+        await reopened.load(); await reopened.select(.smb(source.id))
+        XCTAssertEqual(reopened.currentPath, "Movies/中文 剧集")
+        XCTAssertEqual(reopened.lastBrowsedItemID, item.id)
+        await reopened.toggleFavoriteDirectory()
+        XCTAssertTrue(reopened.favoriteDirectories.isEmpty)
+        reopened.snapshot.nasBrowse[source.id.uuidString] = NASBrowseState(lastPath: "Other", favoritePaths: ["Other"])
+        await reopened.select(.smb(source.id))
+        XCTAssertEqual(reopened.currentPath, "Movies")
+        XCTAssertTrue(reopened.favoriteDirectories.isEmpty)
+        await reopened.removeConnection(source)
+        XCTAssertNil(reopened.snapshot.nasBrowse[source.id.uuidString])
+    }
+
+    func testAutoplayOffPersistsCompletionAndManualNextStillWorks() async throws {
+        let store = makeStore(); await store.load()
+        let first = MediaItem(name: "episode1.mp4", path: "owned-first")
+        let second = MediaItem(name: "episode2.mp4", path: "owned-second")
+        store.snapshot.localItems = [second, first]
+        await store.setAutomaticallyPlayNext(false)
+        await store.play(first)
+        let session = store.beginPlaybackSession(for: first)
+        await store.completePlayback(after: first, sessionID: session)
+        XCTAssertEqual(store.playingItem?.id, first.id)
+        XCTAssertEqual(store.progress(for: first)?.isWatched, true)
+        let reopened = makeStore(); await reopened.load()
+        XCTAssertFalse(reopened.snapshot.automaticallyPlayNext)
+        XCTAssertEqual(reopened.progress(for: first)?.isWatched, true)
+        await store.playNext(after: first)
+        XCTAssertEqual(store.playingItem?.id, second.id)
+    }
+
     func testPausedSeekNearEndPersistsAsResumeUntilPlaybackIsConfirmed() async throws {
         let item = MediaItem(name: "short.mp4", path: directory.appendingPathComponent("short.mp4").path)
         let store = makeStore(); await store.load()
@@ -183,6 +234,28 @@ import FilmSources
         XCTAssertEqual(try Data(contentsOf: file), content)
     }
 
+    #if os(macOS)
+    func testReadonlyLocalImportBookmarkSurvivesReopening() async throws {
+        let file = directory.appendingPathComponent("只读 中文 video.mp4")
+        let content = Data("owned readonly import fixture".utf8)
+        try content.write(to: file)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: file.path)
+        let store = makeStore()
+        await store.importFiles([file])
+        XCTAssertNil(store.errorMessage)
+        XCTAssertNotNil(try XCTUnwrap(store.localItems.first).bookmark)
+        await store.importFiles([file])
+        XCTAssertEqual(store.localItems.count, 1)
+        let reopened = makeStore()
+        await reopened.load()
+        let item = try XCTUnwrap(reopened.localItems.first)
+        let prepared = try await reopened.preparePlayback(item)
+        XCTAssertEqual(try Data(contentsOf: prepared.url), content)
+        XCTAssertEqual(prepared.url.standardizedFileURL, file.standardizedFileURL)
+        XCTAssertEqual(try Data(contentsOf: file), content)
+    }
+    #endif
+
     func testManualNextDoesNotMarkAnUnfinishedVideoWatched() async throws {
         let store = makeStore(); await store.load()
         let first = MediaItem(name: "episode1.mp4", path: "/fixture/episode1.mp4")
@@ -273,4 +346,13 @@ private actor CompletionFailureProvider: SMBFileProviding {
         if fails { throw SMBError.connectionFailed }
         return Data(repeating: 0, count: Int(range.count))
     }
+}
+
+private actor BrowseStateProvider: SMBFileProviding {
+    func testConnection(_ connection: SMBConnection, credentials: SMBCredentials) async throws { }
+    func listDirectory(_ connection: SMBConnection, credentials: SMBCredentials, path: String) async throws -> [MediaItem] {
+        [MediaItem(name: "Episode 02.mp4", path: try SMBPath.joining(path, "Episode 02.mp4"), sourceID: connection.id)]
+    }
+    func fileSize(_ connection: SMBConnection, credentials: SMBCredentials, path: String) async throws -> Int64 { 0 }
+    func readFile(_ connection: SMBConnection, credentials: SMBCredentials, path: String, range: Range<Int64>) async throws -> Data { Data() }
 }

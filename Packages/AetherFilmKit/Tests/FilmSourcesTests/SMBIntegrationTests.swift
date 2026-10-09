@@ -5,6 +5,35 @@ import FilmSources
 
 /// Opt-in only: credentials are injected in memory by an isolated loopback test-server launcher.
 struct SMBIntegrationTests {
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["AETHERFILM_SMB_TEST_PORT"] != nil))
+    func repeatedReadCancellationAndProviderDisposalAllowFreshSessions() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        let port = try #require(environment["AETHERFILM_SMB_TEST_PORT"].flatMap(Int.init))
+        let password = try #require(environment["AETHERFILM_SMB_TEST_PASSWORD"])
+        let credentials = SMBCredentials(username: "aetherfilm-fixture", password: password)
+        let source = SMBConnection(name: "Owned teardown stress", host: "127.0.0.1", port: port, share: "FILMS")
+        for _ in 0..<20 {
+            let provider = SMBProvider(timeout: 3)
+            try await provider.testConnection(source, credentials: credentials)
+            let read = Task {
+                try await provider.readFile(source, credentials: credentials,
+                    path: "nested/sample.bin", range: 0..<1_048_649)
+            }
+            try await Task.sleep(for: .milliseconds(3))
+            read.cancel()
+            await provider.close()
+            do {
+                let bytes = try await read.value
+                // A read can finish before cancellation is delivered.
+                #expect(bytes.count == 1_048_649)
+            } catch is CancellationError { }
+            let fresh = try await provider.readFile(source, credentials: credentials,
+                path: "nested/sample.bin", range: 0..<100)
+            #expect(fresh == Data((0..<100).map { UInt8($0 % 251) }))
+            await provider.close()
+        }
+    }
+
     @Test(.enabled(if: ProcessInfo.processInfo.environment["AETHERFILM_SMB_BOOTSTRAP_URL"] != nil))
     func bootstrapDeliversCredentialsInMemoryForTestRunners() async throws {
         struct Configuration: Decodable {

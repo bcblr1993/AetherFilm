@@ -1,14 +1,15 @@
 {
-  "status": "COMPONENT_ASSEMBLY_VERIFIED",
-  "nativeGeneration": 8,
+  "status": "COMPONENT_PUBLISHED_AND_ANONYMOUS_DOWNLOAD_VERIFIED",
+  "nativeGeneration": 9,
   "wrapperCommit": "8f5ce02f09a7da5d061a24ddac3cb432f2a9b332",
   "libVLCBaseCommit": "005e69e67a8730f128e44bde68437fbb048cf45f",
   "binaryAsset": {
-    "plannedTag": "vlckit-8f5ce02-aether-20261004-native8",
-    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261004-native8/VLCKit-AetherFilm-native8-arm64.xcframework.zip",
-    "filename": "VLCKit-AetherFilm-native8-arm64.xcframework.zip",
-    "bytes": 68726734,
-    "sha256": "1ae7007adbfe8881472682a928caa8cee5011114b4b6d3002a1337c223230260"
+    "plannedTag": "vlckit-8f5ce02-aether-20261008-native9",
+    "url": "https://github.com/bcblr1993/AetherFilm/releases/download/vlckit-8f5ce02-aether-20261008-native9/VLCKit-AetherFilm-native9-arm64.xcframework.zip",
+    "filename": "VLCKit-AetherFilm-native9-arm64.xcframework.zip",
+    "bytes": 68747057,
+    "sha256": "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493",
+    "tag": "vlckit-8f5ce02-aether-20261008-native9"
   },
   "slices": [
     {
@@ -17,10 +18,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 62456952,
-      "binarySHA256": "5cd6ac5f3bfe7477b6cc37e858b3880b7c68feea95447b584a58511eff952ad6",
-      "UUID": "e5019bad-dfb1-3ddc-b996-8e287be0cfde",
-      "textSHA256": "67d9dc1581c2bc00fa29170895871ca697db01802d48ec8886b71d6322fdb2a9",
+      "binaryBytes": 62767256,
+      "binarySHA256": "c1edc04c069603834f857e229b8e74bd741e858d5e1eacea7b4095491f1ae3e3",
+      "UUID": "16527d03-367f-3164-9322-569371c26402",
+      "textSHA256": "720c7cee915b7802b663afa25fd413c509a3904ac187b63ccefca02433ce21e1",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -38,7 +39,11 @@
       "publicHeaderCount": 48,
       "publicLibvlcAPI": true,
       "publicHeadersExactToNative6": true,
-      "publicHeadersExactToNative7": true
+      "publicHeadersExactToNative7": true,
+      "publicHeadersExactToNative8": true,
+      "publicLibVLCExportCount": 315,
+      "builtInCoreEntryCount": 1,
+      "textHashEncoding": "otool textual __TEXT __text dump without filename preamble"
     },
     {
       "identifier": "ios-arm64-simulator",
@@ -46,10 +51,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 54292376,
-      "binarySHA256": "c6c95b93e78b51baab53cc529d9dd8a1e12ec6a7a69d49e96fb42db103acab83",
-      "UUID": "96a6547e-04a8-378d-9886-5c22a3e6b393",
-      "textSHA256": "cd9811cce2c8ae32fa68259fa5898e6805ea5f314c30b64c44623537219eef9e",
+      "binaryBytes": 54637640,
+      "binarySHA256": "7978672a8313962e7fbda8394b4d9748ad289bd09a0b80faacd19ccd5a25e75d",
+      "UUID": "7b2b67b0-8b02-35e1-83c5-c497512f3442",
+      "textSHA256": "91bd9dec746e0dec0ce7ddcb46bf0ef09832c81e66aa9e867c939addb1e73973",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -67,7 +72,11 @@
       "publicHeaderCount": 43,
       "publicLibvlcAPI": true,
       "publicHeadersExactToNative6": true,
-      "publicHeadersExactToNative7": true
+      "publicHeadersExactToNative7": true,
+      "publicHeadersExactToNative8": true,
+      "publicLibVLCExportCount": 315,
+      "builtInCoreEntryCount": 1,
+      "textHashEncoding": "otool textual __TEXT __text dump without filename preamble"
     },
     {
       "identifier": "ios-arm64",
@@ -75,10 +84,10 @@
       "architecture": "arm64",
       "minimum": "26.0",
       "SDK": "27.0",
-      "binaryBytes": 52928920,
-      "binarySHA256": "acd6cf3f1ed212524cf75cae8ca2e5967ca9e0addcfbfc90e181565d1c8ab246",
-      "UUID": "f831f3a2-367b-3a9f-b9b7-931b0d7ce919",
-      "textSHA256": "ce59eff2c7f5795be533b4868091e4f548cfd3b6cc8a21c032ca6576fa3944d5",
+      "binaryBytes": 53273296,
+      "binarySHA256": "dfd55528a09c278f2d678f0b57d8210d5d941d8582ed5c9faf370f447e423a36",
+      "UUID": "85bdf44d-784b-3a50-8744-9d911be66b25",
+      "textSHA256": "60e5edb702330d2dfd722c9b55b5bebf28f4c45c8d11e50102a0b40f8998dc9d",
       "wrapperTargetsExitCodes": [
         0,
         0
@@ -96,7 +105,11 @@
       "publicHeaderCount": 43,
       "publicLibvlcAPI": true,
       "publicHeadersExactToNative6": true,
-      "publicHeadersExactToNative7": true
+      "publicHeadersExactToNative7": true,
+      "publicHeadersExactToNative8": true,
+      "publicLibVLCExportCount": 315,
+      "builtInCoreEntryCount": 1,
+      "textHashEncoding": "otool textual __TEXT __text dump without filename preamble"
     }
   ],
   "AppAndRuntimeReleaseAccepted": false,
@@ -104,5 +117,30 @@
   "outputClockCadencePatchSHA256": "d3b6d69a5c9c2f4d623824dade2f1cab5eaf37240815a969c5d5c192ea74051f",
   "coreAudioCadencePatchSHA256": "3b972cf0699962de78599575e568f0cd685ec1c9adc8f3c9227e313f65b66b4a",
   "mediaPrerollRatePatchSHA256": "dbe103e3d13a0337bd91e9206ad72bf102b5c4398412600841d989d8bf6d7f4f",
-  "avSampleBufferDrainPatchSHA256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78"
+  "avSampleBufferDrainPatchSHA256": "caa979bd3562a4ab1c0215a01a5fc3274956689e879bfc2a72789764d583ba78",
+  "deferredPauseCancelPatchSHA256": "a56b2fceb3ecadaa8c7c83dca621402ea0dae995726db2bcb69188e5e77c1e1c",
+  "fullPortableRebuildExecuted": false,
+  "correspondingSourceExtension": {
+    "asset": "AetherFilm-native9-source-extension-a73effb1784f.tar.gz",
+    "bytes": 11754925,
+    "sha256": "018c891f19c52cb4a9ca8d191e05f53f09a4c7c2b100dc9d2be534581954f538",
+    "applicationCommit": "a73effb1784f88d205e1ae6c44138667e6c46b98",
+    "releaseAccepted": false
+  },
+  "componentAnonymousDownloadsVerified": [
+    {
+      "asset": "VLCKit-AetherFilm-native9-arm64.xcframework.zip",
+      "anonymousCurlExitCode": 0,
+      "httpStatus": "200",
+      "bytes": 68747057,
+      "sha256": "d6afca5cc284709851bb82fc61e4148bfe4b4dffdfa7b53c3cebe52253520493"
+    },
+    {
+      "asset": "AetherFilm-native9-source-extension-a73effb1784f.tar.gz",
+      "anonymousCurlExitCode": 0,
+      "httpStatus": "200",
+      "bytes": 11754925,
+      "sha256": "018c891f19c52cb4a9ca8d191e05f53f09a4c7c2b100dc9d2be534581954f538"
+    }
+  ]
 }

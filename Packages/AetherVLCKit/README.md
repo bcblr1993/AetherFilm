@@ -3,7 +3,7 @@
 This package records the modified native backend used by AetherFilm. The current
 artifact contains only macOS ARM64, iOS ARM64 and iOS Simulator ARM64, with minimum
 OS 26.0 and SDK 27.0. `Provenance/artifact.json` and `Package.swift` pin the actual
-assembled Native8 binary. The configured download URL and checksum identify that
+assembled Native9 binary. The configured download URL and checksum identify that
 component; application and distribution acceptance are recorded separately in
 [the release gates](../../docs/RELEASE.md).
 
@@ -37,7 +37,7 @@ nine production C/ObjC files and the GSM build rule. Three portable wrapper
 project patches were also applied and syntax
 checked against the pinned original wrapper project. Only these small source
 proofs and tool syntax/help checks were executed during preparation of this
-package. `Tools/rebuild_core.py` has not been used for a full portable build.
+package. The parameterized core driver has completed ordinary core builds from verified working source trees; a fresh portable build from archived inputs and newly bootstrapped host tools is not certified.
 
 Native6 preserves the preceding six patches and all ten source hashes. Its seventh
 patch, `output-clock-cadence.patch`, changes the real AVSampleBuffer renderer
@@ -120,7 +120,7 @@ verified Lua archive there. Apply the following local patches once per tree:
 for patch_name in native-aperture gsm-deployment paused-preview-core \
                   decoder-flush-preview held-io-recovery audio-output-domain \
                   output-clock-cadence coreaudio-cadence \
-                  media-preroll-rate avsamplebuffer-drain; do
+                  media-preroll-rate avsamplebuffer-drain deferred-pause-cancel; do
   patch --directory="$vlc_source" -p1 --batch --forward --fuzz=0 \
     < "$package_dir/Patches/$patch_name.patch"
 done
@@ -159,7 +159,8 @@ plan. Add `--execute` only when intentionally starting the full compiler run:
 ```sh
 python3 "$package_dir/Tools/rebuild_core.py" \
   --source "$vlc_source" --output "$core_output" --platform mac \
-  --rust-bin "$rust_bin" --gmake "$gnu_make" --host-tools-bin "$host_tools_bin"
+  --rust-bin "$rust_bin" --gmake "$gnu_make" --host-tools-bin "$host_tools_bin" \
+  --cargo-capi-bin "$cargo_capi_bin"
 ```
 
 Use `mac`, `sim` or `device`. The driver supplies `--arch=arm64`, the corresponding
@@ -170,7 +171,7 @@ Meson invocation. It does not replace an existing output or change `HOME` or
 exit still requires archive architecture, minimum-OS, module, symbol and license
 inspection, followed by wrapper and application tests.
 
-The driver intentionally checks all thirteen Native8 release source hashes. When rebuilding
+The driver checks all fourteen Native9 source hashes; Native8 pins remain historical records. When rebuilding
 with user modifications, retain the original release pins and create a separate
 record of the modified hashes and build identity. Such a rebuild is not the
 byte-identical release artifact.
@@ -222,3 +223,11 @@ commit. Preserve upstream copyright/license notices, including both COPYING
 files here and the application Notices. Packaging source does not establish
 public availability, App acceptance or LGPL relinking/replacement verification.
 Those are separate release gates in `docs/RELEASE.md`.
+
+## Native9 control correction (2026-10-08)
+
+AetherNative modified lib/media_player.c and src/input/input.c on 2026-10-08 to submit resume intent in input-control order and cancel a deferred buffering pause. Original copyright and LGPL terms remain intact. Native8 historical pins and records are retained. See Patches/deferred-pause-cancel.patch and Provenance/native9-build-record.json. Source reconstruction and ordinary App regressions do not certify full portable rebuilding, CI, physical-device, accessibility or final distribution acceptance.
+
+The fixed source archive plus eleven local patches reproduces all 5675 source files from each actual core build. All three ordinary cores and six wrapper targets completed. The Device wrapper was reconstructed using the fixed archive and Device patch; its earlier Simulator-based template and failed header-preparation attempt remain in the evidence. Copy generated plugin headers from `include/vlc/plugins` as well as public headers and the generated `libvlc_version.h` from the corresponding core before wrapper compilation. Keep the generated version header in the assembled framework; never substitute the old template version header. The complete ordinary Mac62/iOS71 regressions and three frozen callback consumers are recorded separately; public App and portable build acceptance remain open.
+
+Provide an existing cargo-c 0.10.9+cargo-0.85.0 tool directory via `--cargo-capi-bin`; `Provenance/build-tools.json` pins all four tool hashes. The driver checks them and copies them into its owned Cargo cache. No global tool installation is performed.
